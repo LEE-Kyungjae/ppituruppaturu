@@ -1,0 +1,18 @@
+# Path: go/Dockerfile
+
+# 1) 빌드
+FROM golang:1.24.6-alpine AS build
+ARG BUILD_ENV
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/myapi .
+
+# 2) 런타임(초소형)
+FROM gcr.io/distroless/base-debian12
+WORKDIR /app
+COPY --from=build /out/myapi /app/myapi
+EXPOSE 8080
+USER 65532:65532
+ENTRYPOINT ["/app/myapi"]

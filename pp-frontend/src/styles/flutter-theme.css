@@ -1,0 +1,201 @@
+/* Flutter-inspired CSS Custom Properties */
+:root {
+  /* Primary Colors - Flutter Blue */
+  --flutter-blue-50: #f0f8ff;
+  --flutter-blue-100: #e0f2fe;
+  --flutter-blue-200: #bae6fd;
+  --flutter-blue-300: #7dd3fc;
+  --flutter-blue-400: #38bdf8;
+  --flutter-blue-500: #0ea5e9;
+  --flutter-blue-600: #0284c7;
+  --flutter-blue-700: #0369a1;
+  --flutter-blue-800: #075985;
+  --flutter-blue-900: #0c4a6e;
+
+  /* Secondary Colors - Soft Purple */
+  --flutter-purple-50: #faf5ff;
+  --flutter-purple-100: #f3e8ff;
+  --flutter-purple-200: #e9d5ff;
+  --flutter-purple-300: #d8b4fe;
+  --flutter-purple-400: #c084fc;
+  --flutter-purple-500: #a855f7;
+  --flutter-purple-600: #9333ea;
+  --flutter-purple-700: #7c3aed;
+  --flutter-purple-800: #6b21a8;
+  --flutter-purple-900: #581c87;
+
+  /* Success Colors - Flutter Green */
+  --flutter-green-50: #f0fdf4;
+  --flutter-green-100: #dcfce7;
+  --flutter-green-200: #bbf7d0;
+  --flutter-green-300: #86efac;
+  --flutter-green-400: #4ade80;
+  --flutter-green-500: #22c55e;
+  --flutter-green-600: #16a34a;
+  --flutter-green-700: #15803d;
+  --flutter-green-800: #166534;
+  --flutter-green-900: #14532d;
+
+  /* Warning Colors - Warm Orange */
+  --flutter-orange-50: #fff7ed;
+  --flutter-orange-100: #ffedd5;
+  --flutter-orange-200: #fed7aa;
+  --flutter-orange-300: #fdba74;
+  --flutter-orange-400: #fb923c;
+  --flutter-orange-500: #f97316;
+  --flutter-orange-600: #ea580c;
+  --flutter-orange-700: #c2410c;
+  --flutter-orange-800: #9a3412;
+  --flutter-orange-900: #7c2d12;
+
+  /* Neutral Colors - Soft Grays */
+  --flutter-gray-50: #f8fafc;
+  --flutter-gray-100: #f1f5f9;
+  --flutter-gray-200: #e2e8f0;
+  --flutter-gray-300: #cbd5e1;
+  --flutter-gray-400: #94a3b8;
+  --flutter-gray-500: #64748b;
+  --flutter-gray-600: #475569;
+  --flutter-gray-700: #334155;
+  --flutter-gray-800: #1e293b;
+  --flutter-gray-900: #0f172a;
+
+  /* Semantic Colors */
+  --flutter-background: #f8fafc;
+  --flutter-surface: #ffffff;
+  --flutter-primary: #0ea5e9;
+  --flutter-secondary: #a855f7;
+  --flutter-accent: #c084fc;
+  --flutter-success: #22c55e;
+  --flutter-warning: #f97316;
+  --flutter-error: #ef4444;
+
+  /* Typography */
+  --flutter-text-primary: #1e293b;
+  --flutter-text-secondary: #475569;
+  --flutter-text-muted: #94a3b8;
+  --flutter-text-inverse: #ffffff;
+
+  /* Shadows */
+  --flutter-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --flutter-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --flutter-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --flutter-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --flutter-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Border Radius */
+  --flutter-radius-sm: 0.125rem;
+  --flutter-radius: 0.375rem;
+  --flutter-radius-md: 0.5rem;
+  --flutter-radius-lg: 0.75rem;
+  --flutter-radius-xl: 1rem;
+  --flutter-radius-2xl: 1.5rem;
+  --flutter-radius-3xl: 2rem;
+}
+
+/* Flutter-style Components */
+.flutter-card {
+  background: var(--flutter-surface);
+  border-radius: var(--flutter-radius-xl);
+  box-shadow: var(--flutter-shadow-lg);
+  border: 1px solid var(--flutter-gray-200);
+  transition: all 0.3s ease;
+}
+
+.flutter-card:hover {
+  box-shadow: var(--flutter-shadow-xl);
+  transform: translateY(-2px);
+}
+
+.flutter-button {
+  background: linear-gradient(135deg, var(--flutter-blue-500), var(--flutter-purple-500));
+  color: var(--flutter-text-inverse);
+  border: none;
+  border-radius: var(--flutter-radius-lg);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  box-shadow: var(--flutter-shadow);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.flutter-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--flutter-shadow-lg);
+}
+
+.flutter-button:active {
+  transform: translateY(0);
+}
+
+.flutter-button-secondary {
+  background: var(--flutter-surface);
+  color: var(--flutter-text-primary);
+  border: 1px solid var(--flutter-gray-300);
+}
+
+.flutter-button-secondary:hover {
+  background: var(--flutter-gray-50);
+  border-color: var(--flutter-gray-400);
+}
+
+.flutter-input {
+  background: var(--flutter-surface);
+  border: 1px solid var(--flutter-gray-300);
+  border-radius: var(--flutter-radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--flutter-text-primary);
+  transition: all 0.3s ease;
+}
+
+.flutter-input:focus {
+  outline: none;
+  border-color: var(--flutter-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Gradient Backgrounds */
+.flutter-gradient-primary {
+  background: linear-gradient(135deg, var(--flutter-blue-500), var(--flutter-purple-500));
+}
+
+.flutter-gradient-soft {
+  background: linear-gradient(135deg, var(--flutter-blue-50), var(--flutter-purple-50));
+}
+
+.flutter-gradient-warm {
+  background: linear-gradient(135deg, var(--flutter-orange-400), var(--flutter-orange-600));
+}
+
+/* Text Colors */
+.flutter-text-primary { color: var(--flutter-text-primary); }
+.flutter-text-secondary { color: var(--flutter-text-secondary); }
+.flutter-text-muted { color: var(--flutter-text-muted); }
+.flutter-text-inverse { color: var(--flutter-text-inverse); }
+
+/* Animations */
+@keyframes flutter-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes flutter-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.flutter-float {
+  animation: flutter-float 3s ease-in-out infinite;
+}
+
+.flutter-pulse {
+  animation: flutter-pulse 2s ease-in-out infinite;
+}

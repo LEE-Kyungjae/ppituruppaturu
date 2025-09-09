@@ -1,0 +1,15 @@
+# config.yaml
+
+server:
+  port: ":8080"
+
+jwt:
+  secret: "your-super-secret-key-change-me"
+
+database:
+  dsn: "user:password@tcp(127.0.0.1:3306)/yourdb?parseTime=True"
+
+ratelimit:
+  rps: 10
+  burst: 20
+  enabled: true

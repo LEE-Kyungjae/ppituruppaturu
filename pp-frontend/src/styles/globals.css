@@ -1,0 +1,36 @@
+/* /Users/ze/work/go/frontend/src/styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-game {
+    @apply px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-primary {
+    @apply btn-game bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700;
+  }
+  
+  .btn-success {
+    @apply btn-game bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700;
+  }
+  
+  .card-game {
+    @apply bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300;
+  }
+  
+  .game-container {
+    @apply min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white;
+  }
+}

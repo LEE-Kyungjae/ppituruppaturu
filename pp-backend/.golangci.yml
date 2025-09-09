@@ -1,0 +1,28 @@
+# .golangci.yml
+
+run:
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+linters:
+  # please, do not use `enable-all`: it's slow and may report obscure issues
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+
+linters-settings:
+  goimports:
+    local-prefixes: ze.com/exit
+
+issues:
+  # Maximum issues count per one linter. Set to 0 to disable.
+  max-issues-per-linter: 0
+  # Maximum count of issues with the same text.
+  max-same-issues: 0
