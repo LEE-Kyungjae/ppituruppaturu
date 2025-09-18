@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"exit/internal/handler"
+	"github.com/pitturu-ppaturu/backend/internal/handler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

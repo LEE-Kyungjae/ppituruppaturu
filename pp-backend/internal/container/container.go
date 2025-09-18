@@ -3,19 +3,20 @@ package container
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"time"
 
-	"exit/internal/auth"
-	"exit/internal/chat"
-	"exit/internal/config"
-	"exit/internal/db"
-	"exit/internal/email"
-	"exit/internal/handler"
-	"exit/internal/kakao"
-	"exit/internal/minigame"
-	"exit/internal/repository"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/auth"
+	"github.com/pitturu-ppaturu/backend/internal/chat"
+	"github.com/pitturu-ppaturu/backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/db"
+	"github.com/pitturu-ppaturu/backend/internal/email"
+	"github.com/pitturu-ppaturu/backend/internal/gameserver"
+	"github.com/pitturu-ppaturu/backend/internal/handler"
+	"github.com/pitturu-ppaturu/backend/internal/kakao"
+	"github.com/pitturu-ppaturu/backend/internal/minigame"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 )
 
 // Container holds all the application's dependencies.
@@ -67,16 +68,19 @@ type Container struct {
 	// Mini Game Engine
 	MiniGameEngine   *minigame.MiniGameEngine
 
+	// Game Server
+	GameServer       *gameserver.GameServer
+
 	// Middleware
 	AuthMiddleware *auth.Middleware
 }
 
-// NewContainer creates a new Container with all the dependencies initialized.
-func NewContainer(cfg *config.Config) *Container {
+// New creates a new Container with all the dependencies initialized.
+func New(cfg *config.Config) (*Container, error) {
 	// 1) DB 연결
 	dbConn, err := db.NewConnection(cfg)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	// 1-1) 커넥션 풀 튜닝(기본값 + cfg가 있으면 덮어쓰기)
 	tuneDBPool(dbConn, cfg)
@@ -125,6 +129,35 @@ func NewContainer(cfg *config.Config) *Container {
 	// 5-1) 미니게임 엔진
 	miniGameEngine := minigame.NewMiniGameEngine(gameService, paymentService)
 
+	// 5-2) 게임서버 초기화 (환경변수 기반 설정)
+	var gameServer *gameserver.GameServer
+	if cfg.GameServerEnabled {
+		gameServerConfig := &gameserver.GameServerConfig{
+			Port:                   cfg.WSPort,
+			MaxConnections:         1000,
+			MaxRooms:               100,
+			MaxPlayersPerRoom:      8,
+			ConnectionTimeout:      5 * time.Minute,
+			RoomInactivityTimeout:  30 * time.Minute,
+			MatchmakingTimeout:     5 * time.Minute,
+			EnableCORS:             true,
+			AllowedOrigins:         []string{cfg.AllowedOrigins},
+			EnableMetrics:          true,
+			EnableHealthCheck:      true,
+			LogLevel:               "info",
+		}
+		gameServer = gameserver.NewGameServer(gameServerConfig, miniGameEngine)
+
+		// 개발 환경에서 테스트용 기본 게임룸 생성
+		if cfg.GoEnv == "development" {
+			go func() {
+				// 게임서버가 시작될 때까지 잠시 대기
+				time.Sleep(2 * time.Second)
+				createTestRooms(gameServer)
+			}()
+		}
+	}
+
 	// 6) 미들웨어
 	authMiddleware := auth.NewMiddleware(tokenSvc)
 
@@ -132,7 +165,7 @@ func NewContainer(cfg *config.Config) *Container {
 	startedAt := time.Now() // 앱 시작 시각을 고정 캡처 → 업타임 계산 정확
 	authHandler := handler.NewAuthHandler(authService, kakaoAuthSvc)
 	userHandler := handler.NewUserHandler(userService, cfg)
-	adminHandler := handler.NewAdminHandler(startedAt)
+	adminHandler := handler.NewAdminHandler(startedAt, gameRepo)
 	friendHandler := handler.NewFriendHandler(friendService)
 	chatHandler := handler.NewChatHandler(userService, chatService, hub)
 	communityHandler := handler.NewCommunityHandler(communityService)
@@ -181,9 +214,12 @@ func NewContainer(cfg *config.Config) *Container {
 		// Mini Game Engine
 		MiniGameEngine:         miniGameEngine,
 
+		// Game Server
+		GameServer:             gameServer,
+
 		// Middleware
 		AuthMiddleware:         authMiddleware,
-	}
+	}, nil
 }
 
 // tuneDBPool sets sane defaults for DB connection pooling.
@@ -214,6 +250,45 @@ func tuneDBPool(db *sql.DB, cfg *config.Config) {
 	db.SetMaxIdleConns(maxIdle)
 	db.SetConnMaxLifetime(maxLife)
 	db.SetConnMaxIdleTime(maxIdleTime)
+}
+
+// createTestRooms 테스트용 기본 게임룸들을 생성합니다
+func createTestRooms(gameServer *gameserver.GameServer) {
+	if gameServer == nil {
+		return
+	}
+
+	roomManager := gameServer.GetRoomManager()
+	if roomManager == nil {
+		return
+	}
+
+	// 테스트용 룸 생성
+	testRooms := []struct {
+		host     string
+		gameType string
+		name     string
+	}{
+		{"test_user_1", "click_speed", "테스트 클릭 스피드 룸"},
+		{"test_user_2", "memory_match", "테스트 메모리 매칭 룸"},
+		{"test_user_3", "number_guess", "테스트 숫자 추측 룸"},
+	}
+
+	for _, testRoom := range testRooms {
+		settings := map[string]interface{}{
+			"maxPlayers": 4,
+			"minPlayers": 2,
+			"isPrivate": false,
+			"name": testRoom.name,
+		}
+
+		_, err := roomManager.CreateRoom(testRoom.host, minigame.GameType(testRoom.gameType), settings)
+		if err != nil {
+			fmt.Printf("⚠️  테스트 룸 생성 실패: %v\n", err)
+		} else {
+			fmt.Printf("✅ 테스트 룸 생성 성공: %s (%s)\n", testRoom.name, testRoom.gameType)
+		}
+	}
 }
 
 /*

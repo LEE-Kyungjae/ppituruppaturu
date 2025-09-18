@@ -1,0 +1,1 @@
+-- Development placeholder - no indexes needed for now

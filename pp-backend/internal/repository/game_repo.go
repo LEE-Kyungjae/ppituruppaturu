@@ -17,11 +17,18 @@ var (
 )
 
 type Game struct {
-	ID          uuid.UUID
-	Name        string
-	Description sql.NullString
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID              uuid.UUID
+	Name            string
+	Description     sql.NullString
+	IsActive        bool
+	DisplayOrder    int
+	Category        string
+	IconEmoji       string
+	MaxPlayers      int
+	MinPlayers      int
+	DifficultyLevel string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type GameSession struct {
@@ -48,6 +55,12 @@ type GameRepository interface {
 	GetGameByID(id uuid.UUID) (*Game, error)
 	GetGameByName(name string) (*Game, error)
 	ListGames() ([]*Game, error)
+	ListActiveGames() ([]*Game, error)
+	
+	// Admin methods
+	ListAllGamesForAdmin() ([]*Game, error)
+	UpdateGameVisibility(id uuid.UUID, isActive bool) error
+	UpdateGameDisplayOrder(id uuid.UUID, displayOrder int) error
 
 	CreateGameSession(gameID uuid.UUID, playerUsername string) (*GameSession, error)
 	GetGameSessionByID(id uuid.UUID) (*GameSession, error)
@@ -69,9 +82,9 @@ func NewPostgresGameRepository(db DBTX) GameRepository {
 }
 
 func (r *postgresGameRepository) CreateGame(name, description string) (*Game, error) {
-	query := `INSERT INTO games (name, description) VALUES ($1, $2) RETURNING id, name, description, created_at, updated_at`
+	query := `INSERT INTO games (name, description) VALUES ($1, $2) RETURNING id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at`
 	var game Game
-	err := r.db.QueryRow(query, name, description).Scan(&game.ID, &game.Name, &game.Description, &game.CreatedAt, &game.UpdatedAt)
+	err := r.db.QueryRow(query, name, description).Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create game: %w", err)
 	}
@@ -79,9 +92,9 @@ func (r *postgresGameRepository) CreateGame(name, description string) (*Game, er
 }
 
 func (r *postgresGameRepository) GetGameByID(id uuid.UUID) (*Game, error) {
-	query := `SELECT id, name, description, created_at, updated_at FROM games WHERE id = $1`
+	query := `SELECT id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at FROM games WHERE id = $1`
 	var game Game
-	err := r.db.QueryRow(query, id).Scan(&game.ID, &game.Name, &game.Description, &game.CreatedAt, &game.UpdatedAt)
+	err := r.db.QueryRow(query, id).Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrGameNotFound
@@ -92,9 +105,9 @@ func (r *postgresGameRepository) GetGameByID(id uuid.UUID) (*Game, error) {
 }
 
 func (r *postgresGameRepository) GetGameByName(name string) (*Game, error) {
-	query := `SELECT id, name, description, created_at, updated_at FROM games WHERE name = $1`
+	query := `SELECT id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at FROM games WHERE name = $1`
 	var game Game
-	err := r.db.QueryRow(query, name).Scan(&game.ID, &game.Name, &game.Description, &game.CreatedAt, &game.UpdatedAt)
+	err := r.db.QueryRow(query, name).Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrGameNotFound
@@ -105,7 +118,7 @@ func (r *postgresGameRepository) GetGameByName(name string) (*Game, error) {
 }
 
 func (r *postgresGameRepository) ListGames() ([]*Game, error) {
-	query := `SELECT id, name, description, created_at, updated_at FROM games ORDER BY name ASC`
+	query := `SELECT id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at FROM games WHERE is_active = true ORDER BY display_order ASC`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list games: %w", err)
@@ -115,7 +128,7 @@ func (r *postgresGameRepository) ListGames() ([]*Game, error) {
 	var games []*Game
 	for rows.Next() {
 		var game Game
-		if err := rows.Scan(&game.ID, &game.Name, &game.Description, &game.CreatedAt, &game.UpdatedAt); err != nil {
+		if err := rows.Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan game row: %w", err)
 		}
 		games = append(games, &game)
@@ -246,4 +259,94 @@ func (r *postgresGameRepository) ListGameScoresByPlayerUsername(playerUsername s
 	}
 
 	return scores, nil
+}
+
+// ListActiveGames returns only active games ordered by display_order
+func (r *postgresGameRepository) ListActiveGames() ([]*Game, error) {
+	query := `SELECT id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at FROM games WHERE is_active = true ORDER BY display_order ASC`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list active games: %w", err)
+	}
+	defer rows.Close()
+
+	var games []*Game
+	for rows.Next() {
+		var game Game
+		if err := rows.Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan game row: %w", err)
+		}
+		games = append(games, &game)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during active game list iteration: %w", err)
+	}
+
+	return games, nil
+}
+
+// ListAllGamesForAdmin returns all games (active and inactive) ordered by display_order
+func (r *postgresGameRepository) ListAllGamesForAdmin() ([]*Game, error) {
+	query := `SELECT id, name, description, is_active, display_order, category, icon_emoji, max_players, min_players, difficulty_level, created_at, updated_at FROM games ORDER BY display_order ASC`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list all games for admin: %w", err)
+	}
+	defer rows.Close()
+
+	var games []*Game
+	for rows.Next() {
+		var game Game
+		if err := rows.Scan(&game.ID, &game.Name, &game.Description, &game.IsActive, &game.DisplayOrder, &game.Category, &game.IconEmoji, &game.MaxPlayers, &game.MinPlayers, &game.DifficultyLevel, &game.CreatedAt, &game.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan game row: %w", err)
+		}
+		games = append(games, &game)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during admin game list iteration: %w", err)
+	}
+
+	return games, nil
+}
+
+// UpdateGameVisibility updates the is_active status of a game
+func (r *postgresGameRepository) UpdateGameVisibility(id uuid.UUID, isActive bool) error {
+	query := `UPDATE games SET is_active = $1, updated_at = NOW() WHERE id = $2`
+	result, err := r.db.Exec(query, isActive, id)
+	if err != nil {
+		return fmt.Errorf("failed to update game visibility: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrGameNotFound
+	}
+
+	return nil
+}
+
+// UpdateGameDisplayOrder updates the display_order of a game
+func (r *postgresGameRepository) UpdateGameDisplayOrder(id uuid.UUID, displayOrder int) error {
+	query := `UPDATE games SET display_order = $1, updated_at = NOW() WHERE id = $2`
+	result, err := r.db.Exec(query, displayOrder, id)
+	if err != nil {
+		return fmt.Errorf("failed to update game display order: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrGameNotFound
+	}
+
+	return nil
 }

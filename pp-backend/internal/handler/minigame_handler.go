@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"exit/internal/minigame"
+	"github.com/pitturu-ppaturu/backend/internal/minigame"
 )
 
 // MiniGameHandler handles mini game related HTTP requests

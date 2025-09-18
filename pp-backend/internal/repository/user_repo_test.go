@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"exit/internal/config"
-	"exit/internal/db"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/db"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 )
 
 func withUserRepo(t *testing.T, db *sql.DB, testFunc func(repo repository.UserRepository)) {

@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"exit/internal/chat"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/chat"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

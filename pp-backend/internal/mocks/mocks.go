@@ -4,8 +4,8 @@ package mocks
 
 import (
 	"database/sql"
-	"exit/internal/chat"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/chat"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"

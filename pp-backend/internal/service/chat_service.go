@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"exit/internal/chat"
-	"exit/internal/repository"
-	serviceErrors "exit/internal/service/errors"
+	"github.com/pitturu-ppaturu/backend/internal/chat"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	serviceErrors "github.com/pitturu-ppaturu/backend/internal/service/errors"
 )
 
 type ChatService interface {

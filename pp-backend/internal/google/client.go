@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 	
-	"exit/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/config"
 )
 
 // GoogleUser represents user info from Google

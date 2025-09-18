@@ -144,11 +144,11 @@ $$ LANGUAGE plpgsql;
 -- Create a stored procedure for logging payment events
 CREATE OR REPLACE FUNCTION log_payment_event(
     p_user_id VARCHAR(255),
+    p_action VARCHAR(50),
+    p_status VARCHAR(50),
     p_payment_id VARCHAR(255) DEFAULT NULL,
     p_session_id VARCHAR(255) DEFAULT NULL,
     p_merchant_uid VARCHAR(255) DEFAULT NULL,
-    p_action VARCHAR(50),
-    p_status VARCHAR(50),
     p_amount INTEGER DEFAULT NULL,
     p_error_code VARCHAR(100) DEFAULT NULL,
     p_error_message TEXT DEFAULT NULL,
@@ -159,10 +159,10 @@ DECLARE
     log_id UUID;
 BEGIN
     INSERT INTO payment_logs (
-        user_id, payment_id, session_id, merchant_uid, action, status, amount, 
+        user_id, action, status, payment_id, session_id, merchant_uid, amount, 
         error_code, error_message, portone_data, ip_address
     ) VALUES (
-        p_user_id, p_payment_id, p_session_id, p_merchant_uid, p_action, p_status, p_amount,
+        p_user_id, p_action, p_status, p_payment_id, p_session_id, p_merchant_uid, p_amount,
         p_error_code, p_error_message, p_portone_data, p_ip_address
     ) RETURNING id INTO log_id;
     

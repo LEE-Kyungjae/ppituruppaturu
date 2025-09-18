@@ -1,0 +1,588 @@
+package service
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/pitturu-ppaturu/backend/internal/errors"
+	"github.com/pitturu-ppaturu/backend/internal/logger"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+)
+
+// PaymentExceptionHandler handles all payment-related exceptions and recovery
+type PaymentExceptionHandler struct {
+	paymentRepo    *repository.PaymentSessionRepository
+	userRepo       *repository.UserRepository
+	logger         *logger.Logger
+	retryConfig    RetryConfig
+	circuitBreaker *CircuitBreaker
+}
+
+// RetryConfig defines retry behavior for different operations
+type RetryConfig struct {
+	MaxRetries      int
+	InitialDelay    time.Duration
+	MaxDelay        time.Duration
+	BackoffFactor   float64
+	RetryableErrors []string
+}
+
+// CircuitBreaker prevents cascading failures
+type CircuitBreaker struct {
+	FailureThreshold int
+	RecoveryTimeout  time.Duration
+	State            CircuitBreakerState
+	FailureCount     int
+	LastFailureTime  time.Time
+}
+
+type CircuitBreakerState int
+
+const (
+	Closed CircuitBreakerState = iota
+	Open
+	HalfOpen
+)
+
+// PaymentRecoveryResult represents the result of payment recovery attempt
+type PaymentRecoveryResult struct {
+	Success         bool
+	RecoveryAction  string
+	OriginalError   error
+	RecoveredAmount int64
+	RequiresManualIntervention bool
+	Details         map[string]interface{}
+}
+
+// NewPaymentExceptionHandler creates a new exception handler
+func NewPaymentExceptionHandler(
+	paymentRepo *repository.PaymentSessionRepository,
+	userRepo *repository.UserRepository,
+) *PaymentExceptionHandler {
+	return &PaymentExceptionHandler{
+		paymentRepo: paymentRepo,
+		userRepo:    userRepo,
+		logger:      logger.GetLogger(),
+		retryConfig: RetryConfig{
+			MaxRetries:    3,
+			InitialDelay:  1 * time.Second,
+			MaxDelay:      30 * time.Second,
+			BackoffFactor: 2.0,
+			RetryableErrors: []string{
+				"connection_timeout",
+				"network_error",
+				"temporary_failure",
+				"rate_limit",
+				"server_busy",
+			},
+		},
+		circuitBreaker: &CircuitBreaker{
+			FailureThreshold: 5,
+			RecoveryTimeout:  60 * time.Second,
+			State:           Closed,
+		},
+	}
+}
+
+// HandlePaymentException handles various payment exceptions with appropriate recovery strategies
+func (peh *PaymentExceptionHandler) HandlePaymentException(ctx context.Context, paymentID string, err error) *PaymentRecoveryResult {
+	result := &PaymentRecoveryResult{
+		OriginalError: err,
+		Details:      make(map[string]interface{}),
+	}
+
+	// Log the exception
+	peh.logger.LogPaymentOperation("exception_handling", paymentID, "", 0, err)
+
+	// Classify the exception type
+	exceptionType := peh.classifyException(err)
+	result.Details["exception_type"] = exceptionType
+
+	switch exceptionType {
+	case "network_timeout":
+		return peh.handleNetworkTimeout(ctx, paymentID, result)
+	case "payment_gateway_error":
+		return peh.handlePaymentGatewayError(ctx, paymentID, result)
+	case "database_error":
+		return peh.handleDatabaseError(ctx, paymentID, result)
+	case "validation_error":
+		return peh.handleValidationError(ctx, paymentID, result)
+	case "authentication_error":
+		return peh.handleAuthenticationError(ctx, paymentID, result)
+	case "insufficient_funds":
+		return peh.handleInsufficientFunds(ctx, paymentID, result)
+	case "card_declined":
+		return peh.handleCardDeclined(ctx, paymentID, result)
+	case "fraud_detected":
+		return peh.handleFraudDetection(ctx, paymentID, result)
+	case "amount_mismatch":
+		return peh.handleAmountMismatch(ctx, paymentID, result)
+	case "duplicate_transaction":
+		return peh.handleDuplicateTransaction(ctx, paymentID, result)
+	case "payment_expired":
+		return peh.handlePaymentExpired(ctx, paymentID, result)
+	case "refund_error":
+		return peh.handleRefundError(ctx, paymentID, result)
+	case "webhook_verification_failed":
+		return peh.handleWebhookVerificationFailed(ctx, paymentID, result)
+	case "currency_not_supported":
+		return peh.handleCurrencyNotSupported(ctx, paymentID, result)
+	case "rate_limit_exceeded":
+		return peh.handleRateLimitExceeded(ctx, paymentID, result)
+	default:
+		return peh.handleUnknownError(ctx, paymentID, result)
+	}
+}
+
+// classifyException determines the type of exception based on error details
+func (peh *PaymentExceptionHandler) classifyException(err error) string {
+	if err == nil {
+		return "unknown"
+	}
+
+	errorMsg := strings.ToLower(err.Error())
+	
+	// Network and connectivity issues
+	if strings.Contains(errorMsg, "timeout") || strings.Contains(errorMsg, "connection reset") {
+		return "network_timeout"
+	}
+	if strings.Contains(errorMsg, "connection refused") || strings.Contains(errorMsg, "network unreachable") {
+		return "network_error"
+	}
+	
+	// Payment gateway specific errors
+	if strings.Contains(errorMsg, "gateway") || strings.Contains(errorMsg, "portone") {
+		return "payment_gateway_error"
+	}
+	
+	// Database errors
+	if strings.Contains(errorMsg, "database") || strings.Contains(errorMsg, "sql") {
+		return "database_error"
+	}
+	
+	// Validation errors
+	if strings.Contains(errorMsg, "validation") || strings.Contains(errorMsg, "invalid") {
+		return "validation_error"
+	}
+	
+	// Authentication errors
+	if strings.Contains(errorMsg, "unauthorized") || strings.Contains(errorMsg, "authentication") {
+		return "authentication_error"
+	}
+	
+	// Payment specific errors
+	if strings.Contains(errorMsg, "insufficient funds") || strings.Contains(errorMsg, "insufficient balance") {
+		return "insufficient_funds"
+	}
+	if strings.Contains(errorMsg, "declined") || strings.Contains(errorMsg, "rejected") {
+		return "card_declined"
+	}
+	if strings.Contains(errorMsg, "fraud") || strings.Contains(errorMsg, "suspicious") {
+		return "fraud_detected"
+	}
+	if strings.Contains(errorMsg, "amount mismatch") || strings.Contains(errorMsg, "amount discrepancy") {
+		return "amount_mismatch"
+	}
+	if strings.Contains(errorMsg, "duplicate") || strings.Contains(errorMsg, "already exists") {
+		return "duplicate_transaction"
+	}
+	if strings.Contains(errorMsg, "expired") || strings.Contains(errorMsg, "timeout") {
+		return "payment_expired"
+	}
+	if strings.Contains(errorMsg, "refund") {
+		return "refund_error"
+	}
+	if strings.Contains(errorMsg, "webhook") || strings.Contains(errorMsg, "signature") {
+		return "webhook_verification_failed"
+	}
+	if strings.Contains(errorMsg, "currency") || strings.Contains(errorMsg, "not supported") {
+		return "currency_not_supported"
+	}
+	if strings.Contains(errorMsg, "rate limit") || strings.Contains(errorMsg, "too many requests") {
+		return "rate_limit_exceeded"
+	}
+	
+	return "unknown"
+}
+
+// handleNetworkTimeout handles network timeout exceptions
+func (peh *PaymentExceptionHandler) handleNetworkTimeout(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Check circuit breaker state
+	if peh.circuitBreaker.State == Open {
+		result.RequiresManualIntervention = true
+		result.RecoveryAction = "circuit_breaker_open"
+		return result
+	}
+
+	// Attempt to verify payment status with PortOne
+	if verifyResult := peh.attemptPaymentVerification(ctx, paymentID); verifyResult != nil {
+		result.Success = true
+		result.RecoveryAction = "payment_verified_after_timeout"
+		result.RecoveredAmount = verifyResult.Amount
+		return result
+	}
+
+	// Mark payment as uncertain for manual review
+	peh.markPaymentAsUncertain(ctx, paymentID, "network_timeout_during_processing")
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "marked_for_manual_review"
+	
+	peh.recordCircuitBreakerFailure()
+	return result
+}
+
+// handlePaymentGatewayError handles payment gateway specific errors
+func (peh *PaymentExceptionHandler) handlePaymentGatewayError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Retry with exponential backoff for temporary gateway issues
+	if peh.isRetryableGatewayError(result.OriginalError) {
+		if success := peh.retryPaymentOperation(ctx, paymentID); success {
+			result.Success = true
+			result.RecoveryAction = "retry_successful"
+			return result
+		}
+	}
+
+	// Mark payment as failed and notify user
+	peh.markPaymentAsFailed(ctx, paymentID, "payment_gateway_error")
+	result.RecoveryAction = "payment_marked_failed"
+	
+	// Schedule automatic refund if payment was partially processed
+	peh.scheduleRefundIfNeeded(ctx, paymentID)
+	
+	return result
+}
+
+// handleDatabaseError handles database-related exceptions
+func (peh *PaymentExceptionHandler) handleDatabaseError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Try to recover using database transaction rollback
+	if peh.attemptDatabaseRecovery(ctx, paymentID) {
+		result.Success = true
+		result.RecoveryAction = "database_recovery_successful"
+		return result
+	}
+
+	// If recovery fails, mark for manual intervention
+	peh.logger.Error("Critical database error during payment processing", result.OriginalError, logger.Fields{
+		"payment_id": paymentID,
+	})
+	
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "database_recovery_failed"
+	
+	// Create support ticket for manual intervention
+	peh.createSupportTicket(ctx, paymentID, "database_error", result.OriginalError.Error())
+	
+	return result
+}
+
+// handleFraudDetection handles fraud detection scenarios
+func (peh *PaymentExceptionHandler) handleFraudDetection(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Immediately block the payment
+	peh.blockPayment(ctx, paymentID, "fraud_detected")
+	
+	// Log security event
+	peh.logger.LogSecurityEvent("fraud_detected", "", "", logger.Fields{
+		"payment_id": paymentID,
+		"details":    result.OriginalError.Error(),
+	})
+	
+	// Notify security team
+	peh.notifySecurityTeam(ctx, paymentID, result.OriginalError.Error())
+	
+	result.RecoveryAction = "payment_blocked_fraud"
+	result.RequiresManualIntervention = true
+	
+	return result
+}
+
+// handleAmountMismatch handles amount discrepancy issues
+func (peh *PaymentExceptionHandler) handleAmountMismatch(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// This is a critical security issue
+	peh.logger.LogSecurityEvent("amount_mismatch", "", "", logger.Fields{
+		"payment_id": paymentID,
+		"error":      result.OriginalError.Error(),
+	})
+	
+	// Block the payment immediately
+	peh.blockPayment(ctx, paymentID, "amount_mismatch")
+	
+	// Create high-priority support ticket
+	peh.createSupportTicket(ctx, paymentID, "amount_mismatch_critical", result.OriginalError.Error())
+	
+	result.RecoveryAction = "payment_blocked_amount_mismatch"
+	result.RequiresManualIntervention = true
+	
+	return result
+}
+
+// handleDuplicateTransaction handles duplicate transaction attempts
+func (peh *PaymentExceptionHandler) handleDuplicateTransaction(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Find the original transaction
+	originalPayment, err := peh.findOriginalPayment(ctx, paymentID)
+	if err != nil {
+		result.RequiresManualIntervention = true
+		result.RecoveryAction = "duplicate_transaction_original_not_found"
+		return result
+	}
+	
+	// If original was successful, reject duplicate
+	if originalPayment.Status == "completed" {
+		peh.rejectDuplicatePayment(ctx, paymentID)
+		result.Success = true
+		result.RecoveryAction = "duplicate_rejected_original_successful"
+		return result
+	}
+	
+	// If original failed, allow this attempt
+	result.Success = true
+	result.RecoveryAction = "duplicate_allowed_original_failed"
+	
+	return result
+}
+
+// Utility methods for exception handling
+
+func (peh *PaymentExceptionHandler) attemptPaymentVerification(ctx context.Context, paymentID string) *PaymentVerificationResult {
+	// Implementation would call PortOne API to verify payment status
+	// This is a placeholder for the actual implementation
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) markPaymentAsUncertain(ctx context.Context, paymentID string, reason string) error {
+	return peh.paymentRepo.UpdatePaymentStatus(ctx, paymentID, "uncertain", reason)
+}
+
+func (peh *PaymentExceptionHandler) markPaymentAsFailed(ctx context.Context, paymentID string, reason string) error {
+	return peh.paymentRepo.UpdatePaymentStatus(ctx, paymentID, "failed", reason)
+}
+
+func (peh *PaymentExceptionHandler) isRetryableGatewayError(err error) bool {
+	retryableMessages := []string{
+		"temporary unavailable",
+		"service busy",
+		"rate limit",
+		"timeout",
+	}
+	
+	errorMsg := strings.ToLower(err.Error())
+	for _, msg := range retryableMessages {
+		if strings.Contains(errorMsg, msg) {
+			return true
+		}
+	}
+	return false
+}
+
+func (peh *PaymentExceptionHandler) retryPaymentOperation(ctx context.Context, paymentID string) bool {
+	delay := peh.retryConfig.InitialDelay
+	
+	for i := 0; i < peh.retryConfig.MaxRetries; i++ {
+		time.Sleep(delay)
+		
+		// Attempt the operation again
+		if err := peh.retryPaymentProcessing(ctx, paymentID); err == nil {
+			return true
+		}
+		
+		// Increase delay for next retry
+		delay = time.Duration(float64(delay) * peh.retryConfig.BackoffFactor)
+		if delay > peh.retryConfig.MaxDelay {
+			delay = peh.retryConfig.MaxDelay
+		}
+	}
+	
+	return false
+}
+
+func (peh *PaymentExceptionHandler) retryPaymentProcessing(ctx context.Context, paymentID string) error {
+	// Implementation would retry the specific payment operation
+	// This is a placeholder
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) attemptDatabaseRecovery(ctx context.Context, paymentID string) bool {
+	// Attempt to rollback any partial transactions
+	tx, err := peh.paymentRepo.BeginTransaction(ctx)
+	if err != nil {
+		return false
+	}
+	defer tx.Rollback()
+	
+	// Attempt to restore consistent state
+	if err := peh.restorePaymentConsistentState(ctx, tx, paymentID); err != nil {
+		return false
+	}
+	
+	return tx.Commit() == nil
+}
+
+func (peh *PaymentExceptionHandler) restorePaymentConsistentState(ctx context.Context, tx *sql.Tx, paymentID string) error {
+	// Implementation would restore database to consistent state
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) blockPayment(ctx context.Context, paymentID string, reason string) error {
+	return peh.paymentRepo.UpdatePaymentStatus(ctx, paymentID, "blocked", reason)
+}
+
+func (peh *PaymentExceptionHandler) scheduleRefundIfNeeded(ctx context.Context, paymentID string) error {
+	// Check if payment was partially processed and needs refund
+	payment, err := peh.paymentRepo.GetByID(ctx, paymentID)
+	if err != nil {
+		return err
+	}
+	
+	if payment.Status == "partial_paid" || payment.Status == "processing" {
+		// Schedule automatic refund
+		return peh.scheduleAutoRefund(ctx, paymentID, payment.Amount)
+	}
+	
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) scheduleAutoRefund(ctx context.Context, paymentID string, amount int64) error {
+	// Implementation would schedule a refund job
+	peh.logger.LogPaymentOperation("refund_scheduled", paymentID, "", amount, nil)
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) createSupportTicket(ctx context.Context, paymentID string, priority string, details string) error {
+	ticket := map[string]interface{}{
+		"payment_id": paymentID,
+		"priority":   priority,
+		"details":    details,
+		"created_at": time.Now(),
+		"status":     "open",
+	}
+	
+	peh.logger.WithFields(logger.Fields(ticket)).Error("Support ticket created for payment exception")
+	
+	// In production, this would integrate with your ticketing system
+	return nil
+}
+
+func (peh *PaymentExceptionHandler) notifySecurityTeam(ctx context.Context, paymentID string, details string) {
+	// Send immediate notification to security team
+	peh.logger.LogSecurityEvent("payment_fraud_alert", "", "", logger.Fields{
+		"payment_id": paymentID,
+		"details":    details,
+		"urgency":    "high",
+	})
+	
+	// In production, this would send alerts via email, Slack, etc.
+}
+
+func (peh *PaymentExceptionHandler) findOriginalPayment(ctx context.Context, paymentID string) (*PaymentSession, error) {
+	// Implementation would find original payment by merchant_uid or other criteria
+	return nil, nil
+}
+
+func (peh *PaymentExceptionHandler) rejectDuplicatePayment(ctx context.Context, paymentID string) error {
+	return peh.paymentRepo.UpdatePaymentStatus(ctx, paymentID, "duplicate_rejected", "Original transaction already completed")
+}
+
+func (peh *PaymentExceptionHandler) recordCircuitBreakerFailure() {
+	peh.circuitBreaker.FailureCount++
+	peh.circuitBreaker.LastFailureTime = time.Now()
+	
+	if peh.circuitBreaker.FailureCount >= peh.circuitBreaker.FailureThreshold {
+		peh.circuitBreaker.State = Open
+		peh.logger.Warn("Payment circuit breaker opened due to consecutive failures")
+	}
+}
+
+// Additional exception handlers for remaining cases...
+
+func (peh *PaymentExceptionHandler) handleValidationError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Validation errors are usually not recoverable
+	peh.markPaymentAsFailed(ctx, paymentID, "validation_error")
+	result.RecoveryAction = "validation_failed"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleAuthenticationError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Authentication errors require user intervention
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "authentication_required"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleInsufficientFunds(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.markPaymentAsFailed(ctx, paymentID, "insufficient_funds")
+	result.RecoveryAction = "insufficient_funds"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleCardDeclined(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.markPaymentAsFailed(ctx, paymentID, "card_declined")
+	result.RecoveryAction = "card_declined"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handlePaymentExpired(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.markPaymentAsFailed(ctx, paymentID, "payment_expired")
+	result.RecoveryAction = "payment_expired"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleRefundError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "refund_error_manual_intervention_required"
+	peh.createSupportTicket(ctx, paymentID, "refund_error", result.OriginalError.Error())
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleWebhookVerificationFailed(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.logger.LogSecurityEvent("webhook_verification_failed", "", "", logger.Fields{
+		"payment_id": paymentID,
+	})
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "webhook_verification_failed"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleCurrencyNotSupported(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.markPaymentAsFailed(ctx, paymentID, "currency_not_supported")
+	result.RecoveryAction = "currency_not_supported"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleRateLimitExceeded(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	// Schedule retry after rate limit reset
+	go func() {
+		time.Sleep(60 * time.Second) // Wait for rate limit reset
+		peh.retryPaymentOperation(ctx, paymentID)
+	}()
+	
+	result.RecoveryAction = "rate_limit_retry_scheduled"
+	return result
+}
+
+func (peh *PaymentExceptionHandler) handleUnknownError(ctx context.Context, paymentID string, result *PaymentRecoveryResult) *PaymentRecoveryResult {
+	peh.logger.Error("Unknown payment exception encountered", result.OriginalError, logger.Fields{
+		"payment_id": paymentID,
+	})
+	
+	result.RequiresManualIntervention = true
+	result.RecoveryAction = "unknown_error_manual_review_required"
+	
+	peh.createSupportTicket(ctx, paymentID, "unknown_error_critical", result.OriginalError.Error())
+	return result
+}
+
+// PaymentVerificationResult represents result of payment verification
+type PaymentVerificationResult struct {
+	Amount int64
+	Status string
+}
+
+// PaymentSession represents payment session model (should match your actual model)
+type PaymentSession struct {
+	ID     string
+	Amount int64
+	Status string
+}

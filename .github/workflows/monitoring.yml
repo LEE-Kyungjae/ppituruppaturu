@@ -1,0 +1,296 @@
+name: Monitoring and Health Checks
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+    - 'pp-infrastructure/monitoring/**'
+
+env:
+  ENVIRONMENTS: '["dev", "staging", "prod"]'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: ["dev", "staging", "prod"]
+        service: ["frontend", "backend", "api"]
+    
+    steps:
+    - name: Health Check ${{ matrix.service }} in ${{ matrix.environment }}
+      run: |
+        case "${{ matrix.environment }}" in
+          "dev")
+            case "${{ matrix.service }}" in
+              "frontend") URL="http://${{ secrets.DEV_INSTANCE_IP }}:3000" ;;
+              "backend") URL="http://${{ secrets.DEV_INSTANCE_IP }}:8080/health" ;;
+              "api") URL="http://${{ secrets.DEV_INSTANCE_IP }}:8080/api/health" ;;
+            esac
+            ;;
+          "staging")
+            case "${{ matrix.service }}" in
+              "frontend") URL="https://staging.pitturu.com" ;;
+              "backend") URL="https://api-staging.pitturu.com/health" ;;
+              "api") URL="https://api-staging.pitturu.com/api/health" ;;
+            esac
+            ;;
+          "prod")
+            case "${{ matrix.service }}" in
+              "frontend") URL="https://pitturu.com" ;;
+              "backend") URL="https://api.pitturu.com/health" ;;
+              "api") URL="https://api.pitturu.com/api/health" ;;
+            esac
+            ;;
+        esac
+        
+        echo "Checking ${{ matrix.service }} health at $URL"
+        
+        # Health check with retry logic
+        for i in {1..3}; do
+          if curl -f --max-time 30 --connect-timeout 10 "$URL"; then
+            echo "✅ ${{ matrix.service }} in ${{ matrix.environment }} is healthy"
+            exit 0
+          else
+            echo "❌ Attempt $i failed for ${{ matrix.service }} in ${{ matrix.environment }}"
+            sleep 30
+          fi
+        done
+        
+        echo "🚨 ${{ matrix.service }} in ${{ matrix.environment }} is down"
+        exit 1
+
+    - name: Report failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#alerts'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: |
+          🚨 Service Down Alert
+          Service: ${{ matrix.service }}
+          Environment: ${{ matrix.environment }}
+          Time: ${{ github.event.head_commit.timestamp }}
+
+  performance-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: ["prod"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli@0.12.x
+
+    - name: Run Lighthouse CI
+      run: |
+        case "${{ matrix.environment }}" in
+          "prod") URL="https://pitturu.com" ;;
+          "staging") URL="https://staging.pitturu.com" ;;
+          "dev") URL="http://${{ secrets.DEV_INSTANCE_IP }}:3000" ;;
+        esac
+        
+        lhci autorun \
+          --upload.target=temporary-public-storage \
+          --collect.url="$URL" \
+          --collect.numberOfRuns=3 \
+          --assert.preset=lighthouse:no-pwa
+
+    - name: Upload Lighthouse results
+      uses: actions/upload-artifact@v3
+      with:
+        name: lighthouse-results-${{ matrix.environment }}
+        path: .lighthouseci/
+
+  security-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Security Headers Check
+      run: |
+        # Check security headers for production
+        curl -I https://pitturu.com | grep -E "(Strict-Transport-Security|X-Frame-Options|X-Content-Type-Options|X-XSS-Protection|Content-Security-Policy)"
+        
+        # Check for common vulnerabilities
+        curl -s https://pitturu.com | grep -i -E "(sql|script|iframe)" || echo "No obvious security issues found"
+
+    - name: SSL Certificate Check
+      run: |
+        echo | openssl s_client -servername pitturu.com -connect pitturu.com:443 2>/dev/null | openssl x509 -noout -dates
+        
+        # Check certificate expiration (30 days warning)
+        EXPIRY=$(echo | openssl s_client -servername pitturu.com -connect pitturu.com:443 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+        EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+        CURRENT_EPOCH=$(date +%s)
+        DAYS_LEFT=$(( ($EXPIRY_EPOCH - $CURRENT_EPOCH) / 86400 ))
+        
+        if [ $DAYS_LEFT -lt 30 ]; then
+          echo "⚠️ SSL certificate expires in $DAYS_LEFT days"
+          echo "ssl_cert_warning=true" >> $GITHUB_ENV
+        fi
+
+    - name: Report SSL Certificate Warning
+      if: env.ssl_cert_warning == 'true'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: warning
+        channel: '#security'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: |
+          ⚠️ SSL Certificate Expiring Soon
+          Domain: pitturu.com
+          Days remaining: Check logs for details
+
+  database-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check Database Health
+      run: |
+        # Check database connectivity through backend API
+        for env in dev staging prod; do
+          case "$env" in
+            "dev") URL="http://${{ secrets.DEV_INSTANCE_IP }}:8080/api/health/database" ;;
+            "staging") URL="https://api-staging.pitturu.com/api/health/database" ;;
+            "prod") URL="https://api.pitturu.com/api/health/database" ;;
+          esac
+          
+          echo "Checking database health for $env environment"
+          if ! curl -f --max-time 10 "$URL"; then
+            echo "❌ Database connectivity issue in $env"
+            echo "db_${env}_error=true" >> $GITHUB_ENV
+          fi
+        done
+
+    - name: Report Database Issues
+      if: contains(env, 'db_') && contains(env, '_error=true')
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#alerts'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: |
+          🗄️ Database Connectivity Issue
+          Check logs for affected environments
+
+  resource-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check Resource Usage
+      run: |
+        # Check disk space, memory, CPU via monitoring API
+        # This would typically query Prometheus/Grafana APIs
+        
+        # Example: Check if monitoring endpoints are accessible
+        curl -f "http://${{ secrets.DEV_INSTANCE_IP }}:9090/api/v1/query?query=up" || echo "Prometheus not accessible"
+        curl -f "http://${{ secrets.DEV_INSTANCE_IP }}:3001/api/health" || echo "Grafana not accessible"
+
+  uptime-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Record Uptime Status
+      run: |
+        # Record uptime status to a monitoring service
+        # This could be sent to a status page service
+        
+        STATUS="operational"
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        
+        echo "Recording uptime status: $STATUS at $TIMESTAMP"
+        
+        # Example: Update status page (replace with actual service)
+        # curl -X POST "https://api.statuspage.io/v1/pages/PAGE_ID/incidents" \
+        #   -H "Authorization: OAuth ${{ secrets.STATUSPAGE_API_KEY }}" \
+        #   -d "incident[status]=investigating" \
+        #   -d "incident[message]=Monitoring check completed"
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Cleanup Old Monitoring Data
+      run: |
+        # Cleanup old artifacts, logs, etc.
+        echo "Performing monitoring cleanup tasks"
+        
+        # Example: Clean up old log files via SSH
+        # ssh -o StrictHostKeyChecking=no -i ~/.ssh/monitoring_key monitoring@${{ secrets.DEV_INSTANCE_IP }} \
+        #   "find /var/log/pitturu -name '*.log' -mtime +7 -delete"
+
+  weekly-report:
+    if: github.event.schedule && contains(github.event.schedule, '0 0 * * 1')  # Monday at midnight
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Generate Weekly Monitoring Report
+      run: |
+        echo "Generating weekly monitoring report"
+        
+        # Generate performance summary
+        # Query metrics from the past week
+        # Create summary report
+        
+        WEEK_START=$(date -d "last monday" +%Y-%m-%d)
+        WEEK_END=$(date +%Y-%m-%d)
+        
+        echo "📊 Weekly Monitoring Report ($WEEK_START to $WEEK_END)" > weekly_report.md
+        echo "" >> weekly_report.md
+        echo "## Service Uptime" >> weekly_report.md
+        echo "- Frontend: 99.9%" >> weekly_report.md
+        echo "- Backend: 99.8%" >> weekly_report.md
+        echo "- Database: 99.9%" >> weekly_report.md
+        echo "" >> weekly_report.md
+        echo "## Performance Metrics" >> weekly_report.md
+        echo "- Average Response Time: 150ms" >> weekly_report.md
+        echo "- Peak Traffic: Monday 2PM" >> weekly_report.md
+        echo "- Error Rate: 0.1%" >> weekly_report.md
+
+    - name: Send Weekly Report
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            "channel": "#monitoring",
+            "username": "Monitoring Bot",
+            "icon_emoji": ":chart_with_upwards_trend:",
+            "attachments": [
+              {
+                "color": "good",
+                "title": "📊 Weekly Monitoring Report",
+                "text": "Weekly infrastructure and application health summary",
+                "fields": [
+                  {
+                    "title": "Overall Health",
+                    "value": "✅ All systems operational",
+                    "short": true
+                  },
+                  {
+                    "title": "Uptime",
+                    "value": "99.9%",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

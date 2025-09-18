@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"exit/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/config"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // PostgreSQL driver
 )

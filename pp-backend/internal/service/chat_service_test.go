@@ -6,9 +6,9 @@ import (
 	"database/sql"
 	"testing"
 
-	"exit/internal/mocks"
-	"exit/internal/repository"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/mocks"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 )
 
 // UserService defines the interface for user related services.

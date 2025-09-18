@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"exit/internal/config"
-	"exit/internal/email"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/email"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 )
 
 var (

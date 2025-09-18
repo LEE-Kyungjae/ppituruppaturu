@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 )
 
 // GameType represents different types of mini games

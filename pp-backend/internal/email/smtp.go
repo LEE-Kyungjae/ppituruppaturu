@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"exit/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/config"
 )
 
 // Sender defines the interface for sending emails.

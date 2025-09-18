@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Phaser from 'phaser'
-import { GameEngineManager } from './GameEngineManager'
+import dynamic from 'next/dynamic'
 import { GameConfig, GameType } from './types'
+
+// Phaser를 클라이언트 사이드에서만 로드
+const Phaser = dynamic(() => import('phaser'), { ssr: false })
+const GameEngineManager = dynamic(() => import('./GameEngineManager').then(mod => ({ default: mod.GameEngineManager })), { ssr: false })
 
 interface GameCanvasProps {
   gameType: GameType
@@ -21,15 +24,18 @@ export function GameCanvas({
   className = ''
 }: GameCanvasProps) {
   const gameRef = useRef<HTMLDivElement>(null)
-  const engineRef = useRef<GameEngineManager | null>(null)
+  const engineRef = useRef<any>(null)
   const [gameState, setGameState] = useState<'loading' | 'ready' | 'playing' | 'ended'>('loading')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!gameRef.current) return
+    if (!gameRef.current || typeof window === 'undefined') return
 
     const initializeGame = async () => {
       try {
+        // 동적으로 GameEngineManager 로드
+        const { GameEngineManager } = await import('./GameEngineManager')
+
         // 게임 엔진 매니저 생성
         const engine = new GameEngineManager({
           parent: gameRef.current!,

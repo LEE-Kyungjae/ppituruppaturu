@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yourusername/pp-backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/config"
 )
 
 // Client represents PortOne API client

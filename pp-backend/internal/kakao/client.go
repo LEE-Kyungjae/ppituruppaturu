@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"exit/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/config"
 )
 
 const (

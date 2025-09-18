@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"exit/internal/handler"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/handler"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

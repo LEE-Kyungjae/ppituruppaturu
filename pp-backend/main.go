@@ -1,59 +1,22 @@
-// backend/main.go
+// main.go - 레거시 호환성을 위한 파일 (새로운 프로젝트에서는 cmd/server/main.go 사용 권장)
 package main
 
 import (
-	"context"
 	"log"
-	"net/http"
 	"os"
-	"os/signal"
-	syscall "syscall"
-	time "time"
-
-	"github.com/gin-gonic/gin"
-	"exit/internal/config"
-	"exit/internal/container"
-	"exit/internal/router"
+	"os/exec"
 )
 
 func main() {
-	// --- 1. Load Configuration ---
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("failed to load configuration: %v", err)
+	log.Println("⚠️  주의: 이 파일은 레거시 호환성을 위한 것입니다.")
+	log.Println("💡 새로운 구조에서는 'make run' 또는 'go run ./cmd/server'를 사용하세요.")
+	
+	// cmd/server/main.go를 실행
+	cmd := exec.Command("go", "run", "./cmd/server")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("서버 실행 실패: %v", err)
 	}
-
-	// --- 2. Initialize Dependencies ---
-	c := container.NewContainer(cfg)
-	defer c.DBConn.Close()
-
-	// --- 3. Setup Router ---
-	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
-	router.Setup(r, c)
-
-	// --- 4. Start Server with Graceful Shutdown ---
-	srv := &http.Server{
-		Addr:    ":" + cfg.Port,
-		Handler: r,
-	}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
-	}
-
-	log.Println("Server exiting")
 }

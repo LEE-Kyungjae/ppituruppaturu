@@ -4,16 +4,16 @@
 # =============================================================================
 
 # Project configuration
-PROJECT_NAME := go-jwt-auth-server
+PROJECT_NAME := pitturu-backend
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 # Go configuration
-GO_VERSION := 1.21
+GO_VERSION := 1.23
 BINARY_NAME := server
 BINARY_PATH := ./bin/$(BINARY_NAME)
-MAIN_PATH := ./main.go
+MAIN_PATH := ./cmd/server/main.go
 
 # Build flags
 LDFLAGS := -ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT) -w -s"
@@ -195,17 +195,27 @@ docs-check: ## Check documentation links
 .PHONY: db-migrate-up
 db-migrate-up: ## Run database migrations up
 	@echo "⬆️  Running database migrations up..."
-	@migrate -database "$(shell grep DSN .env | cut -d'=' -f2 | tr -d '"')" -path ./migrations up
+	@go run cmd/migrate/main.go up
 
 .PHONY: db-migrate-down
-db-migrate-down: ## Run database migrations down
+db-migrate-down: ## Run database migrations down (usage: make db-migrate-down STEPS=1)
 	@echo "⬇️  Running database migrations down..."
-	@migrate -database "$(shell grep DSN .env | cut -d'=' -f2 | tr -d '"')" -path ./migrations down
+	@go run cmd/migrate/main.go down $(STEPS)
+
+.PHONY: db-migrate-version
+db-migrate-version: ## Show current migration version
+	@echo "📋 Checking migration version..."
+	@go run cmd/migrate/main.go version
 
 .PHONY: db-migrate-create
 db-migrate-create: ## Create new migration (usage: make db-migrate-create NAME=migration_name)
 	@echo "📝 Creating migration: $(NAME)"
-	@migrate create -ext sql -dir ./migrations -seq $(NAME)
+	@go run cmd/migrate/main.go create $(NAME)
+
+.PHONY: db-migrate-force
+db-migrate-force: ## Force migration version (usage: make db-migrate-force VERSION=X)
+	@echo "⚠️  Forcing migration version to: $(VERSION)"
+	@go run cmd/migrate/main.go force $(VERSION)
 
 .PHONY: db-reset
 db-reset: ## Reset database (WARNING: destructive)
@@ -216,6 +226,31 @@ db-reset: ## Reset database (WARNING: destructive)
 	@./scripts/docker-manager.sh start dev
 	@sleep 10
 	@make db-migrate-up
+
+.PHONY: db-seed
+db-seed: ## Seed database with sample data
+	@echo "🌱 Seeding database with sample data..."
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=seed
+
+.PHONY: db-clean
+db-clean: ## Clean sample/test data only (safe)
+	@echo "🧹 Cleaning sample data only..."
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=clean
+
+.PHONY: db-clean-all
+db-clean-all: ## Clean ALL data from database (WARNING: destructive)
+	@echo "🚨 WARNING: This will delete ALL data!"
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-clean
+
+.PHONY: db-seed-reset
+db-seed-reset: ## Reset sample data only (safe)
+	@echo "🔄 Resetting sample data only..."
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=reset
+
+.PHONY: db-reset-all
+db-reset-all: ## Reset ALL data with fresh sample data (WARNING: destructive)
+	@echo "🚨 WARNING: This will delete ALL data and reseed!"
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-reset
 
 # =============================================================================
 # DOCKER & DEPLOYMENT

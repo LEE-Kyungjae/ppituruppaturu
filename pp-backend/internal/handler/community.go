@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

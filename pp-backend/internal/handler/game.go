@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	serviceErrors "exit/internal/service/errors"
-	"exit/internal/service"
+	serviceErrors "github.com/pitturu-ppaturu/backend/internal/service/errors"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

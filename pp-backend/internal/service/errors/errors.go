@@ -4,7 +4,7 @@ package errors
 
 import (
 	"errors"
-	"exit/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 )
 
 var (

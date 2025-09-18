@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

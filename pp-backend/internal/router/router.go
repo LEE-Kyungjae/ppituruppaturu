@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerFiles "github.com/swaggo/files"
-	"exit/internal/auth"
-	"exit/internal/container"
-	"exit/internal/middleware"
+	"github.com/pitturu-ppaturu/backend/internal/auth"
+	"github.com/pitturu-ppaturu/backend/internal/container"
+	"github.com/pitturu-ppaturu/backend/internal/middleware"
 )
 
 // Setup configures the application's routes.
@@ -39,6 +39,16 @@ func Setup(r *gin.Engine, c *container.Container) {
 
 	r.GET("/ws/chat", c.AuthMiddleware.BearerToken(), c.ChatHandler.HandleWebSocketConnection)
 
+	// Game WebSocket endpoint - proxies to GameServer
+	r.GET("/ws/game", func(ctx *gin.Context) {
+		// For now, this is a simple proxy to inform users about the game server
+		ctx.JSON(200, gin.H{
+			"message": "Game WebSocket is available on port 8081",
+			"endpoint": "ws://localhost:8081/ws/{username}",
+			"note": "Connect directly to the game server for real-time game features",
+		})
+	})
+
 	// Health Check
 	r.GET("/healthz", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"ok": true})
@@ -49,6 +59,13 @@ func Setup(r *gin.Engine, c *container.Container) {
 	{
 		// Public routes
 		api.POST("/users", c.UserHandler.Register)
+
+		// Public game routes (for easy testing)
+		api.GET("/games", c.GameHandler.ListGames)
+		api.GET("/games/:game_id", c.GameHandler.GetGameByID)
+		api.GET("/minigames/types", c.MiniGameHandler.ListGameTypes)
+		api.GET("/posts", c.CommunityHandler.ListPosts)
+		api.GET("/posts/:post_id", c.CommunityHandler.GetPostByID)
 
 		authAPI := api.Group("/auth")
 		{
@@ -87,8 +104,6 @@ func Setup(r *gin.Engine, c *container.Container) {
 
 			// Community routes
 			protected.POST("/posts", c.CommunityHandler.CreatePost)
-			protected.GET("/posts", c.CommunityHandler.ListPosts)
-			protected.GET("/posts/:post_id", c.CommunityHandler.GetPostByID)
 			protected.PUT("/posts/:post_id", c.CommunityHandler.UpdatePost)
 			protected.DELETE("/posts/:post_id", c.CommunityHandler.DeletePost)
 			protected.POST("/posts/:post_id/comments", c.CommunityHandler.CreateComment)
@@ -99,8 +114,6 @@ func Setup(r *gin.Engine, c *container.Container) {
 
 			// Game routes
 			protected.POST("/games", c.GameHandler.CreateGame)
-			protected.GET("/games", c.GameHandler.ListGames)
-			protected.GET("/games/:game_id", c.GameHandler.GetGameByID)
 			protected.POST("/games/:game_id/sessions", c.GameHandler.CreateGameSession)
 			protected.PUT("/game-sessions/:session_id/end", c.GameHandler.EndGameSession)
 			protected.GET("/games/:game_id/scores", c.GameHandler.ListGameScoresByGameID)
@@ -131,16 +144,90 @@ func Setup(r *gin.Engine, c *container.Container) {
 			protected.GET("/me/chat-rooms", c.ChatRoomHandler.ListUserChatRooms)
 
 			// Mini Games
-			protected.GET("/minigames/types", c.MiniGameHandler.ListGameTypes)
 			protected.POST("/minigames/start", c.MiniGameHandler.StartGame)
 			protected.GET("/minigames/sessions/:sessionId", c.MiniGameHandler.GetGameStatus)
 			protected.POST("/minigames/sessions/:sessionId/action", c.MiniGameHandler.SubmitGameAction)
 			protected.POST("/minigames/sessions/:sessionId/end", c.MiniGameHandler.EndGame)
 
+			// Real-time Game Server API endpoints
+			gameAPI := protected.Group("/game")
+			{
+				// Game rooms management
+				gameAPI.GET("/rooms", func(ctx *gin.Context) {
+					if c.GameServer == nil {
+						ctx.JSON(503, gin.H{
+							"error": "Game server is not enabled",
+							"note": "Set GAME_SERVER_ENABLED=true to enable real-time game features",
+						})
+						return
+					}
+					rooms := c.GameServer.GetRoomManager().ListPublicRooms()
+					roomList := make([]map[string]interface{}, len(rooms))
+					for i, room := range rooms {
+						roomList[i] = room.GetRoomStats()
+					}
+					ctx.JSON(200, gin.H{
+						"rooms": roomList,
+						"total": len(roomList),
+					})
+				})
+
+				gameAPI.POST("/rooms", func(ctx *gin.Context) {
+					if c.GameServer == nil {
+						ctx.JSON(503, gin.H{
+							"error": "Game server is not enabled",
+							"note": "Set GAME_SERVER_ENABLED=true to enable real-time game features",
+						})
+						return
+					}
+					// TODO: Implement room creation via HTTP API
+					ctx.JSON(501, gin.H{
+						"error": "Room creation via HTTP not implemented yet",
+						"note": "Use WebSocket connection to create rooms",
+					})
+				})
+
+				// Game server status and stats
+				gameAPI.GET("/status", func(ctx *gin.Context) {
+					if c.GameServer == nil {
+						ctx.JSON(200, gin.H{
+							"status": "disabled",
+							"enabled": false,
+							"note": "Game server is disabled. Set GAME_SERVER_ENABLED=true to enable.",
+						})
+						return
+					}
+					stats := c.GameServer.GetStats()
+					config := c.GameServer.GetConfig()
+					ctx.JSON(200, gin.H{
+						"status": "running",
+						"enabled": true,
+						"config": map[string]interface{}{
+							"port": config.Port,
+							"maxConnections": config.MaxConnections,
+							"maxRooms": config.MaxRooms,
+							"maxPlayersPerRoom": config.MaxPlayersPerRoom,
+						},
+						"stats": stats,
+					})
+				})
+
+				// Game types available
+				gameAPI.GET("/types", func(ctx *gin.Context) {
+					gameTypes := c.MiniGameEngine.ListGameTypes()
+					ctx.JSON(200, gin.H{
+						"gameTypes": gameTypes,
+					})
+				})
+			}
+
 			admin := protected.Group("/admin")
 			admin.Use(auth.RequireRole("admin"))
 			{
 				admin.GET("/stats", c.AdminHandler.Stats)
+				admin.GET("/games", c.AdminHandler.ListAllGames)
+				admin.PATCH("/games/:gameId/visibility", c.AdminHandler.UpdateGameVisibility)
+				admin.PATCH("/games/:gameId/order", c.AdminHandler.UpdateGameDisplayOrder)
 			}
 		}
 	}

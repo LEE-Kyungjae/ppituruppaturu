@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"exit/internal/config"
-	"exit/internal/repository"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 )
 
 // UserHandler handles user-related requests.

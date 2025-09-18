@@ -3,7 +3,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -37,6 +36,19 @@ type Config struct {
 	SMTPUser          string  `mapstructure:"SMTP_USER"`
 	SMTPPass          string  `mapstructure:"SMTP_PASS"`
 	SMTPSender        string  `mapstructure:"SMTP_SENDER"`
+
+	// Game Server settings
+	WSPort            int     `mapstructure:"WS_PORT"`
+	GameServerEnabled bool    `mapstructure:"GAME_SERVER_ENABLED"`
+
+	// Security settings
+	RequireHTTLS      bool    `mapstructure:"REQUIRE_HTTPS"`
+	MaxLoginAttempts  int     `mapstructure:"MAX_LOGIN_ATTEMPTS"`
+	LockoutDurationMin int    `mapstructure:"LOCKOUT_DURATION_MIN"`
+	RequestTimeoutSec int     `mapstructure:"REQUEST_TIMEOUT_SEC"`
+	MaxRequestSizeMB  int     `mapstructure:"MAX_REQUEST_SIZE_MB"`
+	CORSOrigins       string  `mapstructure:"CORS_ORIGINS"`
+	GoEnv             string  `mapstructure:"GO_ENV"`
 }
 
 // LoadConfig reads configuration from file or environment variables.
@@ -55,6 +67,14 @@ func LoadConfig() (*Config, error) {
 	v.SetDefault("DB_CONN_MAX_IDLE_TIME_MIN", 5)
 	v.SetDefault("DB_CONN_MAX_LIFETIME_HOUR", 2)
 	v.SetDefault("BCRYPT_COST", 12)
+	v.SetDefault("REQUIRE_HTTPS", false)
+	v.SetDefault("MAX_LOGIN_ATTEMPTS", 5)
+	v.SetDefault("LOCKOUT_DURATION_MIN", 15)
+	v.SetDefault("REQUEST_TIMEOUT_SEC", 30)
+	v.SetDefault("MAX_REQUEST_SIZE_MB", 32)
+	v.SetDefault("GO_ENV", "development")
+	v.SetDefault("WS_PORT", 8081)
+	v.SetDefault("GAME_SERVER_ENABLED", true)
 
 	// Load from config file
 	v.SetConfigName("config")

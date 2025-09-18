@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"exit/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 )
 
 // contextKey is a custom type to avoid key collisions in context.

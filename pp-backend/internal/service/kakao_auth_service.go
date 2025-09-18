@@ -9,10 +9,10 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"exit/internal/config"
-	"exit/internal/kakao"
-	"exit/internal/repository"
-	serviceErrors "exit/internal/service/errors"
+	"github.com/pitturu-ppaturu/backend/internal/config"
+	"github.com/pitturu-ppaturu/backend/internal/kakao"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	serviceErrors "github.com/pitturu-ppaturu/backend/internal/service/errors"
 )
 
 type KakaoAuthService interface {

@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"exit/internal/repository"
-	"exit/internal/service"
-	serviceErrors "exit/internal/service/errors"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
+	"github.com/pitturu-ppaturu/backend/internal/service"
+	serviceErrors "github.com/pitturu-ppaturu/backend/internal/service/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
