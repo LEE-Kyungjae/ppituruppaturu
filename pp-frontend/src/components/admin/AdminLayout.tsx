@@ -13,7 +13,8 @@ import {
   X,
   Activity,
   AlertTriangle,
-  Search
+  Search,
+  Gamepad2
 } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
 
@@ -31,6 +32,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: '대시보드', href: '/admin', icon: LayoutDashboard },
   { name: '회원 관리', href: '/admin/users', icon: Users },
+  { name: '게임 관리', href: '/admin/games', icon: Gamepad2 },
   { name: '결제 관리', href: '/admin/payments', icon: CreditCard },
   { name: '시스템 로그', href: '/admin/logs', icon: Activity, badge: 'new' },
   { name: '공지사항', href: '/admin/notices', icon: FileText },

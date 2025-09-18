@@ -8,7 +8,55 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // CSS 변수 기반 테마 컬러 매핑
+      borderRadius: {
+        DEFAULT: 'var(--radius)',
+      },
       colors: {
+        border: 'rgb(var(--border) / <alpha-value>)',
+        background: 'rgb(var(--background) / <alpha-value>)',
+        foreground: 'rgb(var(--foreground) / <alpha-value>)',
+        card: 'rgb(var(--card) / <alpha-value>)',
+        'card-foreground': 'rgb(var(--card-foreground) / <alpha-value>)',
+        popover: 'rgb(var(--popover) / <alpha-value>)',
+        'popover-foreground': 'rgb(var(--popover-foreground) / <alpha-value>)',
+        primary: {
+          DEFAULT: 'rgb(var(--primary) / <alpha-value>)',
+          foreground: 'rgb(var(--primary-foreground) / <alpha-value>)',
+        },
+        secondary: {
+          DEFAULT: 'rgb(var(--secondary) / <alpha-value>)',
+          foreground: 'rgb(var(--secondary-foreground) / <alpha-value>)',
+        },
+        accent: {
+          DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
+          foreground: 'rgb(var(--accent-foreground) / <alpha-value>)',
+        },
+        success: {
+          DEFAULT: 'rgb(var(--success) / <alpha-value>)',
+          foreground: 'rgb(var(--success-foreground) / <alpha-value>)',
+        },
+        warning: {
+          DEFAULT: 'rgb(var(--warning) / <alpha-value>)',
+          foreground: 'rgb(var(--warning-foreground) / <alpha-value>)',
+        },
+        destructive: {
+          DEFAULT: 'rgb(var(--destructive) / <alpha-value>)',
+          foreground: 'rgb(var(--destructive-foreground) / <alpha-value>)',
+        },
+        muted: {
+          DEFAULT: 'rgb(var(--muted) / <alpha-value>)',
+          foreground: 'rgb(var(--muted-foreground) / <alpha-value>)',
+        },
+        input: 'rgb(var(--input) / <alpha-value>)',
+        ring: 'rgb(var(--ring) / <alpha-value>)',
+        'game-gold': 'rgb(var(--game-gold) / <alpha-value>)',
+        'game-silver': 'rgb(var(--game-silver) / <alpha-value>)',
+        'game-bronze': 'rgb(var(--game-bronze) / <alpha-value>)',
+        'neon-blue': 'rgb(var(--neon-blue) / <alpha-value>)',
+        'neon-green': 'rgb(var(--neon-green) / <alpha-value>)',
+        'neon-pink': 'rgb(var(--neon-pink) / <alpha-value>)',
+
         // Flutter-inspired 부드러운 색상 팔레트
         flutter: {
           // Primary Blues - 부드러운 파랑

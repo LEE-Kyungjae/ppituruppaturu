@@ -62,6 +62,38 @@ const GameDashboard = () => {
       isLocked: false
     },
     {
+      id: 'physics-jump',
+      name: '올라올라',
+      description: '가시를 피해 꼭대기까지 점프하세요!',
+      icon: '🏃‍♂️',
+      bestScore: 0,
+      isLocked: false
+    },
+    {
+      id: 'physics-catch',
+      name: '받아받아',
+      description: '친구들을 받고 폭탄을 피하세요!',
+      icon: '🎯',
+      bestScore: 0,
+      isLocked: false
+    },
+    {
+      id: 'physics-balance',
+      name: '흔들흔들',
+      description: '시소의 균형을 5초간 유지하세요!',
+      icon: '⚖️',
+      bestScore: 0,
+      isLocked: false
+    },
+    {
+      id: 'advanced-physics-jump',
+      name: '고급 점프 게임',
+      description: '고도화된 물리엔진과 파티클 효과!',
+      icon: '🚀',
+      bestScore: 0,
+      isLocked: false
+    },
+    {
       id: 'word-puzzle',
       name: '단어 퍼즐',
       description: '주어진 글자로 단어를 만들어보세요!',
@@ -329,7 +361,11 @@ const GameDashboard = () => {
                   const gameRoutes: { [key: string]: string } = {
                     'click-speed': '/games/click-speed',
                     'memory-match': '/games/memory-match', 
-                    'number-guess': '/games/number-guess'
+                    'number-guess': '/games/number-guess',
+                    'physics-jump': '/games/physics-jump',
+                    'physics-catch': '/games/physics-catch',
+                    'physics-balance': '/games/physics-balance',
+                    'advanced-physics-jump': '/games/advanced-physics-jump'
                   }
                   const route = gameRoutes[game.id]
                   if (route) {
@@ -371,7 +407,11 @@ const GameDashboard = () => {
                     const gameRoutes: { [key: string]: string } = {
                       'click-speed': '/games/click-speed',
                       'memory-match': '/games/memory-match', 
-                      'number-guess': '/games/number-guess'
+                      'number-guess': '/games/number-guess',
+                      'physics-jump': '/games/physics-jump',
+                      'physics-catch': '/games/physics-catch',
+                      'physics-balance': '/games/physics-balance',
+                      'advanced-physics-jump': '/games/advanced-physics-jump'
                     }
                     const route = gameRoutes[game.id]
                     if (route) {

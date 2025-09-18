@@ -1,0 +1,572 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 게임 플랫폼 테마 */
+@layer base {
+  :root {
+    /* Base Colors */
+    --background: 250 250 250;
+    --foreground: 15 23 42;
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+    
+    /* Game Theme Colors */
+    --primary: 147 51 234; /* Purple - 게임 느낌 */
+    --primary-foreground: 248 250 252;
+    --secondary: 99 102 241; /* Indigo */
+    --secondary-foreground: 248 250 252;
+    --accent: 236 72 153; /* Pink */
+    --accent-foreground: 248 250 252;
+    
+    /* Game Status Colors */
+    --success: 34 197 94;
+    --success-foreground: 248 250 252;
+    --warning: 245 158 11;
+    --warning-foreground: 15 23 42;
+    --destructive: 239 68 68;
+    --destructive-foreground: 248 250 252;
+    
+    /* Neutral Colors */
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 147 51 234;
+    
+    /* Gaming Specific */
+    --game-gold: 251 191 36;
+    --game-silver: 156 163 175;
+    --game-bronze: 194 65 12;
+    --neon-blue: 6 182 212;
+    --neon-green: 34 197 94;
+    --neon-pink: 236 72 153;
+    
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Base Colors - Dark Mode */
+    --background: 2 8 23;
+    --foreground: 248 250 252;
+    --card: 15 23 42;
+    --card-foreground: 248 250 252;
+    --popover: 15 23 42;
+    --popover-foreground: 248 250 252;
+    
+    /* Game Theme Colors - Dark */
+    --primary: 168 85 247; /* Lighter purple for dark mode */
+    --primary-foreground: 2 8 23;
+    --secondary: 129 140 248; /* Lighter indigo */
+    --secondary-foreground: 2 8 23;
+    --accent: 244 114 182; /* Lighter pink */
+    --accent-foreground: 2 8 23;
+    
+    /* Game Status Colors - Dark */
+    --success: 74 222 128;
+    --success-foreground: 2 8 23;
+    --warning: 251 191 36;
+    --warning-foreground: 2 8 23;
+    --destructive: 248 113 113;
+    --destructive-foreground: 2 8 23;
+    
+    /* Neutral Colors - Dark */
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 168 85 247;
+    
+    /* Gaming Specific - Dark */
+    --game-gold: 252 211 77;
+    --game-silver: 203 213 225;
+    --game-bronze: 251 146 60;
+    --neon-blue: 34 211 238;
+    --neon-green: 74 222 128;
+    --neon-pink: 244 114 182;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* 게임 플랫폼 전용 유틸리티 */
+@layer utilities {
+  /* 애니메이션 */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .animate-victory {
+    animation: victory 1s ease-in-out;
+  }
+  
+  /* 게임 스타일 효과 */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent;
+  }
+  
+  .neon-text {
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+  
+  .game-border {
+    @apply border-2 border-transparent bg-gradient-to-r from-primary via-secondary to-accent bg-clip-border;
+  }
+  
+  /* 글로우 효과 */
+  .shadow-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  
+  .shadow-glow-success {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.4);
+  }
+  
+  .shadow-glow-warning {
+    box-shadow: 0 0 20px hsl(var(--warning) / 0.4);
+  }
+  
+  .shadow-glow-danger {
+    box-shadow: 0 0 20px hsl(var(--destructive) / 0.4);
+  }
+  
+  .neon-border {
+    border: 1px solid hsl(var(--primary));
+    box-shadow: 
+      0 0 5px hsl(var(--primary) / 0.3),
+      inset 0 0 5px hsl(var(--primary) / 0.1);
+  }
+  
+  /* 게임 카드 스타일 */
+  .game-card {
+    @apply bg-card rounded-xl border shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+  }
+  
+  .game-card-active {
+    @apply game-card shadow-glow;
+    transform: translateY(-2px);
+  }
+  
+  /* 버튼 스타일 */
+  .btn-game {
+    @apply inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+  
+  .btn-primary {
+    @apply btn-game bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply btn-game bg-gray-600 text-white hover:bg-gray-700;
+  }
+  
+  .btn-neon {
+    @apply btn-game bg-gradient-to-r from-cyan-400 to-green-400 text-white shadow-lg;
+    @apply hover:from-green-400 hover:to-pink-400 transform hover:scale-105;
+  }
+  
+  .btn-gold {
+    @apply btn-game bg-gradient-to-r from-yellow-400 to-yellow-600 text-black shadow-md;
+    @apply hover:from-yellow-300 hover:to-yellow-500 hover:shadow-lg;
+  }
+  
+  /* 레벨 및 진행상황 */
+  .level-badge {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold;
+    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white;
+  }
+  
+  .progress-bar {
+    @apply w-full bg-muted rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 ease-out;
+  }
+  
+  /* 특수 효과 */
+  .particle-bg {
+    background-image: radial-gradient(circle, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .mesh-bg {
+    background-image: 
+      linear-gradient(45deg, hsl(var(--primary) / 0.05) 25%, transparent 25%),
+      linear-gradient(-45deg, hsl(var(--secondary) / 0.05) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, hsl(var(--accent) / 0.05) 75%),
+      linear-gradient(-45deg, transparent 75%, hsl(var(--primary) / 0.05) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+}
+
+/* 게임 플랫폼 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.8), 0 0 30px hsl(var(--primary) / 0.4);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes victory {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes pulse-neon {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotate3d(0, 1, 0, 90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotate3d(0, 1, 0, 0deg);
+  }
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 hover:bg-gray-500;
+  border-radius: 4px;
+}
+
+/* 포커스 스타일 */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* 반응형 그리드 */
+.responsive-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+}
+
+/* 카드 스타일 */
+.card {
+  @apply bg-white rounded-lg shadow-md border border-gray-200 p-6 transition-all duration-200 hover:shadow-lg;
+}
+
+.card-interactive {
+  @apply card hover:scale-105 cursor-pointer;
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors focus-ring;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors focus-ring;
+}
+
+/* 입력 필드 스타일 */
+.input-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+}
+
+/* 모바일 최적화 */
+@layer utilities {
+  .mobile-safe-area {
+    @apply pb-safe-area-inset-bottom;
+  }
+  
+  .mobile-scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  .mobile-tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .mobile-touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .mobile-text-size-adjust {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* 모바일에서 버튼 최소 크기 보장 */
+  .btn-mobile-friendly {
+    @apply min-h-[44px] min-w-[44px] mobile-tap-highlight-none mobile-touch-manipulation;
+  }
+  
+  /* 모바일 그리드 */
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4;
+  }
+  
+  /* 모바일 패딩 */
+  .mobile-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* 모바일 마진 */
+  .mobile-margin {
+    @apply mx-4 sm:mx-6 lg:mx-8;
+  }
+  
+  /* 모바일에서 호버 효과 비활성화 */
+  @media (hover: none) {
+    .hover-only {
+      @apply transform-none;
+    }
+    
+    .mobile-no-hover:hover {
+      @apply transform-none shadow-none;
+    }
+  }
+}
+
+/* 다크모드 토글 애니메이션 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 접근성 유틸리티 */
+@layer utilities {
+  /* 스크린 리더 전용 텍스트 */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  /* 포커스 시에만 보이는 스킵 링크 */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50;
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md font-medium;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+  
+  /* 고대비 모드 지원 */
+  @media (prefers-contrast: high) {
+    .high-contrast-border {
+      border: 2px solid currentColor !important;
+    }
+    
+    .high-contrast-bg {
+      background: transparent !important;
+      border: 2px solid currentColor !important;
+    }
+  }
+  
+  /* 포커스 표시 개선 */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
+  
+  /* 키보드 네비게이션 전용 포커스 */
+  .focus-keyboard-only {
+    outline: none;
+  }
+  
+  .focus-keyboard-only:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-white outline-none;
+  }
+  
+  /* 터치 대상 크기 보장 */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* ARIA 레이블을 위한 숨김 텍스트 */
+  .aria-label::before {
+    content: attr(aria-label);
+    @apply sr-only;
+  }
+}
+
+/* 다국어 지원 */
+[dir="rtl"] {
+  .rtl-flip {
+    transform: scaleX(-1);
+  }
+  
+  .rtl-margin-start {
+    margin-left: 0;
+    margin-right: var(--margin-start, 0);
+  }
+  
+  .rtl-margin-end {
+    margin-right: 0;
+    margin-left: var(--margin-end, 0);
+  }
+}

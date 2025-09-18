@@ -1,0 +1,182 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // 기본 설정
+  reactStrictMode: true,
+  swcMinify: true,
+  output: 'standalone',
+  compress: true,
+  poweredByHeader: false,
+  trailingSlash: false,
+  generateEtags: true,
+
+  // 실험적 기능
+  experimental: {
+    // 성능 최적화
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      'framer-motion',
+      'zustand'
+    ],
+    // 기타 실험적 기능
+    typedRoutes: true,
+    optimizeCss: true,
+    scrollRestoration: true,
+  },
+
+  // 이미지 최적화
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000, // 1년
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ppituruppaturu.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.ppituruppaturu.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8080',
+      },
+    ],
+  },
+
+  // 컴파일러 최적화
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+    reactRemoveProperties: process.env.NODE_ENV === 'production',
+  },
+
+  // 환경 변수
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080',
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    NEXT_PUBLIC_KAKAO_CLIENT_ID: process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID,
+    NEXT_PUBLIC_ADMOB_APP_ID: process.env.NEXT_PUBLIC_ADMOB_APP_ID,
+    SITE_URL: process.env.SITE_URL || 'https://ppituruppaturu.com',
+    ANALYZE: process.env.ANALYZE,
+  },
+
+  // 보안 헤더
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store',
+          },
+        ],
+      },
+      {
+        source: '/:path*.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
+
+  // 리디렉션
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
+
+  // API 프록시
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+      },
+    ]
+  },
+
+  // Webpack 설정
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // 번들 분석기
+    if (process.env.ANALYZE === 'true') {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'server',
+          analyzerPort: isServer ? 8888 : 8889,
+          openAnalyzer: true,
+        })
+      )
+    }
+
+    // SVG를 React 컴포넌트로 가져오기
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack'],
+    })
+
+    return config
+  },
+
+  // TypeScript 설정
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
+  // ESLint 설정
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+}
+
+// 번들 분석기 래퍼
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+module.exports = withBundleAnalyzer(nextConfig)
