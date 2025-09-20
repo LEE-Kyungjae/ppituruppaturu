@@ -96,8 +96,9 @@ npm run dev
 - **데이터베이스**: localhost:5432
 
 ### 프로덕션 환경
-- **웹사이트**: https://ppituruppaturu.com
-- **API**: https://ppituruppaturu.com/api
+- **웹사이트**: http://152.67.201.101 (배포 완료 🚀)
+- **API**: http://152.67.201.101/api
+- **배포 상태**: ✅ Ansible + GitHub Actions 자동 배포
 - **인프라 관리**: `/Users/ze/work/pp-infra/`
 
 ## 📊 모니터링
