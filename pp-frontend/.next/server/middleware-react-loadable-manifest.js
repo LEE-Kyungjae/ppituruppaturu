@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"lib/game-engine/GameCanvas.tsx -> ./GameEngineManager\":{\"id\":\"lib/game-engine/GameCanvas.tsx -> ./GameEngineManager\",\"files\":[\"static/chunks/src_lib_game-engine_GameEngineManager_ts.js\"]},\"lib/game-engine/GameCanvas.tsx -> phaser\":{\"id\":\"lib/game-engine/GameCanvas.tsx -> phaser\",\"files\":[\"static/chunks/node_modules_phaser_dist_phaser_js.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

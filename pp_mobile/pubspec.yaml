@@ -50,6 +50,10 @@ dependencies:
   sensors_plus: ^6.0.1  # 센서 접근 (자이로스코프 등)
   http: ^1.2.2  # HTTP 클라이언트
 
+  # 크로스플랫폼 멀티플레이어 의존성
+  web_socket_channel: ^3.0.1  # WebSocket 통신
+  connectivity_plus: ^6.0.5  # 네트워크 연결 상태
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -62,3 +62,13 @@ vendor/
 # Temporary files
 tmp/
 temp/
+
+# Infrastructure (moved to pp-infra repository)
+.infra-temp/
+docker-compose.prod.yml
+nginx/
+monitoring/
+scripts/deploy/
+docs/infrastructure/
+DEPLOYMENT_GUIDE.md
+GITHUB_SECRETS_SETUP.md

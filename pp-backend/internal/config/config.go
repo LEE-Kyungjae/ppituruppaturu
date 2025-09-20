@@ -73,7 +73,7 @@ func LoadConfig() (*Config, error) {
 	v.SetDefault("REQUEST_TIMEOUT_SEC", 30)
 	v.SetDefault("MAX_REQUEST_SIZE_MB", 32)
 	v.SetDefault("GO_ENV", "development")
-	v.SetDefault("WS_PORT", 8081)
+	v.SetDefault("WS_PORT", 8082)
 	v.SetDefault("GAME_SERVER_ENABLED", true)
 
 	// Load from config file

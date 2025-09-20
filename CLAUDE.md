@@ -1,10 +1,21 @@
 # PittuRu Project
 
-## 기존 프로젝트 구조
+## 프로젝트 구조
 
-- `pp-backend/`: Go 기반 REST API 서버
-- `pp-frontend/`: Next.js 기반 웹 애플리케이션
+### 애플리케이션 레포지토리 (/Users/ze/work/pp/)
+- `pp-backend/`: Go 기반 REST API 서버 및 WebSocket 게임 서버
+- `pp-frontend/`: Next.js 기반 웹 애플리케이션 (물리 게임 엔진 포함)
 - `pp_mobile/`: Flutter 기반 모바일 애플리케이션
+
+### 인프라 레포지토리 (/Users/ze/work/pp-infra/)
+- Oracle Cloud 기반 프로덕션 인프라
+- Terraform, Ansible 자동화
+- 도메인: ppituruppaturu.com
+- **모든 인프라 관련 작업은 pp-infra에서 진행**
+
+### 역할 구분
+- **이 디렉토리 (pp/)**: 게임 애플리케이션 개발에만 집중
+- **pp-infra/**: 모든 인프라, 배포, 모니터링 작업
 
 ## 프로젝트 헌법
 

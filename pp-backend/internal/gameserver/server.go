@@ -108,7 +108,7 @@ func NewGameServer(config *GameServerConfig, miniGameEngine *minigame.MiniGameEn
 // GetDefaultConfig returns default server configuration
 func GetDefaultConfig() *GameServerConfig {
 	return &GameServerConfig{
-		Port:                   8081,
+		Port:                   8082,
 		MaxConnections:         1000,
 		MaxRooms:               100,
 		MaxPlayersPerRoom:      8,

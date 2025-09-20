@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flame/game.dart';
 import 'games/simple_jump_game.dart';
+import 'games/cross_platform_jump_game.dart';
 
 void main() {
   runApp(const PittuRuApp());
@@ -336,6 +337,23 @@ class GameSelectionScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => GameWidget<SimpleJumpGame>.controlled(
                             gameFactory: SimpleJumpGame.new,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  _GameCard(
+                    title: '멀티플레이어 점프',
+                    subtitle: '크로스플랫폼',
+                    icon: Icons.people,
+                    color: Colors.purple,
+                    description: '웹/모바일 함께 즐기는\n실시간 멀티플레이어 게임',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GameWidget<CrossPlatformJumpGame>.controlled(
+                            gameFactory: CrossPlatformJumpGame.new,
                           ),
                         ),
                       );
