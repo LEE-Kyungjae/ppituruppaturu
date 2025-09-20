@@ -118,9 +118,10 @@ func (qo *QueryOptimizer) QueryContext(ctx context.Context, dest interface{}, qu
 
 	// Try to get prepared statement from cache
 	var err error
-	if stmt, ok := qo.statementCache.Load(query); ok {
-		preparedStmt := stmt.(*sql.Stmt)
-		err = qo.db.SelectContext(ctx, dest, preparedStmt, args...)
+	if _, ok := qo.statementCache.Load(query); ok {
+		// For now, fallback to non-prepared statement
+		// TODO: Implement proper prepared statement handling with sqlx
+		err = qo.db.SelectContext(ctx, dest, query, args...)
 	} else {
 		// Execute and prepare statement for future use
 		err = qo.db.SelectContext(ctx, dest, query, args...)
