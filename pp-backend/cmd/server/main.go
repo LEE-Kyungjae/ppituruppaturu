@@ -36,8 +36,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	
-	// Swagger docs
-	_ "github.com/pitturu-ppaturu/backend/docs"
+	// Swagger docs - 임시 비활성화
+	// _ "github.com/pitturu-ppaturu/backend/docs"
 )
 
 var (
