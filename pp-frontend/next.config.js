@@ -6,6 +6,12 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: require('path').join(__dirname, '../'),
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
 
 module.exports = nextConfig

@@ -9,7 +9,6 @@ import {
   Gamepad2,
   TrendingUp,
   TrendingDown,
-  Eye,
   MessageCircle,
   Heart,
   Star,
