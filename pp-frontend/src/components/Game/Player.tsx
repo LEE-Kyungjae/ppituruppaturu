@@ -14,7 +14,6 @@ export class Player {
   public mesh: THREE.Group;
   public state: PlayerState;
   private bodyMesh: THREE.Mesh;
-  private weaponMesh: THREE.Mesh;
   private scene: THREE.Scene;
 
   constructor(scene: THREE.Scene, playerId: string, color: number = 0x4a90e2) {
@@ -32,47 +31,53 @@ export class Player {
     this.mesh = new THREE.Group();
     this.createPlayerMesh();
     this.scene.add(this.mesh);
+
+    console.log('Player created:', {
+      playerId,
+      position: this.state.position,
+      meshPosition: this.mesh.position,
+      meshVisible: this.mesh.visible,
+      meshChildren: this.mesh.children.length
+    });
   }
 
   private createPlayerMesh(): void {
-    // 플레이어 몸체 생성 (캡슐 형태)
-    const bodyGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
-    const bodyMaterial = new THREE.MeshLambertMaterial({ color: this.state.color });
+    console.log('Creating player mesh with color:', this.state.color);
+
+    // 플레이어 몸체 생성 (매우 안전한 Material)
+    const bodyGeometry = new THREE.BoxGeometry(1.2, 2.0, 0.8); // 더 큰 크기
+    const bodyMaterial = new THREE.MeshBasicMaterial();
+    bodyMaterial.color.setHex(0x00ff00); // 밝은 초록색
+    bodyMaterial.wireframe = false; // 일단 솔리드로
+    bodyMaterial.transparent = false;
+    bodyMaterial.needsUpdate = true;
+
     this.bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    this.bodyMesh.position.y = 0.4;
-    this.bodyMesh.castShadow = true;
+    this.bodyMesh.position.y = 1.0; // 바닥에서 1미터 위
+    this.bodyMesh.castShadow = false; // 그림자 비활성화
     this.mesh.add(this.bodyMesh);
 
-    // 플레이어 머리 생성
-    const headGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-    const headMaterial = new THREE.MeshLambertMaterial({ color: this.state.color });
+    console.log('Body mesh created:', {
+      position: this.bodyMesh.position,
+      visible: this.bodyMesh.visible,
+      material: this.bodyMesh.material,
+      geometry: this.bodyMesh.geometry
+    });
+
+    // 간단한 머리 추가 (안전한 Material)
+    const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+    const headMaterial = new THREE.MeshBasicMaterial();
+    headMaterial.color.setHex(0xffff00); // 노란색
+    headMaterial.wireframe = false;
+    headMaterial.transparent = false;
+    headMaterial.needsUpdate = true;
+
     const headMesh = new THREE.Mesh(headGeometry, headMaterial);
-    headMesh.position.y = 0.9;
-    headMesh.castShadow = true;
+    headMesh.position.y = 2.3; // 몸체 위에
+    headMesh.castShadow = false;
     this.mesh.add(headMesh);
 
-    // 무기 생성 (페인트 건)
-    const weaponGeometry = new THREE.CylinderGeometry(0.05, 0.08, 0.6, 8);
-    const weaponMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
-    this.weaponMesh = new THREE.Mesh(weaponGeometry, weaponMaterial);
-    this.weaponMesh.position.set(0.2, 0.6, 0.1);
-    this.weaponMesh.rotation.z = Math.PI / 6;
-    this.weaponMesh.castShadow = true;
-    this.mesh.add(this.weaponMesh);
-
-    // 발 생성
-    const footGeometry = new THREE.BoxGeometry(0.15, 0.1, 0.3);
-    const footMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 });
-
-    const leftFoot = new THREE.Mesh(footGeometry, footMaterial);
-    leftFoot.position.set(-0.1, 0.05, 0);
-    leftFoot.castShadow = true;
-    this.mesh.add(leftFoot);
-
-    const rightFoot = new THREE.Mesh(footGeometry, footMaterial);
-    rightFoot.position.set(0.1, 0.05, 0);
-    rightFoot.castShadow = true;
-    this.mesh.add(rightFoot);
+    console.log('Head mesh added at:', headMesh.position);
 
     // 초기 위치 설정
     this.mesh.position.copy(this.state.position);
@@ -97,12 +102,6 @@ export class Player {
     if (this.state.isMoving) {
       this.state.position.add(movement);
       this.mesh.position.copy(this.state.position);
-
-      // 이동 방향으로 회전
-      if (direction.length() > 0) {
-        const targetRotation = Math.atan2(direction.x, direction.z);
-        this.updateRotation(targetRotation);
-      }
     }
   }
 
@@ -120,15 +119,17 @@ export class Player {
   }
 
   private animateWeaponRecoil(): void {
-    const originalRotation = this.weaponMesh.rotation.z;
-    const recoilRotation = originalRotation + 0.2;
+    // 무기가 없으므로 간단한 몸체 흔들림으로 대체
+    if (this.bodyMesh) {
+      const originalScale = this.bodyMesh.scale.clone();
+      this.bodyMesh.scale.setScalar(0.9);
 
-    // 간단한 반동 애니메이션
-    this.weaponMesh.rotation.z = recoilRotation;
-
-    setTimeout(() => {
-      this.weaponMesh.rotation.z = originalRotation;
-    }, 100);
+      setTimeout(() => {
+        if (this.bodyMesh) {
+          this.bodyMesh.scale.copy(originalScale);
+        }
+      }, 100);
+    }
   }
 
   public takeDamage(damage: number): boolean {
@@ -161,7 +162,7 @@ export class Player {
 
   public changeColor(newColor: number): void {
     this.state.color = newColor;
-    if (this.bodyMesh.material instanceof THREE.MeshLambertMaterial) {
+    if (this.bodyMesh.material instanceof THREE.MeshBasicMaterial) {
       this.bodyMesh.material.color.setHex(newColor);
     }
   }

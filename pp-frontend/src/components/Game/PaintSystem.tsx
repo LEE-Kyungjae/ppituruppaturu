@@ -83,10 +83,18 @@ export class PaintSystem {
   ): string {
     const projectileId = `projectile_${Date.now()}_${Math.random()}`;
 
-    // 페인트 발사체 생성
-    const geometry = new THREE.SphereGeometry(0.05, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color });
+    // 페인트 발사체 생성 (더 시각적으로 개선)
+    const geometry = new THREE.SphereGeometry(0.08, 12, 12);
+    const material = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.9
+    });
     const mesh = new THREE.Mesh(geometry, material);
+
+    // 발광 효과 추가
+    material.emissive = new THREE.Color(color);
+    material.emissiveIntensity = 0.3;
 
     const projectile: PaintProjectile = {
       id: projectileId,
