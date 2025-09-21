@@ -1,8 +1,8 @@
+name: pitturu-green
 services:
   backend:
     image: ze2l/ppituruppaturu-backend:latest
     restart: unless-stopped
-    container_name: pitturu-backend-green
     ports:
       - "127.0.0.1:8082:8080"
       - "127.0.0.1:8084:8082"
@@ -23,7 +23,6 @@ services:
   frontend:
     image: ze2l/ppituruppaturu-frontend:latest
     restart: unless-stopped
-    container_name: pitturu-frontend-green
     ports:
       - "127.0.0.1:3002:3000"
     environment:
