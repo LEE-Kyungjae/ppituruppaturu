@@ -152,5 +152,14 @@ jobs:
             echo "📊 Final container status:"
             docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
 
+            echo "=== 헬스체크 상태 확인 ==="
+            docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | egrep 'green|blue|8081|8082|8083|8084' || true
+
+            echo "=== Green 백엔드 헬스 로그 (최근 10회) ==="
+            docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}} {{.Output}}{{printf "\n"}}{{end}}' pitturu-green-backend-1 | tail -n 10 || true
+
+            echo "=== 헬스 엔드포인트 직접 확인 ==="
+            curl -I --max-time 5 http://127.0.0.1:3002/api/health || true
+
             echo "✅ Blue/Green deployment completed successfully!"
           EOF
