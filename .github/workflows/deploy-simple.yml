@@ -93,6 +93,27 @@ jobs:
           echo "🔐 Testing SSH connection..."
           ssh -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful!'"
 
+      - name: Pre-deployment port cleanup
+        run: |
+          echo "🧹 배포 전 포트 충돌 방지..."
+          ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            set -euxo pipefail
+            cd /opt/pitturu
+
+            echo "🔍 8082 포트 점유 상태 확인"
+            docker ps --filter "publish=8082" --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}' || echo "8082 포트 비어있음"
+
+            echo "🧹 8082 점유 컨테이너 정리 (안전)"
+            ids=$(docker ps --filter "publish=8082" -q || true)
+            if [ -n "${ids:-}" ]; then
+              echo "8082 점유 컨테이너 제거: $ids"
+              docker stop $ids || true
+              docker rm $ids || true
+            fi
+
+            echo "✅ 포트 정리 완료"
+          EOF
+
       - name: Deploy to server (Blue/Green)
         run: |
           set -euxo pipefail
