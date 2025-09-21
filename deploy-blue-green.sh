@@ -2,81 +2,78 @@
 set -euo pipefail
 
 STACK_DIR="/opt/pitturu"
+BLUE_PORT=3001
+GREEN_PORT=3002
 UPSTREAM_DIR="/etc/nginx/upstreams"
-LINK="/etc/nginx/conf.d/app-upstream.conf"
+UPSTREAM_LINK="/etc/nginx/conf.d/app-upstream.conf"
 
-# 색상 결정 (현재 링크가 없으면 blue부터 시작)
-if [ -L "$LINK" ]; then
-  CUR=$(readlink -f "$LINK" | grep -q "app-blue.conf" && echo "blue" || echo "green")
-  NEXT=$([ "$CUR" = "blue" ] && echo "green" || echo "blue")
-else
-  CUR="none"
-  NEXT="blue"
-fi
+COMPOSE_BLUE="$STACK_DIR/docker-compose.blue.yml"
+COMPOSE_GREEN="$STACK_DIR/docker-compose.green.yml"
 
-echo "🔄 Blue/Green 배포 시작: $CUR -> $NEXT"
+health_ok(){ curl -fsS "http://127.0.0.1:$1/health" >/dev/null 2>&1; }
+port_used(){ docker ps --filter "publish=$1" -q | grep -q . ; }
 
-# 1) 새 스택 올리기
-if [ "$NEXT" = "green" ]; then
-  PORT="3002"
-  COMPOSE_FILE="$STACK_DIR/docker-compose.green.yml"
-  TARGET_CONF="$UPSTREAM_DIR/app-green.conf"
-  HEALTH_URL="http://127.0.0.1:3002/api/health"
-  CONTAINER_NAME="pitturu-web-green"
-else
-  PORT="3001"
-  COMPOSE_FILE="$STACK_DIR/docker-compose.blue.yml"
-  TARGET_CONF="$UPSTREAM_DIR/app-blue.conf"
-  HEALTH_URL="http://127.0.0.1:3001/api/health"
-  CONTAINER_NAME="pitturu-web-blue"
-fi
-
-echo "📥 새 이미지 Pull"
-docker pull ze2l/ppituruppaturu-frontend:latest
-docker pull ze2l/ppituruppaturu-backend:latest
-
-echo "🚀 $NEXT 스택 시작 (포트: $PORT)"
-docker-compose -f "$COMPOSE_FILE" up -d
-
-echo "⏳ 헬스체크 대기: $HEALTH_URL"
-for i in {1..60}; do
-  if curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
-    echo "✅ $NEXT 스택 정상 동작 확인"
-    break
+current_color() {
+  # 1) 링크 기준
+  if [ -L "$UPSTREAM_LINK" ]; then
+    readlink -f "$UPSTREAM_LINK" | grep -q "app-blue.conf" && { echo blue; return; }
+    readlink -f "$UPSTREAM_LINK" | grep -q "app-green.conf" && { echo green; return; }
   fi
-  echo "대기중... ($i/60)"
-  sleep 2
-  if [ $i -eq 60 ]; then
-    echo "❌ 헬스체크 실패"
-    docker-compose -f "$COMPOSE_FILE" logs
-    exit 1
-  fi
-done
+  # 2) 헬스 응답 기준
+  health_ok $BLUE_PORT && { echo blue; return; }
+  health_ok $GREEN_PORT && { echo green; return; }
+  # 3) 포트 점유 기준
+  port_used $BLUE_PORT && { echo blue; return; }
+  port_used $GREEN_PORT && { echo green; return; }
+  # 4) 모름
+  echo none
+}
 
-# 2) Nginx 업스트림 전환
-if [ -f "$TARGET_CONF" ]; then
-  echo "🔄 Nginx 업스트림 전환: $NEXT"
-  ln -sfn "$TARGET_CONF" "$LINK"
+switch_link_and_reload(){
+  local target_conf="$1" # app-blue.conf or app-green.conf
+  ln -sfn "$UPSTREAM_DIR/$target_conf" "$UPSTREAM_LINK"
   nginx -t
   nginx -s reload
-  echo "✅ Nginx 전환 완료"
-else
-  echo "⚠️  업스트림 설정 파일이 없습니다: $TARGET_CONF"
-fi
+}
 
-# 3) 이전 스택 정리 (안전 지연 후)
-if [ "$CUR" != "none" ]; then
-  echo "⏳ 안전 지연 (5초)"
-  sleep 5
+echo "🔄 Blue/Green 배포 시작..."
 
-  if [ "$CUR" = "green" ]; then
-    OLD_COMPOSE="$STACK_DIR/docker-compose.green.yml"
+CUR=$(current_color)
+if [ "$CUR" = "blue" ]; then NEXT="green"; TARGET_PORT=$GREEN_PORT; TARGET_COMPOSE=$COMPOSE_GREEN; TARGET_CONF="app-green.conf"; fi
+if [ "$CUR" = "green" ]; then NEXT="blue"; TARGET_PORT=$BLUE_PORT; TARGET_COMPOSE=$COMPOSE_BLUE; TARGET_CONF="app-blue.conf"; fi
+if [ "$CUR" = "none" ]; then
+  # 초기 진입: 3001이 이미 점유라면 blue가 살아있는 셈 → green부터 띄움
+  if port_used $BLUE_PORT || health_ok $BLUE_PORT; then
+    NEXT="green"; TARGET_PORT=$GREEN_PORT; TARGET_COMPOSE=$COMPOSE_GREEN; TARGET_CONF="app-green.conf"
   else
-    OLD_COMPOSE="$STACK_DIR/docker-compose.blue.yml"
+    NEXT="blue";  TARGET_PORT=$BLUE_PORT;  TARGET_COMPOSE=$COMPOSE_BLUE;  TARGET_CONF="app-blue.conf"
   fi
-
-  echo "🗑️  이전 $CUR 스택 정리"
-  docker-compose -f "$OLD_COMPOSE" down --remove-orphans || true
 fi
 
-echo "🎉 Blue/Green 배포 완료: $CUR -> $NEXT"
+echo "🔁 현재색: $CUR  →  다음색: $NEXT (포트 $TARGET_PORT)"
+
+echo "📥 새 이미지 Pull"
+docker compose -f "$TARGET_COMPOSE" pull
+
+echo "🚀 $NEXT 스택 시작"
+docker compose -f "$TARGET_COMPOSE" up -d
+
+echo "⏳ 헬스체크 대기: http://127.0.0.1:$TARGET_PORT/health"
+for i in {1..60}; do
+  if health_ok $TARGET_PORT; then echo "✅ Healthy"; break; fi
+  sleep 2
+  if [ $i -eq 60 ]; then echo "❌ 헬스 타임아웃"; exit 1; fi
+done
+
+echo "🔁 업스트림 전환 및 무중단 reload"
+switch_link_and_reload "$TARGET_CONF"
+
+if [ "$CUR" != "none" ]; then
+  echo "🧹 이전색($CUR) 정리"
+  if [ "$CUR" = "blue" ]; then docker compose -f "$COMPOSE_BLUE" down --remove-orphans; fi
+  if [ "$CUR" = "green" ]; then docker compose -f "$COMPOSE_GREEN" down --remove-orphans; fi
+fi
+
+echo "📊 컨테이너 상태"
+docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
+echo "✅ 배포 완료: $CUR → $NEXT"

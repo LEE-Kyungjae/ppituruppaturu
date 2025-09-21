@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     image: ze2l/ppituruppaturu-backend:latest
