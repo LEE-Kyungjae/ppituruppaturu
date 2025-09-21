@@ -1,5 +1,5 @@
 # Multi-stage build for Next.js frontend
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -8,7 +8,8 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci
+ENV HUSKY=0
+RUN npm ci --no-optional
 
 # Development stage
 FROM base AS development
@@ -29,6 +30,7 @@ COPY . .
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV HUSKY=0
 RUN npm run build
 
 # Production stage
