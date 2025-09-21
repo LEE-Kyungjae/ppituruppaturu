@@ -1,0 +1,51 @@
+# PittuRu Core Infrastructure Stack
+# DB/Redis 공유 네트워크 - Blue/Green 모두가 참조하는 코어 서비스들
+
+networks:
+  pitturu-core:
+    name: pitturu-core
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pitturu-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pitturu_dev_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-pitturu_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - pitturu-core
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: pitturu-redis
+    networks:
+      - pitturu-core
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+    name: pitturu-pgdata
+  redisdata:
+    name: pitturu-redisdata
