@@ -1,0 +1,22 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /_next/
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /_next/static/
+
+# Host
+Host: https://ppituruppaturu.com
+
+# Sitemaps
+Sitemap: https://ppituruppaturu.com/sitemap.xml
+Sitemap: https://ppituruppaturu.com/server-sitemap.xml
