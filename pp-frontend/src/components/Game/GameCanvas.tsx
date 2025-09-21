@@ -23,6 +23,7 @@ export default function GameCanvas({
   const cameraRef = useRef<THREE.PerspectiveCamera>();
   const animationIdRef = useRef<number>();
   const clockRef = useRef<THREE.Clock>();
+  const lastFrameTimeRef = useRef<number>(0);
 
   const playerRef = useRef<Player>();
   const paintSystemRef = useRef<PaintSystem>();
@@ -32,9 +33,14 @@ export default function GameCanvas({
 
   // 플레이어 이동 처리
   const handlePlayerMove = useCallback((direction: THREE.Vector3) => {
-    if (playerRef.current && clockRef.current) {
-      const deltaTime = clockRef.current.getDelta();
-      playerRef.current.move(direction, deltaTime);
+    if (playerRef.current) {
+      const currentTime = performance.now();
+      const deltaTime = Math.min((currentTime - lastFrameTimeRef.current) / 1000, 0.016); // 최대 60fps
+      if (deltaTime > 0 && direction.length() > 0) {
+        console.log('Moving player:', direction, 'deltaTime:', deltaTime);
+        playerRef.current.move(direction, deltaTime);
+        lastFrameTimeRef.current = currentTime;
+      }
     }
   }, []);
 
@@ -102,6 +108,7 @@ export default function GameCanvas({
 
     // Clock 생성
     clockRef.current = new THREE.Clock();
+    lastFrameTimeRef.current = performance.now();
 
     // Scene 생성
     const scene = new THREE.Scene();
@@ -204,10 +211,15 @@ export default function GameCanvas({
 
   // 게임 시작/중지
   const toggleGame = () => {
+    console.log('Toggle game clicked, current state:', isGameActive);
     if (!isGameActive) {
+      console.log('Starting game, requesting pointer lock');
       requestPointerLock();
+      setIsGameActive(true);
+    } else {
+      console.log('Stopping game');
+      setIsGameActive(false);
     }
-    setIsGameActive(!isGameActive);
   };
 
   return (

@@ -2,6 +2,17 @@
 set -euo pipefail
 
 STACK_DIR="/opt/pitturu"
+
+# 네트워크 생성 함수
+ensure_network(){
+  local network_name="pitturu-core"
+  if ! docker network inspect "$network_name" >/dev/null 2>&1; then
+    echo "🌐 Creating Docker network: $network_name"
+    docker network create --driver bridge "$network_name"
+  else
+    echo "✅ Docker network $network_name already exists"
+  fi
+}
 BLUE_PORT=3001; GREEN_PORT=3002
 BLUE_NAME="pitturu-blue"; GREEN_NAME="pitturu-green"
 COMPOSE_BLUE="$STACK_DIR/docker-compose.blue.yml"
@@ -75,6 +86,9 @@ elif [ "$CUR" = "none" ]; then
 fi
 
 echo "🔁 현재색:$CUR → 다음색:$NEXT (PORT $TARGET_PORT, PROJECT $PROJECT)"
+
+echo "🌐 네트워크 확인 및 생성"
+ensure_network
 
 echo "📥 이미지 Pull"
 docker compose -f "$TARGET_COMPOSE" -p "$PROJECT" pull

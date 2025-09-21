@@ -80,11 +80,13 @@ export function useInputManager({ callbacks, isActive = true }: InputManagerProp
 
   // 키보드 이벤트 처리
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    console.log('Key event received, isActive:', isActive, 'key:', event.code);
     if (!isActive) return;
 
     const keyName = keyMap[event.code as keyof typeof keyMap];
     if (keyName) {
       event.preventDefault();
+      console.log('Key down:', event.code, '→', keyName);
 
       const wasPressed = inputStateRef.current.keys[keyName];
       inputStateRef.current.keys[keyName] = true;
@@ -201,6 +203,11 @@ export function useInputManager({ callbacks, isActive = true }: InputManagerProp
     // 대각선 이동 시 속도 정규화
     if (direction.length() > 1) {
       direction.normalize();
+    }
+
+    // 디버깅: 키 상태와 방향 출력
+    if (direction.length() > 0) {
+      console.log('Keys:', keys, 'Direction:', direction);
     }
 
     callbacks.onMove?.(direction);
