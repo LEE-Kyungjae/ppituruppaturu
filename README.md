@@ -138,4 +138,4 @@ docker exec pitturu_postgres_dev pg_isready -U postgres
 문제가 발생하면:
 1. 로컬 로그 확인: `docker-compose logs`
 2. 게임 서버 로그: 백엔드 콘솔 출력 확인
-3. GitHub Issues를 통한 문의
+3. GitHub Issues를 통한 문의# Trigger deployment
