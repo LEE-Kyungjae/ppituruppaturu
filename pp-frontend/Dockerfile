@@ -41,27 +41,26 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 
+# Install curl for health check first
+RUN apk add --no-cache curl
+
 # Create nextjs user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder /app/public ./public
-
-# Set correct permissions for precompiled files
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy dependencies and built application
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-
-# Install wget for health check
-RUN apk add --no-cache wget
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 USER nextjs
 
 EXPOSE 3000
 
-# Start the server
-CMD ["node", "server.js"]
+# Start the server using next start
+CMD ["npm", "run", "start"]
