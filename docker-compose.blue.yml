@@ -29,8 +29,8 @@ services:
     image: ze2l/ppituruppaturu-backend:latest
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:8082:8082"
+      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:8083:8082"
     environment:
       - DSN=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pitturu_db}?sslmode=disable
       - REDIS_URL=redis://redis:6379
@@ -52,8 +52,8 @@ services:
     ports:
       - "127.0.0.1:3001:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://152.67.201.101/api
-      - NEXT_PUBLIC_WS_URL=ws://152.67.201.101/ws
+      - NEXT_PUBLIC_API_URL=/api
+      - NEXT_PUBLIC_WS_URL=/ws
       - NODE_ENV=production
     depends_on:
       backend:
