@@ -124,6 +124,10 @@ jobs:
           scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
           scp -v nginx-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -v nginx-backend-api-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -v nginx-backend-api-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -v nginx-backend-ws-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -v nginx-backend-ws-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
 
           echo "🚀 Starting Blue/Green deployment..."
           ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
@@ -139,6 +143,10 @@ jobs:
             sudo mkdir -p /etc/nginx/conf.d
             sudo mv /tmp/nginx-blue.conf /etc/nginx/upstreams/app-blue.conf
             sudo mv /tmp/nginx-green.conf /etc/nginx/upstreams/app-green.conf
+            sudo mv /tmp/nginx-backend-api-blue.conf /etc/nginx/upstreams/nginx-backend-api-blue.conf
+            sudo mv /tmp/nginx-backend-api-green.conf /etc/nginx/upstreams/nginx-backend-api-green.conf
+            sudo mv /tmp/nginx-backend-ws-blue.conf /etc/nginx/upstreams/nginx-backend-ws-blue.conf
+            sudo mv /tmp/nginx-backend-ws-green.conf /etc/nginx/upstreams/nginx-backend-ws-green.conf
 
             echo "🔐 Docker Hub login..."
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin

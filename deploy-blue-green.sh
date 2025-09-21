@@ -32,11 +32,15 @@ switch_and_reload(){
   local backend_api_conf="$2"
   local backend_ws_conf="$3"
   echo "🔄 3개 업스트림 동시 전환: $app_conf + $backend_api_conf + $backend_ws_conf"
-  ln -sfn "$UPSTREAM_DIR/$app_conf" "$APP_UPSTREAM_LINK"
-  ln -sfn "$UPSTREAM_DIR/$backend_api_conf" "$BACKEND_API_UPSTREAM_LINK"
-  ln -sfn "$UPSTREAM_DIR/$backend_ws_conf" "$BACKEND_WS_UPSTREAM_LINK"
-  nginx -t
-  nginx -s reload
+  sudo ln -sfn "$UPSTREAM_DIR/$app_conf" "$APP_UPSTREAM_LINK"
+  sudo ln -sfn "$UPSTREAM_DIR/$backend_api_conf" "$BACKEND_API_UPSTREAM_LINK"
+  sudo ln -sfn "$UPSTREAM_DIR/$backend_ws_conf" "$BACKEND_WS_UPSTREAM_LINK"
+  sudo nginx -t
+  if command -v systemctl >/dev/null 2>&1; then
+    sudo systemctl reload nginx
+  else
+    sudo nginx -s reload
+  fi
 }
 
 echo "🔄 Blue/Green 배포 시작..."
