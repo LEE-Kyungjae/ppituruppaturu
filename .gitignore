@@ -17,6 +17,17 @@ yarn-error.log*
 /.next/
 /out/
 
+# Frontend specific
+pp-frontend/.next/
+pp-frontend/out/
+pp-frontend/node_modules/
+
+# Backend specific
+pp-backend/server
+pp-backend/bin/
+pp-backend/dist/
+pp-backend/node_modules/
+
 # Database
 *.db
 *.sqlite

@@ -19,7 +19,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD", "/server", "--healthcheck"]
       interval: 5s
       timeout: 2s
       retries: 20
