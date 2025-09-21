@@ -8,7 +8,8 @@ COMPOSE_BLUE="$STACK_DIR/docker-compose.blue.yml"
 COMPOSE_GREEN="$STACK_DIR/docker-compose.green.yml"
 UPSTREAM_DIR="/etc/nginx/upstreams"
 APP_UPSTREAM_LINK="/etc/nginx/conf.d/app-upstream.conf"
-BACKEND_UPSTREAM_LINK="/etc/nginx/conf.d/backend-upstream.conf"
+BACKEND_API_UPSTREAM_LINK="/etc/nginx/conf.d/backend-api-upstream.conf"
+BACKEND_WS_UPSTREAM_LINK="/etc/nginx/conf.d/backend-ws-upstream.conf"
 HEALTH_PATH="/api/health"   # ← 프론트에 구현된 경로
 
 health_http(){ curl -fsS "http://127.0.0.1:$1$HEALTH_PATH" >/dev/null 2>&1; }
@@ -28,10 +29,12 @@ current_color(){
 
 switch_and_reload(){
   local app_conf="$1"
-  local backend_conf="$2"
-  echo "🔄 업스트림 전환: $app_conf + $backend_conf"
+  local backend_api_conf="$2"
+  local backend_ws_conf="$3"
+  echo "🔄 3개 업스트림 동시 전환: $app_conf + $backend_api_conf + $backend_ws_conf"
   ln -sfn "$UPSTREAM_DIR/$app_conf" "$APP_UPSTREAM_LINK"
-  ln -sfn "$UPSTREAM_DIR/$backend_conf" "$BACKEND_UPSTREAM_LINK"
+  ln -sfn "$UPSTREAM_DIR/$backend_api_conf" "$BACKEND_API_UPSTREAM_LINK"
+  ln -sfn "$UPSTREAM_DIR/$backend_ws_conf" "$BACKEND_WS_UPSTREAM_LINK"
   nginx -t
   nginx -s reload
 }
@@ -41,17 +44,29 @@ echo "🔄 Blue/Green 배포 시작..."
 CUR=$(current_color)
 if [ "$CUR" = "blue" ]; then
   NEXT="green"; TARGET_PORT=$GREEN_PORT; TARGET_COMPOSE=$COMPOSE_GREEN
-  APP_CONF="app-green.conf"; BACKEND_CONF="nginx-backend-green.conf"; PROJECT="$GREEN_NAME"
+  APP_CONF="app-green.conf"
+  BACKEND_API_CONF="nginx-backend-api-green.conf"
+  BACKEND_WS_CONF="nginx-backend-ws-green.conf"
+  PROJECT="$GREEN_NAME"
 elif [ "$CUR" = "green" ]; then
   NEXT="blue"; TARGET_PORT=$BLUE_PORT; TARGET_COMPOSE=$COMPOSE_BLUE
-  APP_CONF="app-blue.conf"; BACKEND_CONF="nginx-backend-blue.conf"; PROJECT="$BLUE_NAME"
+  APP_CONF="app-blue.conf"
+  BACKEND_API_CONF="nginx-backend-api-blue.conf"
+  BACKEND_WS_CONF="nginx-backend-ws-blue.conf"
+  PROJECT="$BLUE_NAME"
 elif [ "$CUR" = "none" ]; then
   if port_used $BLUE_PORT || health_http $BLUE_PORT; then
     NEXT="green"; TARGET_PORT=$GREEN_PORT; TARGET_COMPOSE=$COMPOSE_GREEN
-    APP_CONF="app-green.conf"; BACKEND_CONF="nginx-backend-green.conf"; PROJECT="$GREEN_NAME"
+    APP_CONF="app-green.conf"
+    BACKEND_API_CONF="nginx-backend-api-green.conf"
+    BACKEND_WS_CONF="nginx-backend-ws-green.conf"
+    PROJECT="$GREEN_NAME"
   else
     NEXT="blue"; TARGET_PORT=$BLUE_PORT; TARGET_COMPOSE=$COMPOSE_BLUE
-    APP_CONF="app-blue.conf"; BACKEND_CONF="nginx-backend-blue.conf"; PROJECT="$BLUE_NAME"
+    APP_CONF="app-blue.conf"
+    BACKEND_API_CONF="nginx-backend-api-blue.conf"
+    BACKEND_WS_CONF="nginx-backend-ws-blue.conf"
+    PROJECT="$BLUE_NAME"
   fi
 fi
 
@@ -78,8 +93,8 @@ for i in {1..90}; do
   fi
 done
 
-echo "🔁 이중 업스트림 전환: Frontend + Backend"
-switch_and_reload "$APP_CONF" "$BACKEND_CONF"
+echo "🔁 삼중 업스트림 전환: Frontend + Backend API + Backend WebSocket"
+switch_and_reload "$APP_CONF" "$BACKEND_API_CONF" "$BACKEND_WS_CONF"
 echo "✅ 무중단 전환 완료"
 
 if [ "$CUR" != "none" ]; then
