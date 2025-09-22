@@ -105,7 +105,8 @@ export class CrossPlatformBridge {
     const typeListeners = this.listeners.get(message.type) || []
     const allListeners = this.listeners.get('*') || []
 
-    [...typeListeners, ...allListeners].forEach(listener => {
+    const allListenersCombined = typeListeners.concat(allListeners)
+    allListenersCombined.forEach(listener => {
       try {
         listener(message)
       } catch (error) {

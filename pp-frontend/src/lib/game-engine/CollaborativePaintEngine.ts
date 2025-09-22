@@ -118,7 +118,7 @@ class CollaborativePaintEngine {
     // Multiplayer events
     const multiplayerManager = getMultiplayerManager();
     getMultiplayerManager().on('paint_stroke_start', this.handleRemoteStrokeStart.bind(this))
-    multiplayerManager.on('paint_stroke_update', this.handleRemoteStrokeUpdate.bind(this))
+    getMultiplayerManager().on('paint_stroke_update', this.handleRemoteStrokeUpdate.bind(this))
     multiplayerManager.on('paint_stroke_end', this.handleRemoteStrokeEnd.bind(this))
     multiplayerManager.on('canvas_clear', this.handleCanvasClear.bind(this))
   }

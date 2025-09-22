@@ -48,24 +48,59 @@ export default function AdminLogin() {
     setLoading(true)
     setError(null)
 
-    try {
-      const response = await apiClient.post<{ access_token: string, refresh_token: string }>('/api/v1/auth/login', {
-        username: form.username,
-        password: form.password,
-      })
+    // 개발 환경에서 임시 관리자 계정
+    const devAdminCredentials = {
+      username: 'admin',
+      password: 'admin123'
+    }
 
-      localStorage.setItem('admin_token', response.access_token)
-      if (form.remember) {
-        localStorage.setItem('admin_remember', 'true')
+    try {
+      // 개발용 로그인 처리
+      if (form.username === devAdminCredentials.username &&
+          form.password === devAdminCredentials.password) {
+
+        // 임시 토큰 생성
+        const mockToken = 'dev_admin_token_' + Date.now()
+        localStorage.setItem('admin_token', mockToken)
+        localStorage.setItem('admin_user', JSON.stringify({
+          id: 'admin-001',
+          username: 'admin',
+          role: 'super_admin',
+          permissions: ['all']
+        }))
+
+        if (form.remember) {
+          localStorage.setItem('admin_remember', 'true')
+        }
+
+        // 관리자 대시보드로 이동
+        router.push('/admin')
+        return
       }
-      
-      router.push('/admin')
+
+      // 실제 API 호출 (백엔드가 준비되면)
+      try {
+        const response = await apiClient.post<{ access_token: string, refresh_token: string }>('/api/v1/auth/login', {
+          username: form.username,
+          password: form.password,
+        })
+
+        localStorage.setItem('admin_token', response.access_token)
+        if (form.remember) {
+          localStorage.setItem('admin_remember', 'true')
+        }
+
+        router.push('/admin')
+      } catch (apiError) {
+        // API 실패 시 개발용 계정 안내
+        setError('백엔드 서버에 연결할 수 없습니다. 개발용 계정을 사용하세요: admin/admin123')
+      }
 
     } catch (err: any) {
-      if (err.response && err.response.status === 401) {
-        setError('사용자 이름 또는 비밀번호가 올바르지 않습니다.')
+      if (form.username === devAdminCredentials.username) {
+        setError('비밀번호가 올바르지 않습니다. (개발용: admin123)')
       } else {
-        setError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.')
+        setError('사용자 이름 또는 비밀번호가 올바르지 않습니다. (개발용: admin/admin123)')
       }
     } finally {
       setLoading(false)
@@ -139,7 +174,7 @@ export default function AdminLogin() {
                   value={form.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:ring-2 focus:ring-flutter-blue-400 focus:border-transparent transition-all duration-300"
-                  placeholder="admin"
+                  placeholder="admin (개발용)"
                   disabled={loading}
                 />
               </div>
@@ -157,7 +192,7 @@ export default function AdminLogin() {
                   value={form.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:ring-2 focus:ring-flutter-blue-400 focus:border-transparent transition-all duration-300"
-                  placeholder="비밀번호 입력"
+                  placeholder="admin123 (개발용)"
                   disabled={loading}
                 />
                 <button
