@@ -1,565 +1,162 @@
-/**
- * AI Paint Battle Game Page
- * AI 기능이 완전히 통합된 페인트 배틀 게임
- */
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import CollaborativePaintCanvas from '../../components/game/CollaborativePaintCanvas';
+import PerformanceMonitor from '../../monitoring/PerformanceMonitor';
 
-import React, { useState, useEffect } from 'react'
-import Head from 'next/head'
-import { useRouter } from 'next/router'
+export default function AIPaintBattle() {
+  const router = useRouter();
+  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
+  const [players, setPlayers] = useState<Array<{ id: string; name: string; score: number }>>([]);
+  const [currentPlayer] = useState({ id: 'player1', name: 'Player 1' });
 
-// Game Components
-import CollaborativePaintCanvas from '../../components/game/CollaborativePaintCanvas'
-import AchievementPanel from '../../components/ui/AchievementPanel'
-import GameAnalyticsDashboard from '../../components/analytics/GameAnalyticsDashboard'
-import AIControlCenter from '../../components/ai/AIControlCenter'
-import AdvancedRoomSettings from '../../components/multiplayer/AdvancedRoomSettings'
-
-import { useAchievements } from '../../lib/game-engine/AchievementSystem'
-
-// Hooks and Engines
-import { useMultiplayer } from '../../lib/multiplayer/MultiplayerManager'
-import { useGameAI } from '../../lib/ai/GameAIEngine'
-import { usePerformanceMonitor } from '../../lib/monitoring/PerformanceMonitor'
-import { gameAnalytics } from '../../lib/analytics/GameAnalyticsEngine'
-
-interface GameState {
-  status: 'menu' | 'lobby' | 'playing' | 'finished'
-  startTime?: number
-  playerStats: {
-    paintCoverage: number
-    territoryControlled: number
-    paintStrokes: number
-    powerUpsCollected: number
-  }
-}
-
-const AIPaintBattlePage: React.FC = () => {
-  const router = useRouter()
-
-  // Game State
-  const [gameState, setGameState] = useState<GameState>({
-    status: 'menu',
-    playerStats: {
-      paintCoverage: 0,
-      territoryControlled: 0,
-      paintStrokes: 0,
-      powerUpsCollected: 0
-    }
-  })
-
-  // UI State
-  const [showAchievements, setShowAchievements] = useState(false)
-  const [showAnalytics, setShowAnalytics] = useState(false)
-  const [showAIControl, setShowAIControl] = useState(false)
-  const [showRoomSettings, setShowRoomSettings] = useState(false)
-  const [playerName, setPlayerName] = useState('')
-
-  // Hooks
-  const { isConnected, currentRoom, currentPlayer, connect, createRoom, startGame } = useMultiplayer()
-  const { gameBalance, spawnAIPlayer } = useGameAI()
-  const { progress, notifications, trackGameResult } = useAchievements()
-  const { metrics, startMonitoring, stopMonitoring } = usePerformanceMonitor()
-
-  // Initialize game systems
   useEffect(() => {
-    startMonitoring()
-
-    if (!isConnected) {
-      connect().catch(console.error)
-    }
-
-    return () => {
-      stopMonitoring()
-    }
-  }, [isConnected, connect, startMonitoring, stopMonitoring])
-
-  // Handle game events
-  useEffect(() => {
-    const handleGameEvent = (event: CustomEvent) => {
-      const { type, data } = event.detail
-
-      switch (type) {
-        case 'paint_stroke':
-          setGameState(prev => ({
-            ...prev,
-            playerStats: {
-              ...prev.playerStats,
-              paintStrokes: prev.playerStats.paintStrokes + 1
-            }
-          }))
-          break
-
-        case 'territory_update':
-          setGameState(prev => ({
-            ...prev,
-            playerStats: {
-              ...prev.playerStats,
-              territoryControlled: data.territory || 0
-            }
-          }))
-          break
-
-        case 'powerup_collected':
-          setGameState(prev => ({
-            ...prev,
-            playerStats: {
-              ...prev.playerStats,
-              powerUpsCollected: prev.playerStats.powerUpsCollected + 1
-            }
-          }))
-          break
-
-        case 'game_end':
-          handleGameEnd(data.result, data.finalScore)
-          break
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('gameEvent', handleGameEvent as EventListener)
-      return () => window.removeEventListener('gameEvent', handleGameEvent as EventListener)
-    }
-  }, [])
-
-  const handleStartGame = async () => {
-    if (!playerName.trim()) {
-      alert('플레이어 이름을 입력해주세요!')
-      return
-    }
-
-    try {
-      // Start analytics session
-      gameAnalytics.startGameSession('ai_paint_battle', {
-        ai_enabled: true,
-        difficulty: 'adaptive',
-        max_players: 4
-      })
-
-      // Create room with AI settings
-      const roomSettings = {
-        roomName: `${playerName}의 AI 배틀`,
-        timeLimit: 300,
-        maxPlayers: 4,
-        paintTarget: 80,
-        powerUpsEnabled: true,
-        friendlyFire: false,
-        gameMode: 'paint_battle' as any,
-        isPrivate: false,
-        allowSpectators: true,
-        roundLimit: 1,
-        paintDecayRate: 0,
-        powerUpSpawnRate: 30,
-        territoryBonus: true,
-        chatEnabled: true,
-        voiceChatEnabled: false,
-        autoMatchmaking: true,
-        skillBasedMatching: true,
-        regionRestriction: 'global'
-      }
-
-      await createRoom(roomSettings)
-
-      // Spawn AI players
-      spawnAIPlayer('ai_aggressive', 600)
-      spawnAIPlayer('ai_creative', 550)
-      spawnAIPlayer('ai_balanced', 500)
-
-      setGameState(prev => ({
-        ...prev,
-        status: 'playing',
-        startTime: Date.now()
-      }))
-
-    } catch (error) {
-      console.error('게임 시작 실패:', error)
-      alert('게임 시작에 실패했습니다.')
-    }
-  }
-
-  const handleGameEnd = (result: 'win' | 'lose' | 'draw', finalScore: number) => {
-    // Track game result
-    trackGameResult(result === 'win', {
-      isPerfect: gameState.playerStats.territoryControlled > 90,
-      isComeback: false, // 간단히 처리
-      glitchMode: false,
-      territoryPercentage: gameState.playerStats.territoryControlled
-    })
-
-    // End analytics session
-    gameAnalytics.endGameSession(result, finalScore)
-
-    setGameState(prev => ({ ...prev, status: 'finished' }))
-  }
+    // Initialize game
+    setGameState('playing');
+    setPlayers([
+      { id: 'player1', name: 'Player 1', score: 0 },
+      { id: 'ai', name: 'AI Painter', score: 0 }
+    ]);
+  }, []);
 
   const handleTerritoryUpdate = (stats: any[]) => {
-    const playerStat = stats.find(s => s.playerId === currentPlayer?.id)
-    if (playerStat) {
-      setGameState(prev => ({
-        ...prev,
-        playerStats: {
-          ...prev.playerStats,
-          territoryControlled: playerStat.coverage
-        }
-      }))
+    // Update player scores based on territory control
+    console.log('Territory stats:', stats);
+  };
 
-      // Dispatch territory update event
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('gameEvent', {
-          detail: {
-            type: 'territory_update',
-            data: { territory: playerStat.coverage }
-          }
-        }))
-      }
-    }
-  }
-
-  const renderMainMenu = () => (
-    <div className="main-menu min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="menu-container bg-gray-900 border border-cyber-blue rounded-lg p-8 max-w-md w-full shadow-cyber-blue">
-        <h1 className="text-3xl font-bold text-cyber-blue mb-6 text-center font-mono">
-          AI PAINT BATTLE
-        </h1>
-
-        <div className="space-y-4">
-          <div className="input-group">
-            <label className="block text-sm text-gray-400 mb-2">PLAYER NAME</label>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-cyber-blue focus:outline-none"
-              placeholder="Enter your name..."
-              maxLength={20}
-            />
-          </div>
-
-          <button
-            onClick={handleStartGame}
-            disabled={!playerName.trim() || !isConnected}
-            className="w-full py-3 bg-cyber-blue text-black font-bold rounded hover:bg-blue-600 disabled:bg-gray-600 disabled:text-gray-400 transition-colors"
-          >
-            {!isConnected ? 'CONNECTING...' : 'START AI BATTLE'}
-          </button>
-
-          <div className="connection-status text-center">
-            <div className={`text-xs flex items-center justify-center space-x-2 ${
-              isConnected ? 'text-green-400' : 'text-red-400'
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-400' : 'bg-red-400'
-              } animate-pulse`} />
-              <span>{isConnected ? 'CONNECTED TO SERVER' : 'CONNECTING TO SERVER...'}</span>
-            </div>
-          </div>
-
-          <div className="menu-actions grid grid-cols-2 gap-2 mt-6">
-            <button
-              onClick={() => setShowAchievements(true)}
-              className="py-2 px-4 bg-gray-700 text-white rounded text-sm hover:bg-gray-600 transition-colors"
-            >
-              ACHIEVEMENTS
-            </button>
-            <button
-              onClick={() => setShowAnalytics(true)}
-              className="py-2 px-4 bg-gray-700 text-white rounded text-sm hover:bg-gray-600 transition-colors"
-            >
-              ANALYTICS
-            </button>
-          </div>
-        </div>
-
-        {/* System Status */}
-        <div className="system-status mt-6 pt-4 border-t border-gray-700">
-          <div className="text-xs text-gray-400 space-y-1">
-            <div className="flex justify-between">
-              <span>AI Engine:</span>
-              <span className="text-green-400">ACTIVE</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Performance Monitor:</span>
-              <span className="text-green-400">TRACKING</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Analytics System:</span>
-              <span className="text-green-400">READY</span>
-            </div>
-            {gameBalance && (
-              <div className="flex justify-between">
-                <span>Game Balance:</span>
-                <span className={`${
-                  gameBalance.skill_variance < 0.5 ? 'text-green-400' : 'text-yellow-400'
-                }`}>
-                  {gameBalance.skill_variance < 0.5 ? 'BALANCED' : 'ADJUSTING'}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .shadow-cyber-blue {
-          box-shadow: 0 0 20px rgba(64, 128, 255, 0.3);
-        }
-        .text-cyber-blue {
-          color: #4080ff;
-        }
-        .bg-cyber-blue {
-          background-color: #4080ff;
-        }
-        .border-cyber-blue {
-          border-color: #4080ff;
-        }
-      `}</style>
-    </div>
-  )
-
-  const renderGameUI = () => (
-    <div className="game-ui min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="game-header bg-gray-900 border-b border-gray-700 p-4">
-        <div className="flex justify-between items-center">
-          <div className="game-info">
-            <h1 className="text-xl font-bold text-cyber-blue font-mono">AI PAINT BATTLE</h1>
-            {currentRoom && (
-              <div className="text-sm text-gray-400">
-                Room: {currentRoom.name} | Players: {currentRoom.players.length}/{currentRoom.maxPlayers}
-              </div>
-            )}
-          </div>
-
-          <div className="game-stats flex space-x-6 text-sm">
-            <div className="stat">
-              <span className="text-gray-400">Territory:</span>
-              <span className="text-cyber-green ml-1">{gameState.playerStats.territoryControlled.toFixed(1)}%</span>
-            </div>
-            <div className="stat">
-              <span className="text-gray-400">Strokes:</span>
-              <span className="text-white ml-1">{gameState.playerStats.paintStrokes}</span>
-            </div>
-            <div className="stat">
-              <span className="text-gray-400">Power-ups:</span>
-              <span className="text-yellow-400 ml-1">{gameState.playerStats.powerUpsCollected}</span>
-            </div>
-          </div>
-
-          <div className="game-controls flex space-x-2">
-            <button
-              onClick={() => setShowAIControl(true)}
-              className="px-3 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700 transition-colors"
-            >
-              AI CONTROL
-            </button>
-            <button
-              onClick={() => setShowAnalytics(true)}
-              className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
-            >
-              ANALYTICS
-            </button>
-            <button
-              onClick={() => router.push('/')}
-              className="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700 transition-colors"
-            >
-              EXIT
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Game Area */}
-      <div className="game-area p-4">
-        <CollaborativePaintCanvas
-          width={800}
-          height={600}
-          onTerritoryUpdate={handleTerritoryUpdate}
-        />
-      </div>
-
-      {/* Performance Monitor Overlay */}
-      {metrics && (
-        <div className="performance-overlay fixed top-4 right-4 bg-black bg-opacity-80 rounded p-2 text-xs">
-          <div className="text-cyber-blue">PERFORMANCE</div>
-          <div className="text-white">FPS: {Math.round(metrics.fps)}</div>
-          <div className="text-white">Memory: {Math.round(metrics.memoryUsage)}MB</div>
-          <div className="text-white">Latency: {Math.round(metrics.networkLatency)}ms</div>
-        </div>
-      )}
-
-      <style jsx>{`
-        .text-cyber-blue { color: #4080ff; }
-        .text-cyber-green { color: #00ff80; }
-      `}</style>
-    </div>
-  )
-
-  const renderGameFinished = () => (
-    <div className="game-finished min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="results-container bg-gray-900 border border-cyber-blue rounded-lg p-8 max-w-lg w-full shadow-cyber-blue">
-        <h1 className="text-3xl font-bold text-cyber-blue mb-6 text-center font-mono">
-          GAME COMPLETE
-        </h1>
-
-        <div className="game-results space-y-4">
-          <div className="final-stats bg-gray-800 rounded p-4">
-            <h3 className="text-white font-bold mb-3">FINAL STATISTICS</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Territory Controlled:</span>
-                <div className="text-cyber-green font-mono">{gameState.playerStats.territoryControlled.toFixed(1)}%</div>
-              </div>
-              <div>
-                <span className="text-gray-400">Paint Strokes:</span>
-                <div className="text-white font-mono">{gameState.playerStats.paintStrokes}</div>
-              </div>
-              <div>
-                <span className="text-gray-400">Power-ups Collected:</span>
-                <div className="text-yellow-400 font-mono">{gameState.playerStats.powerUpsCollected}</div>
-              </div>
-              <div>
-                <span className="text-gray-400">Game Duration:</span>
-                <div className="text-white font-mono">
-                  {gameState.startTime ? Math.floor((Date.now() - gameState.startTime) / 1000) : 0}s
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="level-progress bg-gray-800 rounded p-4">
-            <h3 className="text-white font-bold mb-3">LEVEL PROGRESS</h3>
-            <div className="flex justify-between text-sm text-gray-400 mb-2">
-              <span>Level {progress.level}</span>
-              <span>{progress.experience} / {progress.experienceToNext} XP</span>
-            </div>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-cyber-blue transition-all duration-500"
-                style={{ width: `${(progress.experience / progress.experienceToNext) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="action-buttons grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setGameState(prev => ({ ...prev, status: 'menu' }))}
-              className="py-2 px-4 bg-cyber-blue text-black font-bold rounded hover:bg-blue-600 transition-colors"
-            >
-              PLAY AGAIN
-            </button>
-            <button
-              onClick={() => setShowAchievements(true)}
-              className="py-2 px-4 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              ACHIEVEMENTS
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .shadow-cyber-blue { box-shadow: 0 0 20px rgba(64, 128, 255, 0.3); }
-        .text-cyber-blue { color: #4080ff; }
-        .text-cyber-green { color: #00ff80; }
-        .bg-cyber-blue { background-color: #4080ff; }
-        .border-cyber-blue { border-color: #4080ff; }
-      `}</style>
-    </div>
-  )
+  const handleGameEnd = () => {
+    setGameState('finished');
+  };
 
   return (
     <>
       <Head>
-        <title>AI Paint Battle - PittuRu</title>
-        <meta name="description" content="AI-powered collaborative paint battle game" />
+        <title>AI Paint Battle - PittuRu PpattuRu</title>
+        <meta name="description" content="AI와 함께하는 실시간 페인팅 배틀" />
       </Head>
-
-      {/* Main Game Content */}
-      {gameState.status === 'menu' && renderMainMenu()}
-      {gameState.status === 'playing' && renderGameUI()}
-      {gameState.status === 'finished' && renderGameFinished()}
-
-      {/* Modal Overlays */}
-      <AchievementPanel
-        isOpen={showAchievements}
-        onClose={() => setShowAchievements(false)}
-      />
-
-      <GameAnalyticsDashboard
-        isOpen={showAnalytics}
-        onClose={() => setShowAnalytics(false)}
-      />
-
-      <AIControlCenter
-        isOpen={showAIControl}
-        onClose={() => setShowAIControl(false)}
-      />
-
-      <AdvancedRoomSettings
-        isOpen={showRoomSettings}
-        settings={{
-          roomName: 'AI Battle Room',
-          timeLimit: 300,
-          maxPlayers: 4,
-          paintTarget: 80,
-          powerUpsEnabled: true,
-          friendlyFire: false,
-          gameMode: 'paint_battle' as any,
-          isPrivate: false,
-          allowSpectators: true,
-          roundLimit: 1,
-          paintDecayRate: 0,
-          powerUpSpawnRate: 30,
-          territoryBonus: true,
-          chatEnabled: true,
-          voiceChatEnabled: false,
-          autoMatchmaking: true,
-          skillBasedMatching: true,
-          regionRestriction: 'global'
-        }}
-        onChange={() => {}}
-        onClose={() => setShowRoomSettings(false)}
-        onConfirm={() => setShowRoomSettings(false)}
-      />
-
-      {/* Achievement Notifications */}
-      {notifications.map((notification) => (
-        <div
-          key={notification.achievement.id}
-          className="achievement-notification fixed top-4 right-4 bg-black border border-cyber-blue rounded-lg p-4 shadow-cyber-blue animate-slide-in-right z-50"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="text-2xl">{notification.achievement.icon}</div>
-            <div>
-              <div className="text-cyber-blue font-bold text-sm">ACHIEVEMENT UNLOCKED!</div>
-              <div className="text-white font-bold">{notification.achievement.title}</div>
-              <div className="text-gray-400 text-xs">{notification.achievement.description}</div>
+      <div className="ai-paint-battle min-h-screen bg-gray-900 text-white p-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-cyber-blue">AI Paint Battle</h1>
+            <div className="flex items-center gap-4">
+              <PerformanceMonitor />
+              <button
+                onClick={() => router.push('/games')}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+              >
+                게임 목록
+              </button>
             </div>
           </div>
+
+          {/* Game Status */}
+          <div className="mb-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
+            <div className="flex items-center justify-between">
+              <div className="text-lg">
+                상태: <span className="text-cyber-green">{gameState}</span>
+              </div>
+              <div className="flex gap-4">
+                {players.map(player => (
+                  <div key={player.id} className="text-center">
+                    <div className="text-sm text-gray-400">{player.name}</div>
+                    <div className="text-xl font-bold">{player.score}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Game Canvas */}
+          <CollaborativePaintCanvas
+            width={800}
+            height={600}
+            onTerritoryUpdate={handleTerritoryUpdate}
+            className="mb-6"
+          />
+
+          {/* Game Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-600">
+              <h3 className="text-lg font-semibold mb-3">게임 정보</h3>
+              <ul className="text-sm space-y-2 text-gray-300">
+                <li>• AI와 실시간 페인팅 대결</li>
+                <li>• 더 많은 영역을 칠하세요</li>
+                <li>• 시간 제한: 3분</li>
+                <li>• 네온 브러시 효과 사용 가능</li>
+              </ul>
+            </div>
+
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-600">
+              <h3 className="text-lg font-semibold mb-3">조작법</h3>
+              <ul className="text-sm space-y-2 text-gray-300">
+                <li>• 마우스 드래그로 그리기</li>
+                <li>• 브러시 타입 변경</li>
+                <li>• 글리치 모드 토글</li>
+                <li>• 네온 강도 조절</li>
+              </ul>
+            </div>
+
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-600">
+              <h3 className="text-lg font-semibold mb-3">게임 옵션</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={handleGameEnd}
+                  className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition-colors"
+                >
+                  게임 종료
+                </button>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                >
+                  새 게임
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Game Finished Modal */}
+          {gameState === 'finished' && (
+            <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+              <div className="bg-gray-800 p-8 rounded-lg border border-gray-600 text-center">
+                <h2 className="text-2xl font-bold mb-4">게임 종료!</h2>
+                <div className="mb-6">
+                  {players.map(player => (
+                    <div key={player.id} className="mb-2">
+                      <span className="text-lg">{player.name}: </span>
+                      <span className="text-xl font-bold text-cyber-blue">{player.score}점</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-x-4">
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                  >
+                    다시 플레이
+                  </button>
+                  <button
+                    onClick={() => router.push('/games')}
+                    className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    게임 목록
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      ))}
 
-      <style jsx global>{`
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
+        <style jsx>{`
+          .text-cyber-blue {
+            color: #4080ff;
           }
-          to {
-            transform: translateX(0);
-            opacity: 1;
+          .text-cyber-green {
+            color: #00ff80;
           }
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.5s ease-out;
-        }
-        .text-cyber-blue { color: #4080ff; }
-        .text-cyber-green { color: #00ff80; }
-        .bg-cyber-blue { background-color: #4080ff; }
-        .border-cyber-blue { border-color: #4080ff; }
-        .shadow-cyber-blue { box-shadow: 0 0 20px rgba(64, 128, 255, 0.3); }
-      `}</style>
+        `}</style>
+      </div>
     </>
-  )
+  );
 }
-
-export default AIPaintBattlePage

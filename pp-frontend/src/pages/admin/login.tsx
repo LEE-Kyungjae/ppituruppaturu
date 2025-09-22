@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Loader
 } from 'lucide-react'
-import { apiClient } from '@/services/api'
+import AdminAuthService from '@/lib/admin/AdminAuthService'
 
 interface LoginForm {
   username: string
@@ -30,13 +30,14 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const authService = AdminAuthService.getInstance()
+
   useEffect(() => {
-    // Check if already logged in
-    const token = localStorage.getItem('admin_token')
-    if (token) {
+    // Check if already authenticated
+    if (authService.isAuthenticated()) {
       router.push('/admin')
     }
-  }, [router])
+  }, [router, authService])
 
   const handleInputChange = (field: keyof LoginForm, value: string | boolean) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -48,59 +49,26 @@ export default function AdminLogin() {
     setLoading(true)
     setError(null)
 
-    // 개발 환경에서 임시 관리자 계정
-    const devAdminCredentials = {
-      username: 'admin',
-      password: 'admin123'
-    }
-
     try {
-      // 개발용 로그인 처리
-      if (form.username === devAdminCredentials.username &&
-          form.password === devAdminCredentials.password) {
+      await authService.loginWithFallback({
+        username: form.username,
+        password: form.password,
+      })
 
-        // 임시 토큰 생성
-        const mockToken = 'dev_admin_token_' + Date.now()
-        localStorage.setItem('admin_token', mockToken)
-        localStorage.setItem('admin_user', JSON.stringify({
-          id: 'admin-001',
-          username: 'admin',
-          role: 'super_admin',
-          permissions: ['all']
-        }))
-
-        if (form.remember) {
-          localStorage.setItem('admin_remember', 'true')
-        }
-
-        // 관리자 대시보드로 이동
-        router.push('/admin')
-        return
+      if (form.remember) {
+        localStorage.setItem('admin_remember', 'true')
       }
 
-      // 실제 API 호출 (백엔드가 준비되면)
-      try {
-        const response = await apiClient.post<{ access_token: string, refresh_token: string }>('/api/v1/auth/login', {
-          username: form.username,
-          password: form.password,
-        })
-
-        localStorage.setItem('admin_token', response.access_token)
-        if (form.remember) {
-          localStorage.setItem('admin_remember', 'true')
-        }
-
-        router.push('/admin')
-      } catch (apiError) {
-        // API 실패 시 개발용 계정 안내
-        setError('백엔드 서버에 연결할 수 없습니다. 개발용 계정을 사용하세요: admin/admin123')
-      }
-
+      router.push('/admin')
     } catch (err: any) {
-      if (form.username === devAdminCredentials.username) {
-        setError('비밀번호가 올바르지 않습니다. (개발용: admin123)')
+      console.error('Login failed:', err)
+
+      if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else if (err.message) {
+        setError(err.message)
       } else {
-        setError('사용자 이름 또는 비밀번호가 올바르지 않습니다. (개발용: admin/admin123)')
+        setError('로그인에 실패했습니다. 사용자명과 비밀번호를 확인해주세요.')
       }
     } finally {
       setLoading(false)

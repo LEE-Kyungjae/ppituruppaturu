@@ -1,5 +1,5 @@
 // frontend/src/components/admin/AdminLayout.tsx
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { motion } from 'framer-motion'
 import {
@@ -14,9 +14,11 @@ import {
   Activity,
   AlertTriangle,
   Search,
-  Gamepad2
+  Gamepad2,
+  Shield
 } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
+import AdminAuthService, { AdminUser } from '@/lib/admin/AdminAuthService'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -42,10 +44,43 @@ const navigation: NavItem[] = [
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const handleLogout = () => {
-    // TODO: 로그아웃 로직 구현
-    router.push('/admin/login')
+  const authService = AdminAuthService.getInstance()
+
+  useEffect(() => {
+    // Check authentication and load user data
+    if (!authService.isAuthenticated()) {
+      router.push('/admin/login')
+      return
+    }
+
+    const user = authService.getCurrentUser()
+    setCurrentUser(user)
+    setLoading(false)
+  }, [router, authService])
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      router.push('/admin/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Force logout even if API call fails
+      router.push('/admin/login')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-flutter-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -87,11 +122,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-flutter-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-flutter-blue-600 font-semibold">A</span>
+              {currentUser?.role === 'super_admin' ? (
+                <Shield className="w-5 h-5 text-flutter-blue-600" />
+              ) : (
+                <span className="text-flutter-blue-600 font-semibold">
+                  {currentUser?.username?.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
             <div>
-              <p className="font-medium text-gray-900">관리자</p>
-              <p className="text-sm text-gray-600">admin@pitturu.com</p>
+              <p className="font-medium text-gray-900">{currentUser?.username || '관리자'}</p>
+              <p className="text-sm text-gray-600">{currentUser?.email || 'admin@pitturu.com'}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  currentUser?.role === 'super_admin'
+                    ? 'bg-red-100 text-red-700'
+                    : currentUser?.role === 'admin'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {currentUser?.role === 'super_admin' ? '최고 관리자' :
+                   currentUser?.role === 'admin' ? '관리자' : '운영자'}
+                </span>
+                {currentUser?.twoFactorEnabled && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                    2FA
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
