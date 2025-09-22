@@ -34,6 +34,7 @@ func NewAdminHandler(startTime time.Time, gameRepo repository.GameRepository, us
 		logFilePath:     logFilePath,
 		userService:     userService,
 	}
+}
 
 // DashboardStatsResponse defines the structure for the dashboard statistics.
 type DashboardStatsResponse struct {
@@ -198,7 +199,7 @@ type UpdateGameVisibilityRequest struct {
 	IsActive bool `json:"isActive"`
 }
 
-type UpdateGameDisplayOrderRequest {
+type UpdateGameDisplayOrderRequest struct {
 	DisplayOrder int `json:"displayOrder"`
 }
 

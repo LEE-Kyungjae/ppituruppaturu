@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"pp-backend/internal/matching"
+	"github.com/pitturu-ppaturu/backend/internal/matching"
 )
 
 // MatchingWebSocketHandler handles WebSocket connections for matchmaking

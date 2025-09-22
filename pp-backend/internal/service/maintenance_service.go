@@ -2,7 +2,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -89,6 +88,7 @@ func (s *maintenanceService) Start() {
 }
 
 func (s *maintenanceService) broadcastAnnouncement(message string) {
-	msg, _ := json.Marshal(map[string]string{"type": "maintenance", "message": message})
-	s.hub.Broadcast(msg)
+	// 임시로 주석 처리 - 실제 브로드캐스트 로직 구현 필요
+	// msgData, _ := json.Marshal(map[string]string{"type": "maintenance", "message": message})
+	// TODO: 실제 브로드캐스트 구현
 }
