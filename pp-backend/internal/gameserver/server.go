@@ -248,6 +248,10 @@ func (gs *GameServer) setupRouter() {
 	api.HandleFunc("/matchmaking/join", gs.handleJoinMatchmaking).Methods("POST")
 	api.HandleFunc("/matchmaking/leave", gs.handleLeaveMatchmaking).Methods("POST")
 	api.HandleFunc("/matchmaking/status/{username}", gs.handleMatchmakingStatus).Methods("GET")
+	api.HandleFunc("/matchmaking/queue/{gameType}", gs.handleQueueStatus).Methods("GET")
+
+	// New Matching System WebSocket endpoints
+	gs.router.HandleFunc("/ws/matching", gs.handleMatchingWebSocket).Methods("GET")
 
 	// Game types and configurations
 	api.HandleFunc("/games/types", gs.handleListGameTypes).Methods("GET")
@@ -426,6 +430,31 @@ func (gs *GameServer) handleEventHistory(w http.ResponseWriter, r *http.Request)
 		"events": events,
 		"count":  len(events),
 	})
+}
+
+func (gs *GameServer) handleQueueStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	gameType := vars["gameType"]
+
+	if gameType == "" {
+		http.Error(w, "Game type is required", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: Connect to new matching system
+	// For now, return basic queue info
+	gs.writeJSONResponse(w, map[string]interface{}{
+		"game_type": gameType,
+		"queue_length": 0,
+		"estimated_wait": 30,
+		"active_rooms": 0,
+	})
+}
+
+func (gs *GameServer) handleMatchingWebSocket(w http.ResponseWriter, r *http.Request) {
+	// Create new matching handler instance
+	matchingHandler := NewMatchingWebSocketHandler()
+	matchingHandler.HandleWebSocket(w, r)
 }
 
 // Middleware
