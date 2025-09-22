@@ -1,7 +1,7 @@
-// frontend/src/pages/admin/users/index.tsx
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 import AdminLayout from '@/components/admin/AdminLayout'
 import {
   Search,
@@ -21,6 +21,18 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react'
+
+const adminApiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+});
+
+adminApiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface User {
   id: string
@@ -59,6 +71,8 @@ export default function UsersManagement() {
     activity: 'all',
     sortBy: 'newest'
   })
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [userToBan, setUserToBan] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers()
@@ -67,9 +81,9 @@ export default function UsersManagement() {
   const loadUsers = async () => {
     try {
       setLoading(true)
-      // TODO: 실제 API 호출로 대체
-      
-      // Mock data
+      // In a real app, you would fetch users from the API
+      // For now, we use mock data and simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       const mockUsers: User[] = [
         {
           id: '1',
@@ -130,7 +144,6 @@ export default function UsersManagement() {
           isOnline: false
         }
       ]
-      
       setUsers(mockUsers)
     } catch (error) {
       console.error('Failed to load users:', error)
@@ -138,6 +151,32 @@ export default function UsersManagement() {
       setLoading(false)
     }
   }
+
+  const handleUserAction = (userId: string, action: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    if (action === 'ban') {
+      setUserToBan(user);
+      setShowBanModal(true);
+    } else {
+      console.log(`Action: ${action} on user: ${userId}`)
+    }
+  }
+
+  const handleConfirmBan = async () => {
+    if (!userToBan) return;
+
+    try {
+      await adminApiClient.post(`/api/v1/admin/users/${userToBan.username}/ban`);
+      setShowBanModal(false);
+      setUserToBan(null);
+      loadUsers(); // Reload users to show updated status
+    } catch (error) {
+      console.error('Failed to ban user:', error);
+      // Handle error UI
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     // Search filter
@@ -239,11 +278,6 @@ export default function UsersManagement() {
     } else {
       setSelectedUsers(new Set())
     }
-  }
-
-  const handleUserAction = (userId: string, action: string) => {
-    console.log(`Action: ${action} on user: ${userId}`)
-    // TODO: 실제 액션 구현
   }
 
   const handleBulkAction = (action: string) => {
@@ -540,6 +574,45 @@ export default function UsersManagement() {
 
         {/* Pagination would go here */}
       </div>
+
+      {/* Ban Confirmation Modal */}
+      {showBanModal && userToBan && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-8 rounded-2xl max-w-md w-full mx-4 shadow-lg"
+          >
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <Ban className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-5">사용자 차단</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  정말로 <span className="font-bold">{userToBan.username}</span>님을 차단하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                </p>
+              </div>
+              <div className="mt-5 flex justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowBanModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmBan}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  차단하기
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </AdminLayout>
   )
 }

@@ -1,0 +1,245 @@
+name: Asset Pipeline
+
+on:
+  push:
+    paths:
+      - 'tools/ai/prompts/**'
+      - 'tools/scripts/asset-pipeline.sh'
+      - '.github/workflows/asset-pipeline.yml'
+  workflow_dispatch:
+    inputs:
+      asset_type:
+        description: 'Asset type to generate'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'characters'
+          - 'icons'
+          - 'sprites'
+      force_regenerate:
+        description: 'Force regenerate existing assets'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  ASSET_CACHE_VERSION: v1
+
+jobs:
+  asset-generation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Setup ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Setup Python for AI tools
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install AI dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pillow requests beautifulsoup4
+
+      - name: Cache assets
+        if: ${{ !inputs.force_regenerate }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            assets/raw
+            assets/processed
+            tools/ai/outputs
+          key: ${{ env.ASSET_CACHE_VERSION }}-assets-${{ hashFiles('tools/prompts/asset-spec.md') }}
+          restore-keys: |
+            ${{ env.ASSET_CACHE_VERSION }}-assets-
+
+      - name: Create asset directories
+        run: |
+          mkdir -p assets/{raw,processed,dist}/{characters,icons,backgrounds,ui}
+          mkdir -p tools/ai/outputs/{characters,icons,backgrounds}
+
+      - name: Generate assets
+        run: |
+          chmod +x tools/scripts/asset-pipeline.sh
+          ./tools/scripts/asset-pipeline.sh ${{ inputs.asset_type || 'all' }}
+
+      - name: Validate asset quality
+        run: |
+          # 파일 크기 검증
+          echo "🔍 Checking asset file sizes..."
+          find assets/dist -name "*.png" -size +1M -exec echo "⚠️  Large file: {} ($(du -h {} | cut -f1))" \;
+
+          # 해상도 검증
+          echo "🔍 Checking asset resolutions..."
+          for img in assets/processed/characters/*.png; do
+            if [ -f "$img" ]; then
+              resolution=$(identify -format "%wx%h" "$img" 2>/dev/null || echo "unknown")
+              if [[ "$resolution" != "1024x1024" && "$resolution" != "512x512" ]]; then
+                echo "⚠️  Non-standard resolution: $(basename "$img") - $resolution"
+              fi
+            fi
+          done
+
+          # 알파 채널 검증
+          echo "🔍 Checking alpha channels..."
+          for img in assets/processed/characters/*.png; do
+            if [ -f "$img" ]; then
+              has_alpha=$(identify -format "%A" "$img" 2>/dev/null || echo "false")
+              if [ "$has_alpha" != "True" ]; then
+                echo "⚠️  Missing alpha channel: $(basename "$img")"
+              fi
+            fi
+          done
+
+      - name: Generate asset report
+        run: |
+          echo "# Asset Generation Report" > asset_report.md
+          echo "" >> asset_report.md
+          echo "Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> asset_report.md
+          echo "" >> asset_report.md
+
+          echo "## Character Assets" >> asset_report.md
+          char_count=$(find assets/processed/characters -name "*.png" 2>/dev/null | wc -l)
+          echo "- Count: $char_count" >> asset_report.md
+          echo "- Total size: $(du -sh assets/processed/characters 2>/dev/null | cut -f1 || echo '0B')" >> asset_report.md
+          echo "" >> asset_report.md
+
+          echo "## Icon Assets" >> asset_report.md
+          icon_count=$(find assets/processed/icons -name "*.png" 2>/dev/null | wc -l)
+          echo "- Count: $icon_count" >> asset_report.md
+          echo "- Total size: $(du -sh assets/processed/icons 2>/dev/null | cut -f1 || echo '0B')" >> asset_report.md
+          echo "" >> asset_report.md
+
+          echo "## Distribution Assets" >> asset_report.md
+          if [ -f "assets/dist/asset_manifest.json" ]; then
+            echo "- Manifest: ✅ Generated" >> asset_report.md
+          else
+            echo "- Manifest: ❌ Missing" >> asset_report.md
+          fi
+
+          if [ -f "assets/dist/2d/characters.png" ]; then
+            sprite_size=$(du -h assets/dist/2d/characters.png | cut -f1)
+            echo "- Character sprite sheet: ✅ $sprite_size" >> asset_report.md
+          else
+            echo "- Character sprite sheet: ❌ Missing" >> asset_report.md
+          fi
+
+          echo "" >> asset_report.md
+          echo "## Quality Checks" >> asset_report.md
+
+          # 품질 이슈 카운트
+          large_files=$(find assets/dist -name "*.png" -size +1M | wc -l)
+          echo "- Large files (>1MB): $large_files" >> asset_report.md
+
+          # 실패 기준 검사
+          total_issues=0
+          if [ "$large_files" -gt 5 ]; then
+            echo "❌ Too many large files detected" >> asset_report.md
+            total_issues=$((total_issues + 1))
+          fi
+
+          if [ "$char_count" -lt 10 ]; then
+            echo "❌ Insufficient character assets generated" >> asset_report.md
+            total_issues=$((total_issues + 1))
+          fi
+
+          if [ "$total_issues" -eq 0 ]; then
+            echo "✅ All quality checks passed" >> asset_report.md
+          else
+            echo "❌ $total_issues quality issues detected" >> asset_report.md
+            exit 1
+          fi
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: pitturu-assets-${{ github.sha }}
+          path: |
+            assets/dist/
+            asset_report.md
+          retention-days: 30
+
+      - name: Upload to release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            assets/dist/2d/*.png
+            assets/dist/asset_manifest.json
+            asset_report.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment PR with asset report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('asset_report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🎨 Asset Generation Report\n\n${report}`
+            });
+
+  asset-validation:
+    runs-on: ubuntu-latest
+    needs: asset-generation
+    if: always()
+
+    steps:
+      - name: Download assets
+        uses: actions/download-artifact@v3
+        with:
+          name: pitturu-assets-${{ github.sha }}
+
+      - name: Advanced quality checks
+        run: |
+          echo "🔍 Advanced asset validation..."
+
+          # 메타데이터 검증
+          if [ -f "asset_manifest.json" ]; then
+            echo "✅ Asset manifest found"
+            cat asset_manifest.json | jq '.' > /dev/null && echo "✅ Valid JSON format" || echo "❌ Invalid JSON"
+          else
+            echo "❌ Asset manifest missing"
+            exit 1
+          fi
+
+          # 스프라이트 시트 무결성 검사
+          if [ -f "2d/characters.png" ]; then
+            file_size=$(stat -f%z "2d/characters.png" 2>/dev/null || stat -c%s "2d/characters.png")
+            if [ "$file_size" -gt 100 ]; then
+              echo "✅ Character sprite sheet has content"
+            else
+              echo "❌ Character sprite sheet appears empty"
+              exit 1
+            fi
+          fi
+
+          echo "✅ All advanced checks passed"
+
+      - name: Send Slack notification
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "🚨 Asset pipeline failed! Check the logs for details."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

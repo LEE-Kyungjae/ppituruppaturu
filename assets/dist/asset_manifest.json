@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2025-09-22T07:27:27Z",
+  "characters": {
+    "count":       72,
+    "resolution": "1024x1024",
+    "format": "PNG with alpha"
+  },
+  "icons": {
+    "count":       22,
+    "resolution": "256x256",
+    "format": "PNG"
+  },
+  "sprite_sheets": {
+    "characters": "characters.png",
+    "icons": "icons.png"
+  },
+  "tools_used": [
+    "AI generation (나노바나나)",
+    "ImageMagick (processing)",
+    "TexturePacker (sprite sheets)"
+  ]
+}

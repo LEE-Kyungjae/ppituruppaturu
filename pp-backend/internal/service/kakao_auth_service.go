@@ -17,6 +17,7 @@ import (
 
 type KakaoAuthService interface {
 	LoginOrRegister(authCode string) (*repository.User, string, string, error)
+	SocialLoginOrRegister(kakaoID, nickname, email, profileImage, accessToken string) (*repository.User, string, string, error)
 }
 
 type kakaoAuthService struct {
@@ -82,4 +83,43 @@ func (s *kakaoAuthService) LoginOrRegister(authCode string) (*repository.User, s
 	// For now, we'll just return it.
 
 	return user, accessToken, refreshToken, nil
+}
+
+func (s *kakaoAuthService) SocialLoginOrRegister(kakaoID, nickname, email, profileImage, accessToken string) (*repository.User, string, string, error) {
+	// Validate Kakao access token by calling Kakao API
+	_, err := s.kakaoClient.GetUserInfo(context.Background(), accessToken)
+	if err != nil {
+		return nil, "", "", fmt.Errorf("invalid kakao access token: %w", err)
+	}
+
+	// Create unique username with kakao prefix
+	username := fmt.Sprintf("kakao_%s", kakaoID)
+
+	// Check if user exists in our DB
+	user, err := s.userRepo.Find(username)
+	if err != nil && !errors.Is(err, serviceErrors.ErrUserNotFound) {
+		return nil, "", "", fmt.Errorf("failed to find user by kakao ID: %w", err)
+	}
+
+	if errors.Is(err, serviceErrors.ErrUserNotFound) {
+		// New user: Register them with nickname as display name
+		generatedPassword := uuid.New().String() // Generate a random password for security
+		user, err = s.userRepo.Create(username, generatedPassword, "user", s.cfg.BcryptCost, sql.NullString{String: nickname, Valid: true})
+		if err != nil {
+			return nil, "", "", fmt.Errorf("failed to create new user from kakao: %w", err)
+		}
+	}
+
+	// Generate our own JWTs
+	accessTokenJWT, err := s.tokenService.CreateAccessToken(user.Username, user.Role)
+	if err != nil {
+		return nil, "", "", fmt.Errorf("failed to create access token: %w", err)
+	}
+
+	refreshToken, _, err := s.tokenService.CreateRefreshToken(user.Username)
+	if err != nil {
+		return nil, "", "", fmt.Errorf("failed to create refresh token: %w", err)
+	}
+
+	return user, accessTokenJWT, refreshToken, nil
 }

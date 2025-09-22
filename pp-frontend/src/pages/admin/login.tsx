@@ -4,16 +4,17 @@ import { useRouter } from 'next/router'
 import { motion } from 'framer-motion'
 import {
   Shield,
-  Mail,
+  User,
   Lock,
   Eye,
   EyeOff,
   AlertCircle,
   Loader
 } from 'lucide-react'
+import { apiClient } from '@/services/api'
 
 interface LoginForm {
-  email: string
+  username: string
   password: string
   remember: boolean
 }
@@ -21,7 +22,7 @@ interface LoginForm {
 export default function AdminLogin() {
   const router = useRouter()
   const [form, setForm] = useState<LoginForm>({
-    email: '',
+    username: '',
     password: '',
     remember: false
   })
@@ -48,32 +49,30 @@ export default function AdminLogin() {
     setError(null)
 
     try {
-      // TODO: 실제 API 호출로 대체
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock validation
-      if (form.email === 'admin@pitturu.com' && form.password === 'admin123') {
-        // Store token
-        const mockToken = 'admin_token_' + Date.now()
-        localStorage.setItem('admin_token', mockToken)
-        
-        if (form.remember) {
-          localStorage.setItem('admin_remember', 'true')
-        }
-        
-        // Redirect to admin dashboard
-        router.push('/admin')
-      } else {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.')
+      const response = await apiClient.post<{ access_token: string, refresh_token: string }>('/api/v1/auth/login', {
+        username: form.username,
+        password: form.password,
+      })
+
+      localStorage.setItem('admin_token', response.access_token)
+      if (form.remember) {
+        localStorage.setItem('admin_remember', 'true')
       }
-    } catch (err) {
-      setError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.')
+      
+      router.push('/admin')
+
+    } catch (err: any) {
+      if (err.response && err.response.status === 401) {
+        setError('사용자 이름 또는 비밀번호가 올바르지 않습니다.')
+      } else {
+        setError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.')
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  const isFormValid = form.email && form.password
+  const isFormValid = form.username && form.password
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-flutter-blue-900 via-flutter-purple-900 to-indigo-900 flex items-center justify-center p-4">
@@ -128,19 +127,19 @@ export default function AdminLogin() {
           className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
+            {/* Username Field */}
             <div>
               <label className="block text-white/90 text-sm font-medium mb-2">
-                이메일
+                사용자 이름
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
                 <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  type="text"
+                  value={form.username}
+                  onChange={(e) => handleInputChange('username', e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:ring-2 focus:ring-flutter-blue-400 focus:border-transparent transition-all duration-300"
-                  placeholder="admin@pitturu.com"
+                  placeholder="admin"
                   disabled={loading}
                 />
               </div>
@@ -215,20 +214,6 @@ export default function AdminLogin() {
               )}
             </button>
           </form>
-
-          {/* Demo Credentials Info */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl"
-          >
-            <p className="text-white/60 text-sm text-center mb-2">데모 계정</p>
-            <div className="text-white/80 text-sm space-y-1">
-              <p><strong>이메일:</strong> admin@pitturu.com</p>
-              <p><strong>비밀번호:</strong> admin123</p>
-            </div>
-          </motion.div>
         </motion.div>
 
         {/* Footer */}

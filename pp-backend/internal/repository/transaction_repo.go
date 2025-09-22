@@ -45,6 +45,11 @@ type TransactionRepository interface {
 
 	CreatePointTransaction(ptx *PointTransaction) (*PointTransaction, error)
 	ListPointTransactionsByUsername(username string, limit, offset int) ([]*PointTransaction, error)
+
+	GetTotalRevenue() (float64, error)
+	GetRevenueSince(since time.Time) (float64, error)
+	CountTotalPayments() (int, error)
+	CountPaymentsByStatus(status string) (int, error)
 }
 
 type postgresTransactionRepository struct {
@@ -146,4 +151,28 @@ func (r *postgresTransactionRepository) ListPointTransactionsByUsername(username
 	}
 
 	return pointTransactions, nil
+}
+
+func (r *postgresTransactionRepository) GetTotalRevenue() (float64, error) {
+	var totalRevenue float64
+	err := r.db.QueryRow("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed'").Scan(&totalRevenue)
+	return totalRevenue, err
+}
+
+func (r *postgresTransactionRepository) GetRevenueSince(since time.Time) (float64, error) {
+	var totalRevenue float64
+	err := r.db.QueryRow("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND purchased_at >= $1", since).Scan(&totalRevenue)
+	return totalRevenue, err
+}
+
+func (r *postgresTransactionRepository) CountTotalPayments() (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM transactions").Scan(&count)
+	return count, err
+}
+
+func (r *postgresTransactionRepository) CountPaymentsByStatus(status string) (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM transactions WHERE status = $1", status).Scan(&count)
+	return count, err
 }

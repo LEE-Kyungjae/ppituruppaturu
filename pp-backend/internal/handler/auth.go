@@ -215,3 +215,61 @@ func (h *AuthHandler) KakaoLogin(c *gin.Context) {
 		RefreshToken: refreshToken,
 	})
 }
+
+// KakaoSocialLoginReq is the request body for social login.
+type KakaoSocialLoginReq struct {
+	KakaoID      string `json:"kakaoId" binding:"required"`
+	Nickname     string `json:"nickname" binding:"required"`
+	Email        string `json:"email"`
+	ProfileImage string `json:"profileImage"`
+	AccessToken  string `json:"accessToken" binding:"required"`
+}
+
+type socialLoginResponse struct {
+	AccessToken  string                 `json:"accessToken"`
+	RefreshToken string                 `json:"refreshToken"`
+	User         map[string]interface{} `json:"user"`
+}
+
+// KakaoSocialLogin handles social login from frontend.
+// @Summary      Kakao Social Login
+// @Description  Processes Kakao user data from frontend and returns JWT tokens.
+// @Tags         Authentication
+// @Accept       json
+// @Produce      json
+// @Param        userdata body KakaoSocialLoginReq true "Kakao user data"
+// @Success      200 {object} socialLoginResponse
+// @Failure      400 {object} Response
+// @Failure      500 {object} Response
+// @Router       /auth/social/kakao [post]
+func (h *AuthHandler) KakaoSocialLogin(c *gin.Context) {
+	var req KakaoSocialLoginReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, "bad request")
+		return
+	}
+
+	user, accessToken, refreshToken, err := h.kakaoAuthSvc.SocialLoginOrRegister(
+		req.KakaoID, req.Nickname, req.Email, req.ProfileImage, req.AccessToken,
+	)
+	if err != nil {
+		log.Printf("Kakao social login failed: %v", err)
+		respondError(c, http.StatusInternalServerError, "social login failed")
+		return
+	}
+
+	// 사용자 정보를 반환용으로 변환
+	userInfo := map[string]interface{}{
+		"id":           user.Username,
+		"nickname":     user.Username,
+		"email":        req.Email,
+		"profileImage": req.ProfileImage,
+		"provider":     "kakao",
+	}
+
+	respondJSON(c, http.StatusOK, socialLoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         userInfo,
+	})
+}

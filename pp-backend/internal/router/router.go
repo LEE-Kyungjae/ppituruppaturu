@@ -75,6 +75,7 @@ func Setup(r *gin.Engine, c *container.Container) {
 			authAPI.POST("/forgot-password", c.AuthHandler.ForgotPassword)
 			authAPI.POST("/reset-password", c.AuthHandler.ResetPassword)
 			authAPI.GET("/kakao/callback", c.AuthHandler.KakaoLogin)
+			authAPI.POST("/social/kakao", c.AuthHandler.KakaoSocialLogin)
 		}
 
 		// Authenticated routes
@@ -225,9 +226,18 @@ func Setup(r *gin.Engine, c *container.Container) {
 			admin.Use(auth.RequireRole("admin"))
 			{
 				admin.GET("/stats", c.AdminHandler.Stats)
+				admin.GET("/logs", c.AdminHandler.GetLogs)
 				admin.GET("/games", c.AdminHandler.ListAllGames)
 				admin.PATCH("/games/:gameId/visibility", c.AdminHandler.UpdateGameVisibility)
 				admin.PATCH("/games/:gameId/order", c.AdminHandler.UpdateGameDisplayOrder)
+				admin.POST("/users/:username/ban", c.AdminHandler.BanUser)
+
+				maintenance := admin.Group("/maintenance")
+				{
+					maintenance.POST("", c.MaintenanceHandler.ScheduleMaintenance)
+					maintenance.GET("", c.MaintenanceHandler.GetMaintenance)
+					maintenance.DELETE("/:id", c.MaintenanceHandler.CancelMaintenance)
+				}
 			}
 		}
 	}

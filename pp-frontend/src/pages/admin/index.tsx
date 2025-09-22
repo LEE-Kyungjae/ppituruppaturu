@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/router'
+import axios from 'axios'
 import AdminLayout from '@/components/admin/AdminLayout'
 import RecentActivity from '@/components/admin/RecentActivity'
 import { 
@@ -14,57 +15,56 @@ import {
   BarChart3
 } from 'lucide-react'
 
+// Create a dedicated axios instance for admin API calls
+const adminApiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+});
+
+adminApiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 interface DashboardData {
-  totalUsers: number
-  activeUsers: number
-  totalRevenue: number
-  todayRevenue: number
-  totalPayments: number
-  successfulPayments: number
-  failedPayments: number
-  pendingPayments: number
-  newUsersToday: number
-  userGrowthRate: number
-  revenueGrowthRate: number
-  paymentSuccessRate: number
+  uptime: string;
+  totalUsers: number;
+  activeUsers24h: number;
+  newUsers24h: number;
+  totalRevenue: number;
+  revenue24h: number;
+  totalPayments: number;
+  successfulPayments: number;
+  failedPayments: number;
+  pendingPayments: number;
+  paymentSuccessRate: number;
 }
 
 export default function AdminDashboard() {
   const router = useRouter()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [timeRange, setTimeRange] = useState('7d') // 7d, 30d, 90d
+  const [timeRange, setTimeRange] = useState('24h') // 24h, 7d, 30d
 
   useEffect(() => {
-    // TODO: 실제 API 호출로 대체
     const loadDashboardData = async () => {
       try {
-        // Mock data - 실제로는 API에서 가져오기
-        const mockData: DashboardData = {
-          totalUsers: 12547,
-          activeUsers: 8432,
-          totalRevenue: 45230000,
-          todayRevenue: 2450000,
-          totalPayments: 15643,
-          successfulPayments: 14892,
-          failedPayments: 521,
-          pendingPayments: 230,
-          newUsersToday: 145,
-          userGrowthRate: 12.5,
-          revenueGrowthRate: 8.3,
-          paymentSuccessRate: 95.2
-        }
-        
-        setDashboardData(mockData)
+        const { data } = await adminApiClient.get<DashboardData>('/api/v1/admin/stats');
+        setDashboardData(data);
       } catch (error) {
         console.error('Failed to load dashboard data:', error)
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          router.push('/admin/login');
+        }
       } finally {
         setLoading(false)
       }
     }
 
     loadDashboardData()
-  }, [timeRange])
+  }, [router, timeRange])
 
   if (loading) {
     return (
@@ -92,15 +92,15 @@ export default function AdminDashboard() {
     {
       title: '총 회원수',
       value: dashboardData.totalUsers.toLocaleString(),
-      change: `+${dashboardData.userGrowthRate}%`,
+      change: `+${dashboardData.newUsers24h} in 24h`,
       changeType: 'increase' as const,
       icon: Users,
       color: 'blue'
     },
     {
-      title: '활성 회원수',
-      value: dashboardData.activeUsers.toLocaleString(),
-      change: `${((dashboardData.activeUsers / dashboardData.totalUsers) * 100).toFixed(1)}%`,
+      title: '활성 회원수 (24h)',
+      value: dashboardData.activeUsers24h.toLocaleString(),
+      change: `${((dashboardData.activeUsers24h / dashboardData.totalUsers) * 100).toFixed(1)}%`,
       changeType: 'neutral' as const,
       icon: Activity,
       color: 'green'
@@ -108,14 +108,14 @@ export default function AdminDashboard() {
     {
       title: '총 매출',
       value: `${(dashboardData.totalRevenue / 1000000).toFixed(1)}M원`,
-      change: `+${dashboardData.revenueGrowthRate}%`,
+      change: `+${dashboardData.revenue24h.toLocaleString()} in 24h`,
       changeType: 'increase' as const,
       icon: CreditCard,
       color: 'purple'
     },
     {
       title: '오늘 매출',
-      value: `${(dashboardData.todayRevenue / 10000).toFixed(0)}만원`,
+      value: `${(dashboardData.revenue24h / 10000).toFixed(0)}만원`,
       change: '오늘',
       changeType: 'neutral' as const,
       icon: TrendingUp,
@@ -169,9 +169,9 @@ export default function AdminDashboard() {
               onChange={(e) => setTimeRange(e.target.value)}
               className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-flutter-blue-500 focus:border-transparent"
             >
+              <option value="24h">최근 24시간</option>
               <option value="7d">최근 7일</option>
               <option value="30d">최근 30일</option>
-              <option value="90d">최근 90일</option>
             </select>
           </div>
         </div>
@@ -190,10 +190,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
                   <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className={`text-sm mt-1 ${
-                    stat.changeType === 'increase' ? 'text-green-600' :
-                    stat.changeType === 'decrease' ? 'text-red-600' : 'text-gray-600'
-                  }`}>
+                  <p className={`text-sm mt-1 ${stat.changeType === 'increase' ? 'text-green-600' : 'text-gray-600'}`}>
                     {stat.change}
                   </p>
                 </div>
@@ -221,11 +218,7 @@ export default function AdminDashboard() {
             {paymentStats.map((stat, index) => (
               <div key={stat.title} className="text-center">
                 <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                <p className={`text-xl font-bold ${
-                  stat.color === 'blue' ? 'text-blue-600' :
-                  stat.color === 'green' ? 'text-green-600' :
-                  stat.color === 'red' ? 'text-red-600' : 'text-yellow-600'
-                }`}>
+                <p className={`text-xl font-bold ${stat.color === 'blue' ? 'text-blue-600' : stat.color === 'green' ? 'text-green-600' : stat.color === 'red' ? 'text-red-600' : 'text-yellow-600'}`}>
                   {stat.value}
                 </p>
               </div>
@@ -236,7 +229,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">결제 성공률</span>
               <span className="text-lg font-bold text-green-600">
-                {dashboardData.paymentSuccessRate}%
+                {dashboardData.paymentSuccessRate.toFixed(1)}%
               </span>
             </div>
             <div className="mt-2 bg-gray-200 rounded-full h-2">

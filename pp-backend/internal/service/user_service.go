@@ -21,6 +21,7 @@ type UserService interface {
 	DeleteUser(username string) error
 	Find(username string) (*repository.User, error)
 	ValidatePassword(user *repository.User, password string) error
+	BanUser(username string) error
 }
 
 type userService struct {
@@ -109,4 +110,8 @@ func (s *userService) Find(username string) (*repository.User, error) {
 // ValidatePassword validates a user's password.
 func (s *userService) ValidatePassword(user *repository.User, password string) error {
 	return s.userRepo.ValidatePassword(user, password)
+}
+
+func (s *userService) BanUser(username string) error {
+	return s.userRepo.BanUser(username)
 }

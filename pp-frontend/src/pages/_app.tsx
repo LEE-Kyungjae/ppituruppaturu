@@ -1,16 +1,14 @@
-// frontend/src/pages/_app.tsx
-import '@/styles/globals.css'
-import '@/styles/flutter-theme.css'
-import type { AppProps } from 'next/app'
-import { useEffect } from 'react'
+import { AppProps } from 'next/app';
+import '@/styles/globals.css';
+import MaintenanceBanner from '@/components/admin/MaintenanceBanner';
 
-export default function App({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    // AdMob 초기화
-    if (process.env.NEXT_PUBLIC_ADMOB_APP_ID) {
-      // AdMob SDK 로드 (프로덕션에서)
-    }
-  }, [])
-
-  return <Component {...pageProps} />
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <MaintenanceBanner />
+      <Component {...pageProps} />
+    </>
+  );
 }
+
+export default MyApp;

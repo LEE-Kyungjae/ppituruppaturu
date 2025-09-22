@@ -38,6 +38,7 @@ type Container struct {
 	TransactionRepo        repository.TransactionRepository
 	ChatRoomRepo           repository.ChatRoomRepository
 	PasswordResetTokenRepo repository.PasswordResetTokenRepository
+	MaintenanceRepo        repository.MaintenanceRepository
 
 	// Services
 	UserService      service.UserService
@@ -49,6 +50,7 @@ type Container struct {
 	ChatRoomService  service.ChatRoomService
 	KakaoAuthService service.KakaoAuthService
 	AuthService      service.AuthService
+	MaintenanceService service.MaintenanceService
 
 	// Email
 	EmailSender email.Sender
@@ -64,6 +66,7 @@ type Container struct {
 	PaymentHandler   *handler.PaymentHandler
 	ChatRoomHandler  *handler.ChatRoomHandler
 	MiniGameHandler  *handler.MiniGameHandler
+	MaintenanceHandler *handler.MaintenanceHandler
 
 	// Mini Game Engine
 	MiniGameEngine   *minigame.MiniGameEngine
@@ -101,6 +104,7 @@ func New(cfg *config.Config) (*Container, error) {
 	transactionRepo := repository.NewPostgresTransactionRepository(dbConn)
 	chatRoomRepo := repository.NewPostgresChatRoomRepository(dbConn)
 	passwordResetTokenRepo := repository.NewPostgresPasswordResetTokenRepository(dbConn)
+	maintenanceRepo := repository.NewPostgresMaintenanceRepository(dbConn)
 
 	// 4) 이메일 발송기
 	emailSender := email.NewSMTPSender(cfg)
@@ -125,6 +129,7 @@ func New(cfg *config.Config) (*Container, error) {
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, userRepo)
 	kakaoAuthSvc := service.NewKakaoAuthService(kakaoClient, userRepo, tokenSvc, cfg)
 	authService := service.NewAuthService(userRepo, tokenRepo, passwordResetTokenRepo, tokenSvc, emailSender, cfg)
+	maintenanceService := service.NewMaintenanceService(maintenanceRepo, hub)
 
 	// 5-1) 미니게임 엔진
 	miniGameEngine := minigame.NewMiniGameEngine(gameService, paymentService)
@@ -165,7 +170,7 @@ func New(cfg *config.Config) (*Container, error) {
 	startedAt := time.Now() // 앱 시작 시각을 고정 캡처 → 업타임 계산 정확
 	authHandler := handler.NewAuthHandler(authService, kakaoAuthSvc)
 	userHandler := handler.NewUserHandler(userService, cfg)
-	adminHandler := handler.NewAdminHandler(startedAt, gameRepo)
+	adminHandler := handler.NewAdminHandler(startedAt, gameRepo, userRepo, transactionRepo, "./logs/backend.log", userService)
 	friendHandler := handler.NewFriendHandler(friendService)
 	chatHandler := handler.NewChatHandler(userService, chatService, hub)
 	communityHandler := handler.NewCommunityHandler(communityService)
@@ -173,6 +178,9 @@ func New(cfg *config.Config) (*Container, error) {
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomService)
 	miniGameHandler := handler.NewMiniGameHandler(miniGameEngine)
+	maintenanceHandler := handler.NewMaintenanceHandler(maintenanceService)
+
+	maintenanceService.Start()
 
 	return &Container{
 		Config:                 cfg,
@@ -190,6 +198,7 @@ func New(cfg *config.Config) (*Container, error) {
 		TransactionRepo:        transactionRepo,
 		ChatRoomRepo:           chatRoomRepo,
 		PasswordResetTokenRepo: passwordResetTokenRepo,
+		MaintenanceRepo:        maintenanceRepo,
 		UserService:            userService,
 		FriendService:          friendService,
 		ChatService:            chatService,
@@ -199,6 +208,7 @@ func New(cfg *config.Config) (*Container, error) {
 		ChatRoomService:        chatRoomService,
 		KakaoAuthService:       kakaoAuthSvc,
 		AuthService:            authService,
+		MaintenanceService:     maintenanceService,
 		EmailSender:            emailSender,
 		AuthHandler:            authHandler,
 		UserHandler:            userHandler,
@@ -210,6 +220,7 @@ func New(cfg *config.Config) (*Container, error) {
 		PaymentHandler:         paymentHandler,
 		ChatRoomHandler:        chatRoomHandler,
 		MiniGameHandler:        miniGameHandler,
+		MaintenanceHandler:     maintenanceHandler,
 
 		// Mini Game Engine
 		MiniGameEngine:         miniGameEngine,

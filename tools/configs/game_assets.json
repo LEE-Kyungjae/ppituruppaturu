@@ -1,0 +1,221 @@
+{
+  "assets": [
+    {
+      "prompt": "cyberpunk paint gun weapon, futuristic design, neon blue accents, game sprite",
+      "type": "2d",
+      "category": "sprite",
+      "style": "cyberpunk",
+      "width": 256,
+      "height": 256,
+      "tags": ["weapon", "paint_gun", "player_item"],
+      "metadata": {
+        "usage": "player_weapon",
+        "animation_frames": 1,
+        "pivot_point": [128, 200]
+      }
+    },
+    {
+      "prompt": "cyberpunk character sprite, ninja painter, black outfit with neon highlights, side view",
+      "type": "2d",
+      "category": "character",
+      "style": "cyberpunk",
+      "width": 128,
+      "height": 256,
+      "tags": ["player", "character", "ninja"],
+      "metadata": {
+        "usage": "player_sprite",
+        "animation_states": ["idle", "run", "jump", "paint"],
+        "pivot_point": [64, 240]
+      }
+    },
+    {
+      "prompt": "futuristic cityscape background, neon lights, dark atmosphere, cyberpunk aesthetic",
+      "type": "2d",
+      "category": "background",
+      "style": "cyberpunk",
+      "width": 1920,
+      "height": 1080,
+      "tags": ["background", "city", "environment"],
+      "metadata": {
+        "usage": "level_background",
+        "parallax_layers": 3,
+        "seamless_tile": true
+      }
+    },
+    {
+      "prompt": "glowing paint splatter effect, neon colors, particle system, transparent background",
+      "type": "2d",
+      "category": "sprite",
+      "style": "cyberpunk",
+      "width": 512,
+      "height": 512,
+      "tags": ["effect", "paint", "particle"],
+      "metadata": {
+        "usage": "paint_effect",
+        "blend_mode": "additive",
+        "animation_frames": 8
+      }
+    },
+    {
+      "prompt": "cyberpunk UI button, glowing border, dark background, futuristic font",
+      "type": "2d",
+      "category": "ui",
+      "style": "cyberpunk",
+      "width": 200,
+      "height": 60,
+      "tags": ["ui", "button", "interface"],
+      "metadata": {
+        "usage": "menu_button",
+        "states": ["normal", "hover", "pressed"],
+        "nine_slice": [20, 20, 20, 20]
+      }
+    },
+    {
+      "prompt": "holographic health bar UI, cyan glow, transparent glass effect",
+      "type": "2d",
+      "category": "ui",
+      "style": "cyberpunk",
+      "width": 300,
+      "height": 40,
+      "tags": ["ui", "health", "hud"],
+      "metadata": {
+        "usage": "health_bar",
+        "fill_direction": "horizontal",
+        "segments": 10
+      }
+    },
+    {
+      "prompt": "cyberpunk platform tile, metal grating, neon strip lighting, game tileset",
+      "type": "2d",
+      "category": "sprite",
+      "style": "cyberpunk",
+      "width": 128,
+      "height": 64,
+      "tags": ["platform", "tile", "environment"],
+      "metadata": {
+        "usage": "platform_tile",
+        "tileable": true,
+        "collision_shape": "rectangle"
+      }
+    },
+    {
+      "prompt": "paint splat impact sound effect, liquid splash, satisfying",
+      "type": "audio",
+      "category": "sfx",
+      "duration": 0.5,
+      "tags": ["paint", "impact", "feedback"],
+      "metadata": {
+        "usage": "paint_hit_sound",
+        "variations": 3,
+        "volume": 0.7
+      }
+    },
+    {
+      "prompt": "cyberpunk jump sound effect, futuristic whoosh, energy boost",
+      "type": "audio",
+      "category": "sfx",
+      "duration": 0.8,
+      "tags": ["jump", "movement", "character"],
+      "metadata": {
+        "usage": "player_jump_sound",
+        "pitch_variation": 0.2,
+        "volume": 0.6
+      }
+    },
+    {
+      "prompt": "cyberpunk ambient music, dark synthwave, atmospheric, looping",
+      "type": "audio",
+      "category": "music",
+      "duration": 120.0,
+      "tags": ["ambient", "background", "synthwave"],
+      "metadata": {
+        "usage": "level_music",
+        "loop": true,
+        "fade_in": 2.0,
+        "fade_out": 2.0
+      }
+    },
+    {
+      "prompt": "glowing paint collectible orb, rotating animation, cyan energy",
+      "type": "2d",
+      "category": "sprite",
+      "style": "cyberpunk",
+      "width": 64,
+      "height": 64,
+      "tags": ["collectible", "powerup", "orb"],
+      "metadata": {
+        "usage": "paint_ammo",
+        "animation_frames": 16,
+        "rotation_speed": 90
+      }
+    },
+    {
+      "prompt": "cyberpunk enemy drone, hovering robot, red warning lights",
+      "type": "2d",
+      "category": "character",
+      "style": "cyberpunk",
+      "width": 128,
+      "height": 96,
+      "tags": ["enemy", "drone", "robot"],
+      "metadata": {
+        "usage": "enemy_sprite",
+        "animation_states": ["patrol", "alert", "attack"],
+        "health": 3
+      }
+    },
+    {
+      "prompt": "paint coverage meter UI, circular progress bar, neon blue",
+      "type": "2d",
+      "category": "ui",
+      "style": "cyberpunk",
+      "width": 120,
+      "height": 120,
+      "tags": ["ui", "progress", "meter"],
+      "metadata": {
+        "usage": "coverage_meter",
+        "fill_type": "radial",
+        "max_value": 100
+      }
+    },
+    {
+      "prompt": "victory fanfare sound, electronic celebration, uplifting",
+      "type": "audio",
+      "category": "sfx",
+      "duration": 3.0,
+      "tags": ["victory", "celebration", "achievement"],
+      "metadata": {
+        "usage": "level_complete_sound",
+        "volume": 0.8,
+        "priority": "high"
+      }
+    },
+    {
+      "prompt": "cyberpunk checkpoint marker, holographic waypoint, pulsing animation",
+      "type": "2d",
+      "category": "sprite",
+      "style": "cyberpunk",
+      "width": 96,
+      "height": 128,
+      "tags": ["checkpoint", "marker", "waypoint"],
+      "metadata": {
+        "usage": "checkpoint",
+        "animation_frames": 12,
+        "pulse_rate": 1.5
+      }
+    }
+  ],
+  "generation_settings": {
+    "batch_size": 5,
+    "retry_attempts": 3,
+    "quality_threshold": 0.8,
+    "output_formats": {
+      "2d": ["png", "webp"],
+      "audio": ["wav", "ogg"]
+    },
+    "post_processing": {
+      "compress_images": true,
+      "optimize_audio": true,
+      "generate_thumbnails": true
+    }
+  }
+}

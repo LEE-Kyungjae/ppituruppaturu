@@ -87,7 +87,7 @@ func main() {
 	}
 
 	// Initialize logger
-	logger := logger.New("info", "")
+	logger := logger.New("info", "./logs/backend.log")
 
 	// Set Gin mode based on environment
 	if cfg.GoEnv == "production" {

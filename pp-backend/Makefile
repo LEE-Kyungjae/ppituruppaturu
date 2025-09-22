@@ -195,7 +195,7 @@ docs-check: ## Check documentation links
 .PHONY: db-migrate-up
 db-migrate-up: ## Run database migrations up
 	@echo "⬆️  Running database migrations up..."
-	@go run cmd/migrate/main.go up
+	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/migrate/main.go up
 
 .PHONY: db-migrate-down
 db-migrate-down: ## Run database migrations down (usage: make db-migrate-down STEPS=1)

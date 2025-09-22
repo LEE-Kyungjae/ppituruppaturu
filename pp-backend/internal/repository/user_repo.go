@@ -1,4 +1,3 @@
-// backend/internal/repository/user_repo.go
 package repository
 
 import (
@@ -9,8 +8,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-
 
 var (
 	ErrUserNotFound       = errors.New("user not found")
@@ -29,6 +26,7 @@ type User struct {
 	LastOnlineAt      *time.Time
 	IsActive          *bool
 	DeletedAt         *time.Time
+	BannedAt          *time.Time
 	KakaoID           *string
 	Points            int
 }
@@ -44,6 +42,10 @@ type UserRepository interface {
 	UpdatePasswordHash(username, newPasswordHash string) error
 	DeactivateUser(username string) error
 	DeleteUser(username string) error
+	CountTotalUsers() (int, error)
+	CountActiveUsers(since time.Time) (int, error)
+	CountNewUsers(since time.Time) (int, error)
+	BanUser(username string) error
 }
 
 // --- PostgreSQL Implementation ---
@@ -195,6 +197,41 @@ func (r *postgresUserRepository) DeleteUser(username string) error {
 	result, err := r.db.Exec(query, username)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+func (r *postgresUserRepository) CountTotalUsers() (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL").Scan(&count)
+	return count, err
+}
+
+func (r *postgresUserRepository) CountActiveUsers(since time.Time) (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(DISTINCT username) FROM users WHERE last_online_at >= $1 AND deleted_at IS NULL", since).Scan(&count)
+	return count, err
+}
+
+func (r *postgresUserRepository) CountNewUsers(since time.Time) (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM users WHERE created_at >= $1 AND deleted_at IS NULL", since).Scan(&count)
+	return count, err
+}
+
+func (r *postgresUserRepository) BanUser(username string) error {
+	query := "UPDATE users SET banned_at = NOW(), updated_at = NOW() WHERE username = $1"
+	result, err := r.db.Exec(query, username)
+	if err != nil {
+		return fmt.Errorf("failed to ban user: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()

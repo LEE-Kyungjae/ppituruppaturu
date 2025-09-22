@@ -1,0 +1,375 @@
+name: AI Asset Generation Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      asset_config:
+        description: 'Asset configuration file path'
+        required: true
+        default: 'tools/configs/game_assets.json'
+      force_regenerate:
+        description: 'Force regenerate existing assets'
+        required: false
+        type: boolean
+        default: false
+      batch_size:
+        description: 'Batch size for parallel generation'
+        required: false
+        default: '5'
+  push:
+    paths:
+      - 'tools/configs/**.json'
+      - 'tools/scripts/generate_assets.py'
+    branches: [ main, develop ]
+
+env:
+  NANOBANANA_API_KEY: ${{ secrets.NANOBANANA_API_KEY }}
+  STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+  MIDJOURNEY_API_KEY: ${{ secrets.MIDJOURNEY_API_KEY }}
+  ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+
+jobs:
+  generate-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - name: 🛒 Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install aiohttp asyncio-throttle pillow pydub numpy
+        pip install -r tools/requirements.txt || echo "No requirements.txt found"
+
+    - name: 🔧 Setup asset generation environment
+      run: |
+        mkdir -p assets/generated/{2d,3d,audio,metadata}
+        mkdir -p assets/processed
+        chmod +x tools/scripts/generate_assets.py
+
+    - name: 🎨 Generate AI assets
+      run: |
+        python3 tools/scripts/generate_assets.py \
+          --config ${{ github.event.inputs.asset_config || 'tools/configs/game_assets.json' }} \
+          --project-root . \
+          --output-report assets/generated/generation_report_$(date +%Y%m%d_%H%M%S).json
+      env:
+        PYTHONPATH: ${{ github.workspace }}/tools
+        BATCH_SIZE: ${{ github.event.inputs.batch_size || '5' }}
+        FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
+
+    - name: 🖼️ Process generated images
+      run: |
+        python3 -c "
+        import os
+        from PIL import Image
+        import json
+
+        def optimize_images():
+            asset_dir = 'assets/generated/2d'
+            processed_dir = 'assets/processed/2d'
+            os.makedirs(processed_dir, exist_ok=True)
+
+            for filename in os.listdir(asset_dir):
+                if filename.endswith('.png'):
+                    img_path = os.path.join(asset_dir, filename)
+                    img = Image.open(img_path)
+
+                    # Original PNG
+                    optimized_png = os.path.join(processed_dir, filename)
+                    img.save(optimized_png, 'PNG', optimize=True)
+
+                    # WebP version
+                    webp_path = os.path.join(processed_dir, filename.replace('.png', '.webp'))
+                    img.save(webp_path, 'WebP', quality=85, method=6)
+
+                    print(f'Processed: {filename}')
+
+        optimize_images()
+        "
+
+    - name: 🎵 Process generated audio
+      run: |
+        # Install ffmpeg for audio processing
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+
+        # Process audio files
+        python3 -c "
+        import os
+        import subprocess
+
+        def optimize_audio():
+            audio_dir = 'assets/generated/audio'
+            processed_dir = 'assets/processed/audio'
+            os.makedirs(processed_dir, exist_ok=True)
+
+            for filename in os.listdir(audio_dir):
+                if filename.endswith('.wav'):
+                    input_path = os.path.join(audio_dir, filename)
+
+                    # OGG version for web
+                    ogg_path = os.path.join(processed_dir, filename.replace('.wav', '.ogg'))
+                    subprocess.run([
+                        'ffmpeg', '-i', input_path, '-c:a', 'libvorbis', '-q:a', '4',
+                        '-y', ogg_path
+                    ], check=True, capture_output=True)
+
+                    # Compressed WAV
+                    wav_path = os.path.join(processed_dir, filename)
+                    subprocess.run([
+                        'ffmpeg', '-i', input_path, '-c:a', 'pcm_s16le',
+                        '-y', wav_path
+                    ], check=True, capture_output=True)
+
+                    print(f'Processed: {filename}')
+
+        try:
+            optimize_audio()
+        except Exception as e:
+            print(f'Audio processing skipped: {e}')
+        "
+
+    - name: 📊 Generate asset manifest
+      run: |
+        python3 -c "
+        import os
+        import json
+        import hashlib
+        from datetime import datetime
+
+        def generate_manifest():
+            manifest = {
+                'generated_at': datetime.now().isoformat(),
+                'version': '1.0',
+                'assets': {
+                    '2d': [],
+                    '3d': [],
+                    'audio': []
+                }
+            }
+
+            # Process each asset type
+            for asset_type in ['2d', '3d', 'audio']:
+                processed_dir = f'assets/processed/{asset_type}'
+                if os.path.exists(processed_dir):
+                    for filename in os.listdir(processed_dir):
+                        file_path = os.path.join(processed_dir, filename)
+
+                        # Calculate hash
+                        with open(file_path, 'rb') as f:
+                            file_hash = hashlib.sha256(f.read()).hexdigest()
+
+                        # Get file size
+                        file_size = os.path.getsize(file_path)
+
+                        asset_info = {
+                            'filename': filename,
+                            'path': f'assets/processed/{asset_type}/{filename}',
+                            'size': file_size,
+                            'hash': file_hash,
+                            'format': filename.split('.')[-1]
+                        }
+
+                        manifest['assets'][asset_type].append(asset_info)
+
+            # Save manifest
+            with open('assets/asset_manifest.json', 'w') as f:
+                json.dump(manifest, f, indent=2)
+
+            print(f'Generated manifest with {sum(len(assets) for assets in manifest[\"assets\"].values())} assets')
+
+        generate_manifest()
+        "
+
+    - name: 🔍 Asset quality validation
+      run: |
+        python3 -c "
+        import os
+        import json
+        from PIL import Image
+
+        def validate_assets():
+            issues = []
+
+            # Validate 2D assets
+            img_dir = 'assets/processed/2d'
+            if os.path.exists(img_dir):
+                for filename in os.listdir(img_dir):
+                    if filename.endswith(('.png', '.webp')):
+                        try:
+                            img_path = os.path.join(img_dir, filename)
+                            img = Image.open(img_path)
+
+                            # Check dimensions
+                            if img.width < 32 or img.height < 32:
+                                issues.append(f'{filename}: Too small ({img.width}x{img.height})')
+
+                            # Check file size
+                            file_size = os.path.getsize(img_path)
+                            if file_size > 5 * 1024 * 1024:  # 5MB
+                                issues.append(f'{filename}: Too large ({file_size} bytes)')
+
+                        except Exception as e:
+                            issues.append(f'{filename}: Invalid image - {e}')
+
+            # Report issues
+            if issues:
+                print('❌ Asset validation issues found:')
+                for issue in issues:
+                    print(f'  - {issue}')
+                exit(1)
+            else:
+                print('✅ All assets passed validation')
+
+        validate_assets()
+        "
+
+    - name: 📈 Generate statistics
+      run: |
+        python3 -c "
+        import os
+        import json
+
+        def generate_stats():
+            stats = {
+                'total_assets': 0,
+                'by_type': {},
+                'total_size': 0,
+                'largest_asset': None,
+                'smallest_asset': None
+            }
+
+            largest_size = 0
+            smallest_size = float('inf')
+
+            for asset_type in ['2d', '3d', 'audio']:
+                processed_dir = f'assets/processed/{asset_type}'
+                if os.path.exists(processed_dir):
+                    count = 0
+                    type_size = 0
+
+                    for filename in os.listdir(processed_dir):
+                        file_path = os.path.join(processed_dir, filename)
+                        file_size = os.path.getsize(file_path)
+
+                        count += 1
+                        type_size += file_size
+
+                        if file_size > largest_size:
+                            largest_size = file_size
+                            stats['largest_asset'] = {'name': filename, 'size': file_size}
+
+                        if file_size < smallest_size:
+                            smallest_size = file_size
+                            stats['smallest_asset'] = {'name': filename, 'size': file_size}
+
+                    stats['by_type'][asset_type] = {
+                        'count': count,
+                        'total_size': type_size
+                    }
+                    stats['total_assets'] += count
+                    stats['total_size'] += type_size
+
+            # Save stats
+            with open('assets/generation_stats.json', 'w') as f:
+                json.dump(stats, f, indent=2)
+
+            # Print summary
+            print(f'📊 Generation Statistics:')
+            print(f'  Total assets: {stats[\"total_assets\"]}')
+            print(f'  Total size: {stats[\"total_size\"]:,} bytes')
+            for asset_type, data in stats['by_type'].items():
+                print(f'  {asset_type}: {data[\"count\"]} assets ({data[\"total_size\"]:,} bytes)')
+
+        generate_stats()
+        "
+
+    - name: 🚀 Deploy to CDN (if configured)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # This would upload assets to your CDN
+        echo "🚧 CDN deployment not configured yet"
+        # aws s3 sync assets/processed/ s3://your-bucket/assets/ --delete
+
+    - name: 📝 Create pull request with new assets
+      if: github.event_name == 'workflow_dispatch'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: feature/ai-generated-assets-${{ github.run_number }}
+        title: "🎨 AI Generated Assets - Batch ${{ github.run_number }}"
+        body: |
+          ## AI Asset Generation Results
+
+          This PR contains newly generated game assets using AI services.
+
+          ### 📊 Statistics
+          - Generation run: ${{ github.run_number }}
+          - Config file: ${{ github.event.inputs.asset_config || 'tools/configs/game_assets.json' }}
+          - Timestamp: ${{ github.run_id }}
+
+          ### 🎨 Generated Assets
+          Please review the generated assets in the `assets/processed/` directory.
+
+          ### ✅ Quality Checks
+          - [x] Asset validation passed
+          - [x] File size optimization completed
+          - [x] Manifest generated
+
+          ### 🔍 Manual Review Required
+          - [ ] Visual quality assessment
+          - [ ] Asset integration testing
+          - [ ] Performance impact evaluation
+
+          **Auto-generated by AI Asset Pipeline**
+        commit-message: "feat: generate AI assets batch ${{ github.run_number }}"
+        delete-branch: true
+
+    - name: 📋 Upload generation artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: ai-generated-assets-${{ github.run_number }}
+        path: |
+          assets/generated/
+          assets/processed/
+          assets/*.json
+        retention-days: 30
+
+    - name: 💬 Notify on Discord (if configured)
+      if: always()
+      run: |
+        # Discord webhook notification
+        if [ -n "${{ secrets.DISCORD_WEBHOOK }}" ]; then
+          status_emoji="✅"
+          if [ "${{ job.status }}" != "success" ]; then
+            status_emoji="❌"
+          fi
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \"$status_emoji AI Asset Generation Complete\",
+                   \"description\": \"Batch ${{ github.run_number }} - ${{ job.status }}\",
+                   \"color\": $([ "${{ job.status }}" = "success" ] && echo "65280" || echo "16711680"),
+                   \"fields\": [
+                     {\"name\": \"Run ID\", \"value\": \"${{ github.run_id }}\", \"inline\": true},
+                     {\"name\": \"Config\", \"value\": \"${{ github.event.inputs.asset_config || 'tools/configs/game_assets.json' }}\", \"inline\": true}
+                   ]
+                 }]
+               }" \
+               "${{ secrets.DISCORD_WEBHOOK }}"
+        fi

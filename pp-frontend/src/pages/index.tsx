@@ -1,184 +1,212 @@
 // frontend/src/pages/index.tsx
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import Navbar from '../components/layout/Navbar'
-import GameDashboard from '../components/dashboard/GameDashboard'
-import SocialLogin from '../components/auth/SocialLogin'
-import SEOHead from '../components/SEOHead'
-import { generateSEO, generateBreadcrumbStructuredData } from '../utils/seo'
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import Navbar from '@/components/layout/Navbar';
+import SocialLogin from '@/components/auth/SocialLogin';
+import SEOHead from '@/components/SEOHead';
+import { generateSEO, generateBreadcrumbStructuredData } from '@/utils/seo';
+import { Users, Gamepad2, Layers, Zap, ArrowRight } from 'lucide-react';
+
+const HeroSection = () => {
+  const { scrollYProgress } = useScroll();
+  const scale = useTransform(scrollYProgress, [0, 0.3], [1, 1.5]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+
+  return (
+    <section className="relative h-screen flex items-center justify-center text-white overflow-hidden">
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900"
+        style={{ scale, opacity }}
+      />
+      <div className="relative z-10 text-center p-4">
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight"
+        >
+          PITTURU: The Next Dimension of Gaming
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8"
+        >
+          Experience a seamless fusion of technologies, creating a gaming platform that's powerful, flexible, and endlessly fun.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <button className="bg-white text-black font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-colors duration-300 flex items-center gap-2 mx-auto">
+            Get Started <ArrowRight className="w-5 h-5" />
+          </button>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const FeatureCard = ({ icon, title, description, index }) => {
+  const Icon = icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.2 }}
+      viewport={{ once: true }}
+      className="bg-gray-800 p-8 rounded-2xl border border-gray-700"
+    >
+      <div className="bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6" />
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+      <p className="text-gray-400">{description}</p>
+    </motion.div>
+  );
+};
+
+const FeaturesSection = () => {
+  const features = [
+    { icon: Users, title: 'Community Driven', description: 'Engage with a vibrant community of gamers and developers.' },
+    { icon: Gamepad2, title: 'Diverse Mini-Games', description: 'A constantly expanding library of fun and addictive mini-games.' },
+    { icon: Layers, title: 'Hybrid Technology', description: 'Leveraging Unity and Flutter for a seamless cross-platform experience.' },
+    { icon: Zap, title: 'Real-time Backend', description: 'Powered by a high-performance Go backend for instant action.' },
+  ];
+
+  return (
+    <section className="py-20 bg-gray-900 text-white">
+      <div className="container mx-auto px-4">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-bold text-center mb-12"
+        >
+          Why PittuRu?
+        </motion.h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, i) => (
+            <FeatureCard key={i} index={i} {...feature} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const CTASection = () => {
+  return (
+    <section className="py-20 bg-gray-800 text-white">
+      <div className="container mx-auto px-4 text-center">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-bold mb-4"
+        >
+          Ready to Dive In?
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto"
+        >
+          Join thousands of players and start your gaming journey today. It's free to play!
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <button className="bg-blue-500 text-white font-bold py-4 px-10 rounded-full text-xl hover:bg-blue-600 transition-colors duration-300">
+            Create Your Account
+          </button>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
-  const [points, setPoints] = useState(1250)
-  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [points, setPoints] = useState(0);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // 임시 로그인 상태 (실제로는 JWT 토큰으로 관리)
   useEffect(() => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      setIsLoggedIn(true)
-      setUsername(userData.username)
-      setPoints(userData.points || 1250)
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      // In a real app, you'd validate the token and fetch user data
+      setIsLoggedIn(true);
+      setUsername('Player1'); // Placeholder
+      setPoints(1250); // Placeholder
     }
-  }, [])
+  }, []);
 
-  const handleLogin = () => {
-    setShowLoginModal(true)
-  }
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setShowLoginModal(false);
+    // Fetch and set user data
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    setIsLoggedIn(false)
-    setUsername('')
-    setPoints(0)
-  }
+    localStorage.removeItem('auth_token');
+    setIsLoggedIn(false);
+    setUsername('');
+    setPoints(0);
+  };
 
-  const handleDemoLogin = () => {
-    const demoUser = {
-      username: 'DemoUser',
-      points: 1250
-    }
-    localStorage.setItem('user', JSON.stringify(demoUser))
-    setIsLoggedIn(true)
-    setUsername(demoUser.username)
-    setPoints(demoUser.points)
-    setShowLoginModal(false)
-  }
-
-  // SEO 설정
   const seoProps = generateSEO({
-    title: 'PittuRu Gaming Platform - 무료 미니게임',
-    description: '5종 미니게임을 플레이하고 포인트를 획득하세요! 클릭 스피드, 메모리 매치, 숫자 맞추기 등 다양한 게임을 무료로 즐기세요.',
-    keywords: ['무료게임', '미니게임', '브라우저게임', '포인트게임'],
+    title: 'PittuRu - The Next Dimension of Gaming',
+    description: 'Experience a seamless fusion of technologies, creating a gaming platform that\'s powerful, flexible, and endlessly fun.',
+    keywords: ['mini-games', 'browser games', 'free games', 'online gaming'],
     url: '/'
-  })
+  });
 
   const breadcrumbData = generateBreadcrumbStructuredData([
-    { name: '홈', url: '/' }
-  ])
-
-  const organizationStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "PittuRu Gaming Platform",
-    "alternateName": "피투루",
-    "description": "무료 미니게임 플랫폼",
-    "url": "https://ppituruppaturu.com",
-    "logo": "https://ppituruppaturu.com/logo.png",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "customer service",
-      "availableLanguage": ["Korean"]
-    },
-    "sameAs": [
-      "https://github.com/pitturu"
-    ]
-  }
+    { name: 'Home', url: '/' }
+  ]);
 
   return (
     <>
-      <SEOHead
-        {...seoProps}
-        breadcrumbs={breadcrumbData}
-        structuredData={organizationStructuredData}
-      />
-
+      <SEOHead {...seoProps} breadcrumbs={breadcrumbData} />
       <Navbar 
         isLoggedIn={isLoggedIn}
         username={username}
         points={points}
-        onLogin={handleLogin}
+        onLogin={() => setShowLoginModal(true)}
         onLogout={handleLogout}
       />
-      
-      {isLoggedIn ? (
-        <GameDashboard />
-      ) : (
-        <main className="min-h-screen bg-gradient-to-br from-flutter-blue-50 via-flutter-purple-50 to-flutter-gray-50 pt-16">
-          <div className="container mx-auto px-4 py-16 text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-flutter-blue-600 to-flutter-purple-600">
-              🎮 PittuRu Gaming
-            </h1>
-            
-            <p className="text-xl md:text-2xl mb-12 text-flutter-gray-700">
-              5종 미니게임 • 포인트 획득 • 실시간 순위
-            </p>
+      <main className="bg-gray-900">
+        <HeroSection />
+        <FeaturesSection />
+        <CTASection />
+      </main>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl border border-flutter-gray-200">
-                <div className="text-4xl mb-4">⚡</div>
-                <h3 className="text-xl font-bold mb-2 text-flutter-gray-800">클릭 스피드</h3>
-                <p className="text-flutter-gray-600">10초 안에 최대한 많이 클릭!</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl border border-flutter-gray-200">
-                <div className="text-4xl mb-4">🧠</div>
-                <h3 className="text-xl font-bold mb-2 text-flutter-gray-800">메모리 매치</h3>
-                <p className="text-flutter-gray-600">카드 짝을 맞춰 점수 획득!</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl border border-flutter-gray-200">
-                <div className="text-4xl mb-4">🎯</div>
-                <h3 className="text-xl font-bold mb-2 text-flutter-gray-800">숫자 맞추기</h3>
-                <p className="text-flutter-gray-600">적은 시도로 숫자를 맞혀라!</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <button 
-                onClick={handleLogin}
-                className="inline-block bg-gradient-to-r from-flutter-blue-500 to-flutter-purple-500 px-8 py-4 rounded-full text-lg font-semibold text-white hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:from-flutter-blue-600 hover:to-flutter-purple-600"
-              >
-                🚀 게임 시작하기
-              </button>
-              
-              <div className="flex justify-center gap-4">
-                <button className="bg-white/70 px-6 py-3 rounded-full hover:bg-white/90 transition-all duration-300 backdrop-blur-sm text-flutter-gray-700 hover:text-flutter-gray-900 shadow-md hover:shadow-lg border border-flutter-gray-200">
-                  📊 순위표
-                </button>
-                <button className="bg-white/70 px-6 py-3 rounded-full hover:bg-white/90 transition-all duration-300 backdrop-blur-sm text-flutter-gray-700 hover:text-flutter-gray-900 shadow-md hover:shadow-lg border border-flutter-gray-200">
-                  💰 포인트 상점
-                </button>
-              </div>
-            </div>
-          </div>
-        </main>
-      )}
-
-      {/* 로그인 모달 */}
       {showLoginModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl border border-flutter-gray-100">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl max-w-md w-full mx-4 shadow-lg">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-flutter-gray-800">로그인</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Login or Sign Up</h2>
               <button 
                 onClick={() => setShowLoginModal(false)}
-                className="text-flutter-gray-400 hover:text-flutter-gray-600 text-2xl transition-colors duration-200"
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
-                ×
+                &times;
               </button>
             </div>
-            
-            <div className="mb-6">
-              <SocialLogin />
-            </div>
-
-            <div className="border-t border-flutter-gray-200 pt-4">
-              <button
-                onClick={handleDemoLogin}
-                className="w-full bg-gradient-to-r from-flutter-blue-500 to-flutter-purple-500 text-white py-3 px-6 rounded-xl font-medium hover:from-flutter-blue-600 hover:to-flutter-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                🎮 데모 계정으로 체험하기
-              </button>
-              <p className="text-sm text-flutter-gray-500 mt-2 text-center">
-                소셜 로그인 설정 전 데모 체험 가능
-              </p>
-            </div>
+            <SocialLogin onLoginSuccess={handleLoginSuccess} />
           </div>
         </div>
       )}
     </>
-  )
+  );
 }
