@@ -54,6 +54,9 @@ dependencies:
   web_socket_channel: ^3.0.1  # WebSocket 통신
   connectivity_plus: ^6.0.5  # 네트워크 연결 상태
 
+  # Unity 통합
+  flutter_unity_widget: ^2022.2.1  # Unity WebGL 위젯
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

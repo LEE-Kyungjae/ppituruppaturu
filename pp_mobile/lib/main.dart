@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flame/game.dart';
+import 'screens/game_hub_screen.dart';
 import 'games/simple_jump_game.dart';
-import 'games/cross_platform_jump_game.dart';
 
 void main() {
   runApp(const PittuRuApp());
@@ -22,7 +22,7 @@ class PittuRuApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const WebViewScreen(),
+      home: const GameHubScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -349,12 +349,10 @@ class GameSelectionScreen extends StatelessWidget {
                     color: Colors.purple,
                     description: '웹/모바일 함께 즐기는\n실시간 멀티플레이어 게임',
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GameWidget<CrossPlatformJumpGame>.controlled(
-                            gameFactory: CrossPlatformJumpGame.new,
-                          ),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Unity 통합 버전으로 업그레이드 중입니다! 🎮'),
+                          duration: Duration(seconds: 2),
                         ),
                       );
                     },
