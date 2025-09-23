@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Simple Unity Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #2c3e50;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+
+      #gameContainer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(45deg, #3498db, #8e44ad);
+      }
+
+      .game-content {
+        text-align: center;
+        background: rgba(0,0,0,0.3);
+        padding: 40px;
+        border-radius: 20px;
+        border: 2px solid #ecf0f1;
+      }
+
+      .unity-logo {
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+
+      .game-controls {
+        margin-top: 30px;
+      }
+
+      button {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        margin: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+      }
+
+      .status {
+        margin: 20px 0;
+        padding: 10px;
+        background: rgba(46, 204, 113, 0.2);
+        border-radius: 8px;
+        border-left: 4px solid #2ecc71;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <div class="game-content">
+        <div class="unity-logo">🎮</div>
+        <h1>Unity WebGL 시뮬레이션</h1>
+        <p>Unity + Flutter 통합 테스트용 샘플</p>
+
+        <div class="status" id="gameStatus">
+          게임 준비됨 - Flutter와 통신 가능
+        </div>
+
+        <div class="game-controls">
+          <button onclick="sendMessageToFlutter('jump')">점프</button>
+          <button onclick="sendMessageToFlutter('shoot')">발사</button>
+          <button onclick="sendMessageToFlutter('pause')">일시정지</button>
+          <button onclick="startGame()">게임 시작</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <p>점수: <span id="score">0</span></p>
+          <p>플레이어: <span id="playerName">Player1</span></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let gameScore = 0;
+      let isGameRunning = false;
+
+      // Flutter Unity Widget이 사용하는 통신 함수들 시뮬레이션
+      window.unityGame = {
+        SendMessage: function(gameObject, methodName, parameter) {
+          console.log('Unity 메시지 수신:', gameObject, methodName, parameter);
+          handleUnityMessage(methodName, parameter);
+        }
+      };
+
+      function handleUnityMessage(method, param) {
+        const statusEl = document.getElementById('gameStatus');
+
+        switch(method) {
+          case 'SetPlayerName':
+            document.getElementById('playerName').textContent = param;
+            statusEl.textContent = `플레이어 설정됨: ${param}`;
+            break;
+          case 'UpdateScore':
+            gameScore = parseInt(param);
+            document.getElementById('score').textContent = gameScore;
+            statusEl.textContent = `점수 업데이트: ${gameScore}`;
+            break;
+          case 'StartGame':
+            isGameRunning = true;
+            statusEl.textContent = '게임 시작됨!';
+            break;
+          case 'PauseGame':
+            isGameRunning = false;
+            statusEl.textContent = '게임 일시정지됨';
+            break;
+          default:
+            statusEl.textContent = `Unity 메시지: ${method}(${param})`;
+        }
+      }
+
+      function sendMessageToFlutter(action) {
+        const message = {
+          type: 'unity_action',
+          action: action,
+          score: gameScore,
+          timestamp: Date.now()
+        };
+
+        // Flutter Unity Widget에 메시지 전송 시뮬레이션
+        if (window.flutter_unity_widget) {
+          window.flutter_unity_widget.onMessage(JSON.stringify(message));
+        }
+
+        // 콘솔에서 확인 가능
+        console.log('Flutter로 메시지 전송:', message);
+
+        // 시각적 피드백
+        const statusEl = document.getElementById('gameStatus');
+        statusEl.textContent = `액션 실행: ${action}`;
+
+        // 점수 증가 시뮬레이션
+        if (action === 'jump' || action === 'shoot') {
+          gameScore += 10;
+          document.getElementById('score').textContent = gameScore;
+        }
+      }
+
+      function startGame() {
+        isGameRunning = true;
+        sendMessageToFlutter('game_started');
+
+        // 자동 점수 증가 시뮬레이션
+        const gameLoop = setInterval(() => {
+          if (!isGameRunning) {
+            clearInterval(gameLoop);
+            return;
+          }
+
+          gameScore += 1;
+          document.getElementById('score').textContent = gameScore;
+
+          // 10초마다 Flutter에 점수 업데이트 전송
+          if (gameScore % 10 === 0) {
+            sendMessageToFlutter('score_milestone');
+          }
+        }, 1000);
+      }
+
+      // 게임 로드 완료 시뮬레이션
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          if (window.flutter_unity_widget) {
+            window.flutter_unity_widget.onLoaded('MainScene');
+          }
+          console.log('Unity WebGL 시뮬레이션 로드 완료');
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

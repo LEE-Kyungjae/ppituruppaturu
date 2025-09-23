@@ -1,13 +1,14 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter/services.dart';
 import '../services/websocket_manager.dart';
 import '../services/cross_platform_game_manager.dart';
 
-class CrossPlatformJumpGame extends FlameGame with HasTapDetectors, HasCollisionDetection {
+class CrossPlatformJumpGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   late LocalPlayerComponent localPlayer;
   late ScoreComponent scoreDisplay;
   late ConnectionStatusComponent connectionStatus;
@@ -184,8 +185,7 @@ class CrossPlatformJumpGame extends FlameGame with HasTapDetectors, HasCollision
     }
   }
 
-  @override
-  bool onTapDown(TapDownInfo info) {
+  void onScreenTap() {
     if (localPlayer.onGround || localPlayer.velocity.y > -100) {
       localPlayer.jump();
 
@@ -205,7 +205,6 @@ class CrossPlatformJumpGame extends FlameGame with HasTapDetectors, HasCollision
 
       HapticFeedback.lightImpact();
     }
-    return true;
   }
 
   Future<void> _createInitialPlatforms() async {

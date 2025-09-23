@@ -141,7 +141,9 @@ class GameAIEngine {
   constructor() {
     this.initializeAI()
     this.setupEventListeners()
-    this.startRealTimeAnalysis()
+    // 자동 실행 비활성화 - CPU 과부하 방지
+    // this.startRealTimeAnalysis()
+    console.log('[AI Engine] Initialized but real-time analysis disabled. Use startAnalysis() to enable manually.')
   }
 
   private initializeAI() {
@@ -906,6 +908,32 @@ class GameAIEngine {
     console.log(`[AI Engine] Learning from achievement: ${achievement.title}`)
   }
 
+  // Manual Control API
+  public startAnalysis(): void {
+    if (this.analysisInterval || this.balanceInterval) {
+      console.warn('[AI Engine] Analysis already running')
+      return
+    }
+    this.startRealTimeAnalysis()
+    console.log('[AI Engine] Real-time analysis started manually')
+  }
+
+  public stopAnalysis(): void {
+    if (this.analysisInterval) {
+      clearInterval(this.analysisInterval)
+      this.analysisInterval = null
+    }
+    if (this.balanceInterval) {
+      clearInterval(this.balanceInterval)
+      this.balanceInterval = null
+    }
+    console.log('[AI Engine] Real-time analysis stopped')
+  }
+
+  public isAnalysisRunning(): boolean {
+    return !!(this.analysisInterval || this.balanceInterval)
+  }
+
   // Public API
   public getAIPlayer(playerId: string): AIPlayerBehavior | null {
     return this.aiPlayers.get(playerId) || null
@@ -986,10 +1014,12 @@ export function useGameAI() {
       setPredictions(newPredictions)
     }
 
-    const interval = setInterval(updateAIData, 2000)
-    updateAIData() // Initial update
+    // setInterval 자동 실행 비활성화 - CPU 과부하 방지
+    // const interval = setInterval(updateAIData, 2000)
+    updateAIData() // Initial update only
 
-    return () => clearInterval(interval)
+    // return () => clearInterval(interval)
+    return () => {} // No cleanup needed
   }, [])
 
   return {
@@ -1000,7 +1030,10 @@ export function useGameAI() {
     getDecisionHistory: gameAI.getDecisionHistory.bind(gameAI),
     getStrategyClusters: gameAI.getStrategyClusters.bind(gameAI),
     forceBalanceCheck: gameAI.forceBalanceCheck.bind(gameAI),
-    updateAISkillLevel: gameAI.updateAISkillLevel.bind(gameAI)
+    updateAISkillLevel: gameAI.updateAISkillLevel.bind(gameAI),
+    startAnalysis: gameAI.startAnalysis.bind(gameAI),
+    stopAnalysis: gameAI.stopAnalysis.bind(gameAI),
+    isAnalysisRunning: gameAI.isAnalysisRunning.bind(gameAI)
   }
 }
 

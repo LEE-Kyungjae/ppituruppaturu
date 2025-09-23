@@ -78,7 +78,7 @@ temp/
 .infra-temp/
 docker-compose.prod.yml
 nginx/
-monitoring/
+/monitoring/
 scripts/deploy/
 docs/infrastructure/
 DEPLOYMENT_GUIDE.md

@@ -9,8 +9,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-SERVER="152.67.201.101"
-USER="root"
+SSH_HOST="ocloud"
 
 log() { echo -e "${BLUE}[$(date +'%H:%M:%S')]${NC} $1"; }
 success() { echo -e "${GREEN}✅ $1${NC}"; }
@@ -22,7 +21,7 @@ log "🔍 사전 체크 시작..."
 command -v docker >/dev/null || error "Docker가 설치되지 않음"
 command -v ssh >/dev/null || error "SSH가 설치되지 않음"
 
-if ! ssh -o ConnectTimeout=5 -o BatchMode=yes $USER@$SERVER "echo connected" >/dev/null 2>&1; then
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes $SSH_HOST "echo connected" >/dev/null 2>&1; then
     error "SSH 접속 실패. SSH 키를 확인하세요."
 fi
 
@@ -63,7 +62,7 @@ success "이미지 푸시 완료"
 
 # 3) 서버 배포 (기존 컨테이너 강제 교체)
 log "🚀 서버 배포 시작..."
-ssh $USER@$SERVER << 'EOF'
+ssh $SSH_HOST << 'EOF'
 set -euo pipefail
 
 log() { echo -e "\033[0;34m[$(date +'%H:%M:%S')]\033[0m $1"; }

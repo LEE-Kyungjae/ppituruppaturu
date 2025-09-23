@@ -65,19 +65,12 @@ class _UnityGameWidgetState extends State<UnityGameWidget> {
   void _setupUnityBridge() {
     if (_unityController == null) return;
 
-    // Unity → Flutter 메시지 수신
-    _unityController!.onUnityMessage.listen((message) {
-      _handleUnityMessage(message);
-      widget.onUnityMessage?.call(message);
-    });
+    // TODO: Unity → Flutter 메시지 수신 (API 변경으로 임시 비활성화)
+    // Unity와 Flutter 간 통신은 다른 방법으로 구현 필요
 
-    // Unity → Flutter 씬 로드 완료 알림
-    _unityController!.onUnitySceneLoaded.listen((sceneName) {
-      setState(() {
-        _isGameReady = true;
-        _gameStatus = 'Game Ready';
-      });
-      widget.onUnitySceneLoaded?.call(sceneName);
+    setState(() {
+      _isGameReady = true;
+      _gameStatus = 'Game Ready';
     });
 
     print('🔗 Unity-Flutter 브리지 설정 완료');
