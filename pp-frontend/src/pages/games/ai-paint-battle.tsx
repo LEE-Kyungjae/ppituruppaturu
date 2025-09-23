@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import CollaborativePaintCanvas from '../../components/Game/CollaborativePaintCanvas';
+import CollaborativePaintCanvas from '../../components/game/CollaborativePaintCanvas';
 import PerformanceMonitor from '../../monitoring/PerformanceMonitor';
 
 export default function AIPaintBattle() {
