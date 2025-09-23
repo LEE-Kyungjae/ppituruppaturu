@@ -4,11 +4,12 @@ package service_test
 import (
 	"database/sql"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/pitturu-ppaturu/backend/internal/mocks"
 	"github.com/pitturu-ppaturu/backend/internal/repository"
 	"github.com/pitturu-ppaturu/backend/internal/service"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -97,6 +98,26 @@ func (m *MockTransactionRepository) CreatePointTransaction(ptx *repository.Point
 func (m *MockTransactionRepository) ListPointTransactionsByUsername(username string, limit, offset int) ([]*repository.PointTransaction, error) {
 	args := m.Called(username, limit, offset)
 	return args.Get(0).([]*repository.PointTransaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) GetTotalRevenue() (float64, error) {
+	args := m.Called()
+	return args.Get(0).(float64), args.Error(1)
+}
+
+func (m *MockTransactionRepository) GetRevenueSince(since time.Time) (float64, error) {
+	args := m.Called(since)
+	return args.Get(0).(float64), args.Error(1)
+}
+
+func (m *MockTransactionRepository) CountTotalPayments() (int, error) {
+	args := m.Called()
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockTransactionRepository) CountPaymentsByStatus(status string) (int, error) {
+	args := m.Called(status)
+	return args.Int(0), args.Error(1)
 }
 
 func TestPaymentService_CreateItem(t *testing.T) {
