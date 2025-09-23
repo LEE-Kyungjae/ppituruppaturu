@@ -3,7 +3,6 @@ package monitoring
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"runtime"

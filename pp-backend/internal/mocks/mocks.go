@@ -3,7 +3,9 @@
 package mocks
 
 import (
+	"context"
 	"database/sql"
+	"time"
 	"github.com/pitturu-ppaturu/backend/internal/chat"
 	"github.com/pitturu-ppaturu/backend/internal/repository"
 
@@ -121,6 +123,11 @@ func (m *MockUserRepository) DeleteUser(username string) error {
 	return args.Error(0)
 }
 
+func (m *MockUserRepository) BanUser(ctx context.Context, userID int64, reason string) error {
+    args := m.Called(ctx, userID, reason)
+    return args.Error(0)
+}
+
 // MockMessageRepository is a mock implementation of repository.MessageRepository
 type MockMessageRepository struct {
 	mock.Mock
@@ -235,6 +242,11 @@ func (m *MockUserService) ValidatePassword(user *repository.User, password strin
 	return args.Error(0)
 }
 
+func (m *MockUserService) BanUser(ctx context.Context, userID int64, reason string) error {
+    args := m.Called(ctx, userID, reason)
+    return args.Error(0)
+}
+
 // MockAuthService is a mock implementation of service.AuthService
 type MockAuthService struct {
 	mock.Mock
@@ -273,6 +285,11 @@ type MockKakaoAuthService struct {
 func (m *MockKakaoAuthService) LoginOrRegister(authCode string) (*repository.User, string, string, error) {
 	args := m.Called(authCode)
 	return args.Get(0).(*repository.User), args.String(1), args.String(2), args.Error(3)
+}
+
+func (m *MockKakaoAuthService) SocialLoginOrRegister(ctx context.Context, token string) (*repository.User, error) {
+    args := m.Called(ctx, token)
+    return args.Get(0).(*repository.User), args.Error(1)
 }
 
 // MockPostRepository is a mock implementation of repository.PostRepository
@@ -430,4 +447,74 @@ func (m *MockGameRepository) ListGameScoresByGameID(gameID uuid.UUID, limit, off
 func (m *MockGameRepository) ListGameScoresByPlayerUsername(playerUsername string, limit, offset int) ([]*repository.GameScore, error) {
 	args := m.Called(playerUsername, limit, offset)
 	return args.Get(0).([]*repository.GameScore), args.Error(1)
+}
+
+// MockTransactionRepository is a mock for TransactionRepository
+type MockTransactionRepository struct {
+	mock.Mock
+}
+
+func (m *MockTransactionRepository) CreateTransaction(tx *repository.Transaction) (*repository.Transaction, error) {
+	args := m.Called(tx)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+	return args.Get(0).(*repository.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) GetTransactionByID(id uuid.UUID) (*repository.Transaction, error) {
+	args := m.Called(id)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+	return args.Get(0).(*repository.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) UpdateTransactionStatus(id uuid.UUID, status string, paymentGatewayID sql.NullString) error {
+	args := m.Called(id, status, paymentGatewayID)
+	return args.Error(0)
+}
+
+func (m *MockTransactionRepository) ListTransactionsByUsername(username string, limit, offset int) ([]*repository.Transaction, error) {
+	args := m.Called(username, limit, offset)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+	return args.Get(0).([]*repository.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) CreatePointTransaction(ptx *repository.PointTransaction) (*repository.PointTransaction, error) {
+	args := m.Called(ptx)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+	return args.Get(0).(*repository.PointTransaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) ListPointTransactionsByUsername(username string, limit, offset int) ([]*repository.PointTransaction, error) {
+	args := m.Called(username, limit, offset)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+	return args.Get(0).([]*repository.PointTransaction), args.Error(1)
+}
+
+func (m *MockTransactionRepository) GetTotalRevenue() (float64, error) {
+	args := m.Called()
+	return args.Get(0).(float64), args.Error(1)
+}
+
+func (m *MockTransactionRepository) GetRevenueSince(since time.Time) (float64, error) {
+	args := m.Called(since)
+	return args.Get(0).(float64), args.Error(1)
+}
+
+func (m *MockTransactionRepository) CountTotalPayments() (int, error) {
+	args := m.Called()
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockTransactionRepository) CountPaymentsByStatus(status string) (int, error) {
+	args := m.Called(status)
+	return args.Int(0), args.Error(1)
 }
