@@ -338,7 +338,7 @@ jobs:
         delete-branch: true
 
     - name: 📋 Upload generation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: ai-generated-assets-${{ github.run_number }}
@@ -346,6 +346,7 @@ jobs:
           assets/generated/
           assets/processed/
           assets/*.json
+        if-no-files-found: error
         retention-days: 30
 
     - name: 💬 Notify on Discord (if configured)

@@ -164,12 +164,13 @@ jobs:
           fi
 
       - name: Upload assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pitturu-assets-${{ github.sha }}
           path: |
             assets/dist/
             asset_report.md
+          if-no-files-found: error
           retention-days: 30
 
       - name: Upload to release (on tag)
@@ -205,7 +206,7 @@ jobs:
 
     steps:
       - name: Download assets
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pitturu-assets-${{ github.sha }}
 
