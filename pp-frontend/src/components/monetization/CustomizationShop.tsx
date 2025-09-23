@@ -128,6 +128,18 @@ const SHOP_ITEMS: ShopItem[] = [
   }
 ]
 
+const resolveShopItem = (index: number): ShopItem => {
+  const item = SHOP_ITEMS[index];
+  if (!item) {
+    const fallback = SHOP_ITEMS[0];
+    if (!fallback) {
+      throw new Error('No shop items available');
+    }
+    return fallback;
+  }
+  return item;
+}
+
 const GACHA_BOXES: GachaBox[] = [
   {
     id: 'mystery_box_basic',
@@ -136,9 +148,9 @@ const GACHA_BOXES: GachaBox[] = [
     price: { points: 300, cash: 1500 },
     preview: '📦',
     items: [
-      { item: SHOP_ITEMS[0], probability: 5 },
-      { item: SHOP_ITEMS[1], probability: 1 },
-      { item: SHOP_ITEMS[2], probability: 3 }
+      { item: resolveShopItem(0), probability: 5 },
+      { item: resolveShopItem(1), probability: 1 },
+      { item: resolveShopItem(2), probability: 3 }
     ],
     guaranteedRarity: 'rare',
     guaranteedAfter: 10
@@ -150,9 +162,9 @@ const GACHA_BOXES: GachaBox[] = [
     price: { points: 800, cash: 3900 },
     preview: '🎁',
     items: [
-      { item: SHOP_ITEMS[0], probability: 15 },
-      { item: SHOP_ITEMS[1], probability: 5 },
-      { item: SHOP_ITEMS[2], probability: 10 }
+      { item: resolveShopItem(0), probability: 15 },
+      { item: resolveShopItem(1), probability: 5 },
+      { item: resolveShopItem(2), probability: 10 }
     ],
     guaranteedRarity: 'epic',
     guaranteedAfter: 5
@@ -172,8 +184,8 @@ const CURRENT_SEASON: SeasonPass = {
   levels: Array.from({ length: 50 }, (_, i) => ({
     level: i + 1,
     expRequired: (i + 1) * 1000,
-    freeReward: i % 5 === 0 ? SHOP_ITEMS[0] : undefined,
-    premiumReward: i % 3 === 0 ? SHOP_ITEMS[1] : undefined
+    freeReward: i % 5 === 0 ? resolveShopItem(0) : undefined,
+    premiumReward: i % 3 === 0 ? resolveShopItem(1) : undefined
   })),
   currentLevel: 12,
   currentExp: 8500
@@ -205,9 +217,10 @@ export const CustomizationShop: React.FC = () => {
   )
 
   const purchaseItem = (item: ShopItem, paymentMethod: 'points' | 'cash') => {
-    if (paymentMethod === 'points' && item.price.points) {
-      if (userPoints >= item.price.points) {
-        setUserPoints(prev => prev - item.price.points!)
+    if (paymentMethod === 'points') {
+      const pointCost = item.price.points
+      if (typeof pointCost === 'number' && userPoints >= pointCost) {
+        setUserPoints(prev => prev - pointCost)
         setOwnedItems(prev => [...prev, item.id])
       }
     }
@@ -216,11 +229,13 @@ export const CustomizationShop: React.FC = () => {
 
   const openGachaBox = (gachaBox: GachaBox, paymentMethod: 'points' | 'cash') => {
     if (paymentMethod === 'points') {
-      if (userPoints >= gachaBox.price.points) {
-        setUserPoints(prev => prev - gachaBox.price.points)
+      const pointsCost = gachaBox.price.points
+      if (typeof pointsCost === 'number' && userPoints >= pointsCost) {
+        setUserPoints(prev => prev - pointsCost)
         
         // Simulate gacha result
-        const randomItem = gachaBox.items[Math.floor(Math.random() * gachaBox.items.length)].item
+        const selectedEntry = gachaBox.items[Math.floor(Math.random() * gachaBox.items.length)]
+        const randomItem = selectedEntry?.item ?? resolveShopItem(0)
         setOwnedItems(prev => [...prev, randomItem.id])
         setShowGachaResult(randomItem)
         

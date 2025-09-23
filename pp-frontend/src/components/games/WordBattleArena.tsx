@@ -72,7 +72,7 @@ export const WordBattleArena: React.FC = () => {
     const inputRef = useRef<HTMLInputElement>(null)
 
     const generateNewSentence = useCallback(() => {
-      const sentence = SENTENCES[Math.floor(Math.random() * SENTENCES.length)]
+      const sentence = SENTENCES[Math.floor(Math.random() * SENTENCES.length)] ?? ''
       setCurrentSentence(sentence)
       setUserInput('')
       if (!startTime) setStartTime(Date.now())
@@ -97,10 +97,10 @@ export const WordBattleArena: React.FC = () => {
         
         // Calculate WPM
         if (startTime) {
-          const timeElapsed = (Date.now() - startTime) / 1000 / 60 // minutes
-          const wordsTyped = currentSentence.split(' ').length
-          const currentWPM = Math.round(wordsTyped / timeElapsed)
-          setWpm(currentWPM)
+      const timeElapsed = (Date.now() - startTime) / 1000 / 60 // minutes
+      const wordsTyped = currentSentence ? currentSentence.split(' ').length : 0
+      const currentWPM = Math.round(wordsTyped / timeElapsed)
+      setWpm(currentWPM)
         }
         
         generateNewSentence()
@@ -192,21 +192,21 @@ export const WordBattleArena: React.FC = () => {
       const letters: string[] = []
       // Add some vowels
       for (let i = 0; i < 4; i++) {
-        letters.push(vowels[Math.floor(Math.random() * vowels.length)])
+        letters.push(vowels[Math.floor(Math.random() * vowels.length)] ?? 'A')
       }
       // Add some consonants
       for (let i = 0; i < 6; i++) {
-        letters.push(consonants[Math.floor(Math.random() * consonants.length)])
+        letters.push(consonants[Math.floor(Math.random() * consonants.length)] ?? 'B')
       }
-      
+
       // For simplicity, let's use English letters instead
       const englishLetters = ['A', 'E', 'I', 'O', 'U', 'R', 'S', 'T', 'L', 'N']
       const finalLetters: string[] = []
-      
+
       for (let i = 0; i < 8; i++) {
-        finalLetters.push(englishLetters[Math.floor(Math.random() * englishLetters.length)])
+        finalLetters.push(englishLetters[Math.floor(Math.random() * englishLetters.length)] ?? 'A')
       }
-      
+
       setAvailableLetters(finalLetters)
     }, [])
 
@@ -351,21 +351,25 @@ export const WordBattleArena: React.FC = () => {
       const quizType = Math.random() > 0.5 ? 'meaning' : 'translation'
       
       if (quizType === 'meaning') {
-        const quiz = QUIZ_DATA.meaning[Math.floor(Math.random() * QUIZ_DATA.meaning.length)]
-        setCurrentQuiz({
-          type: 'meaning',
-          question: `"${quiz.word}"의 뜻은?`,
-          answer: quiz.options[1], // Second option is always correct in our setup
-          options: quiz.options
-        })
+        const quiz = QUIZ_DATA.meaning[Math.floor(Math.random() * QUIZ_DATA.meaning.length)] ?? QUIZ_DATA.meaning[0]
+        if (quiz) {
+          setCurrentQuiz({
+            type: 'meaning',
+            question: `"${quiz.word}"의 뜻은?`,
+            answer: quiz.options?.[1] ?? quiz.meaning,
+            options: quiz.options ?? []
+          })
+        }
       } else {
-        const quiz = QUIZ_DATA.translation[Math.floor(Math.random() * QUIZ_DATA.translation.length)]
-        setCurrentQuiz({
-          type: 'translation',
-          question: `"${quiz.korean}"의 영어는?`,
-          answer: quiz.options[0], // First option is always correct in our setup
-          options: quiz.options
-        })
+        const quiz = QUIZ_DATA.translation[Math.floor(Math.random() * QUIZ_DATA.translation.length)] ?? QUIZ_DATA.translation[0]
+        if (quiz) {
+          setCurrentQuiz({
+            type: 'translation',
+            question: `"${quiz.korean}"의 영어는?`,
+            answer: quiz.options?.[0] ?? quiz.english,
+            options: quiz.options ?? []
+          })
+        }
       }
       setSelectedAnswer('')
     }, [])
@@ -376,8 +380,9 @@ export const WordBattleArena: React.FC = () => {
 
     const selectAnswer = (answer: string) => {
       setSelectedAnswer(answer)
-      
-      if (answer === currentQuiz?.answer) {
+      if (!currentQuiz) return
+
+      if (answer === currentQuiz.answer) {
         const points = 50 + (streakCount * 10)
         setQuizScore(prev => prev + points)
         setStreakCount(prev => prev + 1)

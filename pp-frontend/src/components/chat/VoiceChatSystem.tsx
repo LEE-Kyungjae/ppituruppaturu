@@ -102,6 +102,9 @@ export const VoiceChatSystem: React.FC = () => {
 
   // Get available audio devices
   const getAudioDevices = useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      return
+    }
     try {
       const devices = await navigator.mediaDevices.enumerateDevices()
       const audioInputs = devices.filter(device => device.kind === 'audioinput')
@@ -121,10 +124,10 @@ export const VoiceChatSystem: React.FC = () => {
       ])
 
       if (audioInputs.length > 0 && !selectedMicrophone) {
-        setSelectedMicrophone(audioInputs[0].deviceId)
+        setSelectedMicrophone(audioInputs[0]?.deviceId || '')
       }
       if (audioOutputs.length > 0 && !selectedSpeaker) {
-        setSelectedSpeaker(audioOutputs[0].deviceId)
+        setSelectedSpeaker(audioOutputs[0]?.deviceId || '')
       }
     } catch (error) {
       console.error('Failed to enumerate audio devices:', error)
@@ -133,13 +136,20 @@ export const VoiceChatSystem: React.FC = () => {
 
   // Initialize audio devices on mount
   useEffect(() => {
-    getAudioDevices()
-    
-    // Listen for device changes
-    navigator.mediaDevices.addEventListener('devicechange', getAudioDevices)
-    return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', getAudioDevices)
+    const mediaDevices = typeof navigator !== 'undefined' ? navigator.mediaDevices : undefined
+    if (!mediaDevices) {
+      return undefined
     }
+
+    getAudioDevices()
+
+    if (mediaDevices.addEventListener) {
+      mediaDevices.addEventListener('devicechange', getAudioDevices)
+      return () => {
+        mediaDevices.removeEventListener('devicechange', getAudioDevices)
+      }
+    }
+    return undefined
   }, [getAudioDevices])
 
   // Voice activity detection setup

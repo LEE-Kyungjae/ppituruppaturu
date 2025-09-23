@@ -26,6 +26,14 @@ interface GameState {
 const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan']
 const CARD_EMOJIS = ['🎮', '🎯', '🎲', '🎪', '🎨', '🎸', '🎺', '🎻', '🎭', '🎪', '🎊', '🎈', '🏆', '⭐', '💎', '🔥']
 
+interface MemoryCard {
+  id: number
+  emoji: string
+  isFlipped: boolean
+  isMatched: boolean
+  position: number
+}
+
 export const SpeedMemoryChallenge: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     phase: 'lobby',
@@ -54,9 +62,10 @@ export const SpeedMemoryChallenge: React.FC = () => {
     const [mistakes, setMistakes] = useState(0)
 
     const generatePattern = useCallback(() => {
-      const newPattern = Array.from({ length: level }, () => 
-        COLORS[Math.floor(Math.random() * COLORS.length)]
-      )
+      const newPattern = Array.from({ length: level }, () => {
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)] ?? COLORS[0] ?? 'red'
+        return color
+      })
       setPattern(newPattern)
       setUserPattern([])
       setCurrentStep(0)
@@ -203,7 +212,7 @@ export const SpeedMemoryChallenge: React.FC = () => {
 
   // Round 2: Card Matching Game
   const CardMatchingRound: React.FC = () => {
-    const [cards, setCards] = useState<Array<{ id: number, emoji: string, isFlipped: boolean, isMatched: boolean }>>([])
+    const [cards, setCards] = useState<MemoryCard[]>([])
     const [flippedCards, setFlippedCards] = useState<number[]>([])
     const [matchedPairs, setMatchedPairs] = useState(0)
     const [moves, setMoves] = useState(0)
@@ -220,7 +229,8 @@ export const SpeedMemoryChallenge: React.FC = () => {
           id: index,
           emoji,
           isFlipped: false,
-          isMatched: false
+          isMatched: false,
+          position: index
         }))
       
       setCards(shuffledCards)
@@ -247,7 +257,8 @@ export const SpeedMemoryChallenge: React.FC = () => {
 
     const flipCard = (cardId: number) => {
       if (flippedCards.length >= 2 || flippedCards.includes(cardId)) return
-      if (cards[cardId].isMatched) return
+      const targetCard = cards[cardId]
+      if (!targetCard || targetCard.isMatched) return
 
       const newFlippedCards = [...flippedCards, cardId]
       setFlippedCards(newFlippedCards)
@@ -261,8 +272,17 @@ export const SpeedMemoryChallenge: React.FC = () => {
       // Check for match when 2 cards are flipped
       if (newFlippedCards.length === 2) {
         const [firstId, secondId] = newFlippedCards
+        if (firstId === undefined || secondId === undefined) {
+          setTimeout(() => setFlippedCards([]), 500)
+          return
+        }
+
         const firstCard = cards[firstId]
         const secondCard = cards[secondId]
+        if (!firstCard || !secondCard) {
+          setTimeout(() => setFlippedCards([]), 500)
+          return
+        }
 
         if (firstCard.emoji === secondCard.emoji) {
           // Match found
@@ -289,7 +309,7 @@ export const SpeedMemoryChallenge: React.FC = () => {
       }
     }
 
-    const isCardVisible = (card: typeof cards[0]) => {
+    const isCardVisible = (card: MemoryCard) => {
       return card.isFlipped || card.isMatched || flippedCards.includes(card.id)
     }
 

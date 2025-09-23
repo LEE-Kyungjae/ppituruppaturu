@@ -95,13 +95,28 @@ const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   // 카드 섞기 및 초기화
   const initializeCards = (difficulty: 'easy' | 'medium' | 'hard'): Card[] => {
     const gridSize = gridSizes[difficulty]
-    const emojis = cardEmojis[difficulty].slice(0, gridSize.total / 2)
+    const availableEmojis = cardEmojis[difficulty]
+    if (!gridSize || !availableEmojis) {
+      return []
+    }
+    const requiredPairs = Math.max(0, Math.floor(gridSize.total / 2))
+    const fallbackEmojis = availableEmojis.length > 0 ? availableEmojis : ['⭐']
+    const emojis = Array.from({ length: requiredPairs }, (_, index) => {
+      const baseEmoji = fallbackEmojis[index % fallbackEmojis.length] ?? '⭐'
+      return baseEmoji
+    })
     const doubledEmojis = [...emojis, ...emojis]
     
     // Fisher-Yates 셔플
     for (let i = doubledEmojis.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [doubledEmojis[i], doubledEmojis[j]] = [doubledEmojis[j], doubledEmojis[i]]
+      const temp = doubledEmojis[i];
+      if (doubledEmojis[j] !== undefined) {
+        doubledEmojis[i] = doubledEmojis[j];
+      }
+      if (temp !== undefined) {
+        doubledEmojis[j] = temp;
+      }
     }
 
     return doubledEmojis.map((emoji, index) => ({

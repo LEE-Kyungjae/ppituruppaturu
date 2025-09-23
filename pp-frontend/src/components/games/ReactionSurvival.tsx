@@ -71,10 +71,10 @@ export const ReactionSurvival: React.FC = () => {
       // Random delay between challenges
       const delay = Math.max(1000, 3000 - (level * 200)) + Math.random() * 2000
       
-      setTimeout(() => {
-        if (Math.random() < 0.7) { // 70% chance for target color
-          setCurrentColor(targetColor)
-          setIsTargetActive(true)
+     setTimeout(() => {
+       if (Math.random() < 0.7) { // 70% chance for target color
+         setCurrentColor(targetColor)
+         setIsTargetActive(true)
           setReactionStartTime(Date.now())
           setChallengeCount(prev => prev + 1)
           
@@ -89,7 +89,8 @@ export const ReactionSurvival: React.FC = () => {
           }, Math.max(2000 - level * 100, 500))
         } else { // Show other colors (traps)
           const trapColors = [REACTION_COLORS.danger, REACTION_COLORS.warning, REACTION_COLORS.special]
-          setCurrentColor(trapColors[Math.floor(Math.random() * trapColors.length)])
+          const trapColor = trapColors[Math.floor(Math.random() * trapColors.length)] ?? REACTION_COLORS.warning
+          setCurrentColor(trapColor)
           
           setTimeout(() => {
             setCurrentColor(REACTION_COLORS.neutral)
@@ -97,7 +98,7 @@ export const ReactionSurvival: React.FC = () => {
           }, 800)
         }
       }, delay)
-    }, [level, targetColor, isTargetActive])
+   }, [level, targetColor, isTargetActive])
 
     useEffect(() => {
       generateChallenge()
@@ -206,21 +207,23 @@ export const ReactionSurvival: React.FC = () => {
       
       if (patternType < 0.33) {
         // Shape pattern
-        const baseShape = SHAPES[Math.floor(Math.random() * SHAPES.length)]
+        const baseShape = SHAPES[Math.floor(Math.random() * SHAPES.length)] ?? 'circle'
         for (let i = 0; i < patternLength; i++) {
-          pattern.push(Math.random() < 0.8 ? baseShape : SHAPES[Math.floor(Math.random() * SHAPES.length)])
+          pattern.push(Math.random() < 0.8 ? baseShape : SHAPES[Math.floor(Math.random() * SHAPES.length)] ?? baseShape)
         }
       } else if (patternType < 0.66) {
-        // Direction pattern  
-        const baseDirection = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)]
+        // Direction pattern
+        const baseDirection = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)] ?? 'up'
         for (let i = 0; i < patternLength; i++) {
-          pattern.push(Math.random() < 0.8 ? baseDirection : DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)])
+          pattern.push(Math.random() < 0.8 ? baseDirection : DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)] ?? baseDirection)
         }
       } else {
         // Color pattern
-        const baseColor = Object.keys(REACTION_COLORS)[Math.floor(Math.random() * Object.keys(REACTION_COLORS).length)]
+        const colorKeys = Object.keys(REACTION_COLORS)
+        const baseColor = colorKeys[Math.floor(Math.random() * colorKeys.length)] ?? 'neutral'
         for (let i = 0; i < patternLength; i++) {
-          pattern.push(Math.random() < 0.8 ? baseColor : Object.keys(REACTION_COLORS)[Math.floor(Math.random() * Object.keys(REACTION_COLORS).length)])
+          const randomColor = colorKeys[Math.floor(Math.random() * colorKeys.length)] ?? baseColor
+          pattern.push(Math.random() < 0.8 ? baseColor : randomColor)
         }
       }
 
@@ -240,7 +243,11 @@ export const ReactionSurvival: React.FC = () => {
           
           if (index === pattern.length - 1) {
             // Check if this element breaks the pattern
-            const patternElement = pattern[0] // Assuming first element sets the pattern
+            const patternElement = pattern[0]
+            if (!patternElement) {
+              setTimeout(() => generatePattern(), 1000)
+              return
+            }
             const breakerExists = pattern.some((element, i) => i > 0 && element !== patternElement)
             
             if (breakerExists && pattern[index] !== patternElement) {

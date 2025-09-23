@@ -115,11 +115,12 @@ export class SoundEngine {
 
   // 프로시저럴 사운드 생성 (간단한 톤)
   createTone(frequency: number, duration: number, type: OscillatorType = 'sine'): AudioBuffer {
-    if (!this.audioContext) throw new Error('Audio context not initialized')
+    const audioContext = this.audioContext
+    if (!audioContext) throw new Error('Audio context not initialized')
 
-    const sampleRate = this.audioContext.sampleRate
+    const sampleRate = audioContext.sampleRate
     const length = sampleRate * duration
-    const buffer = this.audioContext.createBuffer(1, length, sampleRate)
+    const buffer = audioContext.createBuffer(1, length, sampleRate)
     const data = buffer.getChannelData(0)
 
     for (let i = 0; i < length; i++) {
@@ -140,7 +141,7 @@ export class SoundEngine {
       }
       
       // 볼륨 감쇠 (페이드 아웃)
-      if (i > length * 0.8) {
+      if (i > length * 0.8 && data[i] !== undefined) {
         data[i] *= (length - i) / (length * 0.2)
       }
     }
@@ -150,7 +151,8 @@ export class SoundEngine {
 
   // 기본 게임 사운드 생성
   generateGameSounds() {
-    if (!this.audioContext) return
+    const audioContext = this.audioContext
+    if (!audioContext) return
 
     // 점프 사운드
     const jumpBuffer = this.createTone(440, 0.15, 'square')
@@ -205,11 +207,12 @@ export class SoundEngine {
 
   // 노이즈 사운드 생성 (폭발 등에 사용)
   private createNoiseSound(duration: number, type: 'explosion' | 'hit'): AudioBuffer {
-    if (!this.audioContext) throw new Error('Audio context not initialized')
+    const audioContext = this.audioContext
+    if (!audioContext) throw new Error('Audio context not initialized')
 
-    const sampleRate = this.audioContext.sampleRate
+    const sampleRate = audioContext.sampleRate
     const length = sampleRate * duration
-    const buffer = this.audioContext.createBuffer(1, length, sampleRate)
+    const buffer = audioContext.createBuffer(1, length, sampleRate)
     const data = buffer.getChannelData(0)
 
     for (let i = 0; i < length; i++) {
@@ -232,18 +235,22 @@ export class SoundEngine {
 
   // 멜로디 생성
   private createMelody(frequencies: number[], durations: number[]): AudioBuffer {
-    if (!this.audioContext) throw new Error('Audio context not initialized')
+    const audioContext = this.audioContext
+    if (!audioContext) throw new Error('Audio context not initialized')
 
-    const sampleRate = this.audioContext.sampleRate
+    const sampleRate = audioContext.sampleRate
     const totalDuration = durations.reduce((sum, dur) => sum + dur, 0)
     const length = sampleRate * totalDuration
-    const buffer = this.audioContext.createBuffer(1, length, sampleRate)
+    const buffer = audioContext.createBuffer(1, length, sampleRate)
     const data = buffer.getChannelData(0)
 
     let currentTime = 0
     for (let i = 0; i < frequencies.length; i++) {
       const frequency = frequencies[i]
       const duration = durations[i]
+      if (typeof frequency !== 'number' || typeof duration !== 'number') {
+        continue
+      }
       const startSample = Math.floor(currentTime * sampleRate)
       const endSample = Math.floor((currentTime + duration) * sampleRate)
 

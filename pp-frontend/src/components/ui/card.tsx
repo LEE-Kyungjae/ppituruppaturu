@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
+import { motion, type MotionProps } from "framer-motion"
 
 const cardVariants = cva(
   "rounded-xl border bg-white text-gray-900 shadow-sm transition-all duration-300",
@@ -47,9 +47,12 @@ const cardVariants = cva(
   }
 )
 
+type MotionDivProps = Omit<MotionProps, keyof React.HTMLAttributes<HTMLDivElement>> &
+  Omit<React.HTMLAttributes<HTMLDivElement>, keyof MotionProps>
+
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & 
+  React.HTMLAttributes<HTMLDivElement> &
   VariantProps<typeof cardVariants> & {
     animate?: boolean
     animationDelay?: number
@@ -62,14 +65,14 @@ const Card = React.forwardRef<
         className={cn(cardVariants({ variant, padding, interactive }), className)}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ 
-          duration: 0.5, 
+        transition={{
+          duration: 0.5,
           delay: animationDelay,
           type: "spring",
           stiffness: 100
         }}
         whileHover={interactive !== "none" ? { scale: 1.02 } : {}}
-        {...props}
+        {...(props as MotionDivProps)}
       >
         {children}
       </motion.div>
