@@ -203,61 +203,165 @@ jobs:
     needs: [frontend-tests, backend-tests, mobile-tests]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      REGISTRY: docker.io
+      IMAGE_NAME: ze2l/ppituruppaturu
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Log in to Container Registry
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Docker Info & Debug
+      run: |
+        docker version
+        docker buildx version
+        docker buildx ls
+        echo "=== Backend Context ==="
+        ls -lah ./pp-backend
+        test -f ./pp-backend/Dockerfile && echo "Backend Dockerfile found"
+        echo "=== Frontend Context ==="
+        ls -lah ./pp-frontend
+        test -f ./pp-frontend/Dockerfile && echo "Frontend Dockerfile found"
+
+    - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Extract metadata (tags, labels) for frontend
-      id: meta-frontend
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest
-
-    - name: Extract metadata (tags, labels) for backend
-      id: meta-backend
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest
-
-    - name: Build and push Frontend Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./pp-frontend
-        file: ./pp-frontend/Dockerfile
-        push: true
-        tags: ${{ steps.meta-frontend.outputs.tags }}
-        labels: ${{ steps.meta-frontend.outputs.labels }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push Backend Docker image
       uses: docker/build-push-action@v5
       with:
         context: ./pp-backend
         file: ./pp-backend/Dockerfile
+        target: production
+        platforms: linux/amd64
         push: true
-        tags: ${{ steps.meta-backend.outputs.tags }}
-        labels: ${{ steps.meta-backend.outputs.labels }}
+        no-cache: true
+        provenance: false
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+        outputs: type=registry
 
-    - name: Deploy to production
+    - name: Build and push Frontend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./pp-frontend
+        file: ./pp-frontend/Dockerfile
+        target: production
+        platforms: linux/amd64
+        push: true
+        no-cache: true
+        provenance: false
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
+        outputs: type=registry
+
+    - name: Check deployment prerequisites
       run: |
-        echo "🚀 Deploying to production..."
-        # Add your deployment script here
-        # This could call your infrastructure automation
-        # or trigger deployment in your CD system
+        echo "🔍 Checking deployment prerequisites..."
+        echo "SERVER_HOST: ${{ secrets.SERVER_HOST }}"
+        echo "SERVER_USER: ${{ secrets.SERVER_USER }}"
+        echo "DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}"
+        echo "SSH key length: ${#DEPLOY_SSH_KEY}"
+      env:
+        DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+    - name: Test SSH connection
+      run: |
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        echo "🔐 Testing SSH connection..."
+        ssh -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful!'"
+
+    - name: Pre-deployment port cleanup
+      run: |
+        echo "🧹 배포 전 포트 충돌 방지..."
+        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          set -euxo pipefail
+          cd /opt/pitturu
+
+          echo "🔍 8082 포트 점유 상태 확인"
+          docker ps --filter "publish=8082" --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}' || echo "8082 포트 비어있음"
+
+          echo "🧹 8082 점유 컨테이너 정리 (안전)"
+          ids=$(docker ps --filter "publish=8082" -q || true)
+          if [ -n "${ids:-}" ]; then
+            echo "8082 점유 컨테이너 제거: $ids"
+            docker stop $ids || true
+            docker rm $ids || true
+          fi
+
+          echo "✅ 포트 정리 완료"
+        EOF
+
+    - name: Deploy to server (Blue/Green)
+      run: |
+        set -euxo pipefail
+
+        echo "📁 Uploading deployment files..."
+        scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
+        scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
+        scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
+        scp -v nginx-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-backend-api-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-backend-api-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-backend-ws-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-backend-ws-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-pitturu-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+
+        echo "🚀 Starting Blue/Green deployment..."
+        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          set -euxo pipefail
+          cd /opt/pitturu
+
+          echo "📁 Current directory: $(pwd)"
+          echo "📁 Directory contents:"
+          ls -la
+
+          echo "🔧 Setting up Nginx configuration..."
+          sudo mkdir -p /etc/nginx/upstreams
+          sudo mkdir -p /etc/nginx/conf.d
+          sudo mv /tmp/nginx-blue.conf /etc/nginx/upstreams/app-blue.conf
+          sudo mv /tmp/nginx-green.conf /etc/nginx/upstreams/app-green.conf
+          sudo mv /tmp/nginx-backend-api-blue.conf /etc/nginx/upstreams/nginx-backend-api-blue.conf
+          sudo mv /tmp/nginx-backend-api-green.conf /etc/nginx/upstreams/nginx-backend-api-green.conf
+          sudo mv /tmp/nginx-backend-ws-blue.conf /etc/nginx/upstreams/nginx-backend-ws-blue.conf
+          sudo mv /tmp/nginx-backend-ws-green.conf /etc/nginx/upstreams/nginx-backend-ws-green.conf
+          sudo mv /tmp/nginx-pitturu-site.conf /etc/nginx/sites-available/pitturu
+
+          echo "🔐 Docker Hub login..."
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+          echo "🎯 Making deploy script executable..."
+          chmod +x deploy-blue-green.sh
+
+          echo "🔄 Executing Blue/Green deployment..."
+          ./deploy-blue-green.sh
+
+          echo "📊 Final container status:"
+          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
+
+          echo "=== 헬스체크 상태 확인 ==="
+          docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | egrep 'green|blue|8081|8082|8083|8084' || true
+
+          echo "=== Green 백엔드 헬스 로그 (최근 10회) ==="
+          docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}} {{.Output}}{{printf "\n"}}{{end}}' pitturu-green-backend-1 | tail -n 10 || true
+
+          echo "=== 헬스 엔드포인트 직접 확인 ==="
+          curl -I --max-time 5 http://127.0.0.1:3002/api/health || true
+
+          echo "✅ Blue/Green deployment completed successfully!"
+        EOF
 
     - name: Create deployment status
       uses: chrnorm/deployment-action@v2
