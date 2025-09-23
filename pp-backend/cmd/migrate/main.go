@@ -26,14 +26,14 @@ func main() {
 	}
 
 	command := os.Args[1]
-	
+
 	switch command {
 	case "up":
 		if err := runMigrateUp(cfg.DSN); err != nil {
 			log.Fatal("Failed to run up migrations:", err)
 		}
 		fmt.Println("✅ Up migrations completed successfully")
-		
+
 	case "down":
 		steps := 1
 		if len(os.Args) > 2 {
@@ -45,7 +45,7 @@ func main() {
 			log.Fatal("Failed to run down migrations:", err)
 		}
 		fmt.Printf("✅ Down migrations completed successfully (%d steps)\n", steps)
-		
+
 	case "version":
 		version, dirty, err := getMigrationVersion(cfg.DSN)
 		if err != nil {
@@ -56,7 +56,7 @@ func main() {
 			status = "dirty"
 		}
 		fmt.Printf("Current version: %d (%s)\n", version, status)
-		
+
 	case "create":
 		if len(os.Args) < 3 {
 			log.Fatal("Usage: migrate create <migration_name>")
@@ -65,7 +65,7 @@ func main() {
 		if err := createMigration(migrationName); err != nil {
 			log.Fatal("Failed to create migration:", err)
 		}
-		
+
 	case "force":
 		if len(os.Args) < 3 {
 			log.Fatal("Usage: migrate force <version>")
@@ -78,11 +78,13 @@ func main() {
 			log.Fatal("Failed to force migration version:", err)
 		}
 		fmt.Printf("✅ Forced migration version to %d\n", version)
-		
+
 	case "drop":
 		fmt.Print("Are you sure you want to drop all tables? (y/N): ")
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			log.Fatal("Failed to read confirmation:", err)
+		}
 		if response != "y" && response != "Y" {
 			fmt.Println("Operation cancelled")
 			return
@@ -91,7 +93,7 @@ func main() {
 			log.Fatal("Failed to drop database:", err)
 		}
 		fmt.Println("✅ Database dropped successfully")
-		
+
 	default:
 		log.Fatal("Unknown command. Use: up, down, version, create, force, or drop")
 	}
@@ -200,22 +202,22 @@ func dropDatabase(dsn string) error {
 
 func createMigration(name string) error {
 	timestamp := time.Now().Unix()
-	
+
 	upFile := fmt.Sprintf("internal/migrations/%06d_%s.up.sql", timestamp, name)
 	downFile := fmt.Sprintf("internal/migrations/%06d_%s.down.sql", timestamp, name)
 
 	// Create up migration file
-	upContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- Write your UP migration here\n", 
+	upContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- Write your UP migration here\n",
 		name, time.Now().Format("2006-01-02 15:04:05"))
-	
+
 	if err := os.WriteFile(upFile, []byte(upContent), 0644); err != nil {
 		return fmt.Errorf("failed to create up migration file: %w", err)
 	}
 
 	// Create down migration file
-	downContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- Write your DOWN migration here\n", 
+	downContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- Write your DOWN migration here\n",
 		name, time.Now().Format("2006-01-02 15:04:05"))
-	
+
 	if err := os.WriteFile(downFile, []byte(downContent), 0644); err != nil {
 		return fmt.Errorf("failed to create down migration file: %w", err)
 	}

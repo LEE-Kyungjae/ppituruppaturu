@@ -6,15 +6,17 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/pitturu-ppaturu/backend/internal/repository"
 )
 
 func withChatRoomRepo(t *testing.T, db *sql.DB, testFunc func(repo repository.ChatRoomRepository)) {
 	tx, err := db.Begin()
 	require.NoError(t, err)
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	repo := repository.NewPostgresChatRoomRepository(tx)
 
@@ -101,7 +103,7 @@ func TestChatRoomRepository_UpdateChatRoom(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, updatedRoom)
 		assert.Equal(t, "Updated Room", updatedRoom.Name)
-		require.NotNil(t, updatedRoom.Description) // Ensure pointer is not nil
+		require.NotNil(t, updatedRoom.Description)                // Ensure pointer is not nil
 		assert.Equal(t, "Updated Desc", *updatedRoom.Description) // Dereference pointer
 		assert.Equal(t, "private", updatedRoom.Type)
 

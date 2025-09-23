@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
+	_ "github.com/lib/pq"
 	"github.com/pitturu-ppaturu/backend/internal/config"
 	"golang.org/x/crypto/bcrypt"
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -89,23 +89,23 @@ func seedUsers(db *sql.DB, cfg *config.Config) error {
 	}{
 		{"testuser", "password123", "user", map[string]string{
 			"display_name": "테스트 유저",
-			"bio": "테스트용 계정입니다",
+			"bio":          "테스트용 계정입니다",
 		}},
 		{"admin", "admin123", "admin", map[string]string{
 			"display_name": "관리자",
-			"bio": "시스템 관리자 계정",
+			"bio":          "시스템 관리자 계정",
 		}},
 		{"gamer1", "gamer123", "user", map[string]string{
 			"display_name": "게이머1",
-			"bio": "게임을 사랑하는 유저",
+			"bio":          "게임을 사랑하는 유저",
 		}},
 		{"gamer2", "gamer123", "user", map[string]string{
-			"display_name": "게이머2", 
-			"bio": "경쟁을 즐기는 유저",
+			"display_name": "게이머2",
+			"bio":          "경쟁을 즐기는 유저",
 		}},
 		{"buyer", "buyer123", "user", map[string]string{
 			"display_name": "구매왕",
-			"bio": "아이템 수집가",
+			"bio":          "아이템 수집가",
 		}},
 	}
 
@@ -142,14 +142,14 @@ func seedUsers(db *sql.DB, cfg *config.Config) error {
 
 func seedGames(db *sql.DB) error {
 	games := []struct {
-		name           string
-		description    string
-		isActive       bool
-		displayOrder   int
-		category       string
-		iconEmoji      string
-		maxPlayers     int
-		minPlayers     int
+		name            string
+		description     string
+		isActive        bool
+		displayOrder    int
+		category        string
+		iconEmoji       string
+		maxPlayers      int
+		minPlayers      int
 		difficultyLevel string
 	}{
 		{"주사위 배틀", "운과 전략을 겨루는 주사위 게임", true, 1, "strategy", "🎲", 4, 2, "easy"},
@@ -220,43 +220,48 @@ func seedPosts(db *sql.DB) error {
 	return nil
 }
 
-
 func cleanData(db *sql.DB) {
 	fmt.Println("🧹 샘플 데이터만 정리 중...")
 
 	// Only delete sample/test data, not all data
 	testUsernames := []string{"testuser", "admin", "gamer1", "gamer2", "buyer"}
-	
+
+	execCleanup := func(query string, args ...interface{}) {
+		if _, err := db.Exec(query, args...); err != nil {
+			fmt.Printf("⚠️ cleanup query failed: %v\n", err)
+		}
+	}
+
 	// Delete related data for test users first (due to foreign key constraints)
 	for _, username := range testUsernames {
 		// Clean game scores
-		db.Exec("DELETE FROM game_scores WHERE player_username = $1", username)
-		
+		execCleanup("DELETE FROM game_scores WHERE player_username = $1", username)
+
 		// Clean game sessions
-		db.Exec("DELETE FROM game_sessions WHERE player_username = $1", username)
-		
+		execCleanup("DELETE FROM game_sessions WHERE player_username = $1", username)
+
 		// Clean comments
-		db.Exec("DELETE FROM comments WHERE author_username = $1", username)
-		
+		execCleanup("DELETE FROM comments WHERE author_username = $1", username)
+
 		// Clean posts
-		db.Exec("DELETE FROM posts WHERE author_username = $1", username)
-		
+		execCleanup("DELETE FROM posts WHERE author_username = $1", username)
+
 		// Clean messages
-		db.Exec("DELETE FROM messages WHERE sender_id = $1", username)
-		
+		execCleanup("DELETE FROM messages WHERE sender_id = $1", username)
+
 		// Clean friend relationships
-		db.Exec("DELETE FROM friends WHERE user_id = $1 OR friend_id = $1", username)
-		
+		execCleanup("DELETE FROM friends WHERE user_id = $1 OR friend_id = $1", username)
+
 		// Clean refresh tokens
-		db.Exec("DELETE FROM refresh_tokens WHERE user_id = $1", username)
+		execCleanup("DELETE FROM refresh_tokens WHERE user_id = $1", username)
 	}
-	
+
 	// Delete test games (sample games we created)
 	testGames := []string{"피투피 배틀", "멀티 서바이벌", "퍼즐 챌린지", "레이싱 매니아", "타워 디펜스"}
 	for _, gameName := range testGames {
-		db.Exec("DELETE FROM games WHERE name = $1", gameName)
+		execCleanup("DELETE FROM games WHERE name = $1", gameName)
 	}
-	
+
 	// Delete test users last
 	for _, username := range testUsernames {
 		if _, err := db.Exec("DELETE FROM users WHERE username = $1", username); err != nil {
@@ -274,7 +279,7 @@ func hardCleanData(db *sql.DB) {
 
 	tables := []string{
 		"game_scores", "game_sessions", "games",
-		"comments", "posts", 
+		"comments", "posts",
 		"messages", "chat_rooms",
 		"friends", "refresh_tokens", "users",
 	}

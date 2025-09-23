@@ -23,16 +23,16 @@ type MatchRequest struct {
 
 // GameRoom represents an active game room
 type GameRoom struct {
-	ID           string                 `json:"id"`
-	GameType     string                 `json:"game_type"`
-	Players      []*MatchRequest        `json:"players"`
-	MaxPlayers   int                    `json:"max_players"`
-	Status       string                 `json:"status"` // "waiting", "starting", "in_progress", "finished"
-	CreatedAt    time.Time              `json:"created_at"`
-	StartedAt    *time.Time             `json:"started_at,omitempty"`
-	FinishedAt   *time.Time             `json:"finished_at,omitempty"`
-	Settings     map[string]interface{} `json:"settings"`
-	CrossPlatform bool                  `json:"cross_platform"`
+	ID            string                 `json:"id"`
+	GameType      string                 `json:"game_type"`
+	Players       []*MatchRequest        `json:"players"`
+	MaxPlayers    int                    `json:"max_players"`
+	Status        string                 `json:"status"` // "waiting", "starting", "in_progress", "finished"
+	CreatedAt     time.Time              `json:"created_at"`
+	StartedAt     *time.Time             `json:"started_at,omitempty"`
+	FinishedAt    *time.Time             `json:"finished_at,omitempty"`
+	Settings      map[string]interface{} `json:"settings"`
+	CrossPlatform bool                   `json:"cross_platform"`
 }
 
 // Matchmaker handles player matching and room management
@@ -50,13 +50,13 @@ type Matchmaker struct {
 // GameTypeConfig defines configuration for different game types
 type GameTypeConfig struct {
 	Name                 string        `json:"name"`
-	MinPlayers          int           `json:"min_players"`
-	MaxPlayers          int           `json:"max_players"`
-	OptimalPlayers      int           `json:"optimal_players"`
-	MatchTimeout        time.Duration `json:"match_timeout"`
-	SkillRangeThreshold int           `json:"skill_range_threshold"`
-	CrossPlatformEnabled bool         `json:"cross_platform_enabled"`
-	AllowedPlatforms    []string      `json:"allowed_platforms"`
+	MinPlayers           int           `json:"min_players"`
+	MaxPlayers           int           `json:"max_players"`
+	OptimalPlayers       int           `json:"optimal_players"`
+	MatchTimeout         time.Duration `json:"match_timeout"`
+	SkillRangeThreshold  int           `json:"skill_range_threshold"`
+	CrossPlatformEnabled bool          `json:"cross_platform_enabled"`
+	AllowedPlatforms     []string      `json:"allowed_platforms"`
 }
 
 // NewMatchmaker creates a new matchmaker instance
@@ -87,43 +87,43 @@ func (mm *Matchmaker) initializeGameTypes() {
 	gameTypes := []*GameTypeConfig{
 		{
 			Name:                 "paint_battle",
-			MinPlayers:          2,
-			MaxPlayers:          8,
-			OptimalPlayers:      4,
-			MatchTimeout:        30 * time.Second,
-			SkillRangeThreshold: 200,
+			MinPlayers:           2,
+			MaxPlayers:           8,
+			OptimalPlayers:       4,
+			MatchTimeout:         30 * time.Second,
+			SkillRangeThreshold:  200,
 			CrossPlatformEnabled: true,
-			AllowedPlatforms:    []string{"web", "mobile", "desktop"},
+			AllowedPlatforms:     []string{"web", "mobile", "desktop"},
 		},
 		{
 			Name:                 "physics_jump",
-			MinPlayers:          1,
-			MaxPlayers:          6,
-			OptimalPlayers:      3,
-			MatchTimeout:        15 * time.Second,
-			SkillRangeThreshold: 150,
+			MinPlayers:           1,
+			MaxPlayers:           6,
+			OptimalPlayers:       3,
+			MatchTimeout:         15 * time.Second,
+			SkillRangeThreshold:  150,
 			CrossPlatformEnabled: true,
-			AllowedPlatforms:    []string{"web", "mobile", "desktop"},
+			AllowedPlatforms:     []string{"web", "mobile", "desktop"},
 		},
 		{
 			Name:                 "memory_match",
-			MinPlayers:          2,
-			MaxPlayers:          4,
-			OptimalPlayers:      2,
-			MatchTimeout:        20 * time.Second,
-			SkillRangeThreshold: 100,
+			MinPlayers:           2,
+			MaxPlayers:           4,
+			OptimalPlayers:       2,
+			MatchTimeout:         20 * time.Second,
+			SkillRangeThreshold:  100,
 			CrossPlatformEnabled: true,
-			AllowedPlatforms:    []string{"web", "mobile"},
+			AllowedPlatforms:     []string{"web", "mobile"},
 		},
 		{
 			Name:                 "click_speed",
-			MinPlayers:          1,
-			MaxPlayers:          10,
-			OptimalPlayers:      5,
-			MatchTimeout:        10 * time.Second,
-			SkillRangeThreshold: 50,
+			MinPlayers:           1,
+			MaxPlayers:           10,
+			OptimalPlayers:       5,
+			MatchTimeout:         10 * time.Second,
+			SkillRangeThreshold:  50,
 			CrossPlatformEnabled: true,
-			AllowedPlatforms:    []string{"web", "mobile", "desktop"},
+			AllowedPlatforms:     []string{"web", "mobile", "desktop"},
 		},
 	}
 
@@ -173,9 +173,9 @@ func (mm *Matchmaker) JoinQueue(request *MatchRequest) error {
 
 	// Send confirmation to player
 	mm.sendMessageToPlayer(request, map[string]interface{}{
-		"type": "queue_joined",
-		"game_type": request.GameType,
-		"position": len(mm.waitingQueue[request.GameType]),
+		"type":           "queue_joined",
+		"game_type":      request.GameType,
+		"position":       len(mm.waitingQueue[request.GameType]),
 		"estimated_wait": mm.estimateWaitTime(request.GameType),
 	})
 
@@ -196,7 +196,7 @@ func (mm *Matchmaker) LeaveQueue(playerID string) error {
 
 				// Send confirmation
 				mm.sendMessageToPlayer(request, map[string]interface{}{
-					"type": "queue_left",
+					"type":      "queue_left",
 					"game_type": gameType,
 				})
 
@@ -290,7 +290,7 @@ func (mm *Matchmaker) findCompatiblePlayers(queue []*MatchRequest, config *GameT
 
 	// Prefer optimal player count, but accept minimum
 	if len(selected) >= config.OptimalPlayers ||
-	   (len(selected) >= config.MinPlayers && time.Since(anchor.RequestTime) > config.MatchTimeout) {
+		(len(selected) >= config.MinPlayers && time.Since(anchor.RequestTime) > config.MatchTimeout) {
 		return selected
 	}
 
@@ -302,13 +302,13 @@ func (mm *Matchmaker) createGameRoom(gameType string, players []*MatchRequest, c
 	roomID := generateRoomID()
 
 	room := &GameRoom{
-		ID:           roomID,
-		GameType:     gameType,
-		Players:      players,
-		MaxPlayers:   config.MaxPlayers,
-		Status:       "waiting",
-		CreatedAt:    time.Now(),
-		Settings:     map[string]interface{}{
+		ID:         roomID,
+		GameType:   gameType,
+		Players:    players,
+		MaxPlayers: config.MaxPlayers,
+		Status:     "waiting",
+		CreatedAt:  time.Now(),
+		Settings: map[string]interface{}{
 			"skill_range": calculateSkillRange(players),
 			"platforms":   getPlatforms(players),
 		},
@@ -338,11 +338,11 @@ func (mm *Matchmaker) startGameRoom(room *GameRoom) {
 	// Notify all players
 	for _, player := range room.Players {
 		mm.sendMessageToPlayer(player, map[string]interface{}{
-			"type": "match_found",
-			"room_id": room.ID,
-			"game_type": room.GameType,
-			"players": mm.getPlayerInfoList(room.Players),
-			"settings": room.Settings,
+			"type":           "match_found",
+			"room_id":        room.ID,
+			"game_type":      room.GameType,
+			"players":        mm.getPlayerInfoList(room.Players),
+			"settings":       room.Settings,
 			"cross_platform": room.CrossPlatform,
 		})
 	}
@@ -356,8 +356,8 @@ func (mm *Matchmaker) startGameRoom(room *GameRoom) {
 	// Notify players game is starting
 	for _, player := range room.Players {
 		mm.sendMessageToPlayer(player, map[string]interface{}{
-			"type": "game_starting",
-			"room_id": room.ID,
+			"type":      "game_starting",
+			"room_id":   room.ID,
 			"countdown": 3,
 		})
 	}
@@ -393,7 +393,7 @@ func (mm *Matchmaker) estimateWaitTime(gameType string) int {
 
 	// Simple estimation based on queue length and required players
 	estimatedMatches := queueLength / gameConfig.OptimalPlayers
-	return max(10, estimatedMatches * int(mm.matchInterval.Seconds()))
+	return max(10, estimatedMatches*int(mm.matchInterval.Seconds()))
 }
 
 func (mm *Matchmaker) checkQueueTimeouts(gameType string, queue []*MatchRequest) {
@@ -404,7 +404,7 @@ func (mm *Matchmaker) checkQueueTimeouts(gameType string, queue []*MatchRequest)
 		if now.Sub(request.RequestTime) > gameConfig.MatchTimeout*2 {
 			// Offer to play with bots or expand skill range
 			mm.sendMessageToPlayer(request, map[string]interface{}{
-				"type": "queue_timeout_options",
+				"type":    "queue_timeout_options",
 				"options": []string{"expand_skill_range", "play_with_bots", "continue_waiting"},
 			})
 		}
@@ -413,8 +413,14 @@ func (mm *Matchmaker) checkQueueTimeouts(gameType string, queue []*MatchRequest)
 
 func (mm *Matchmaker) sendMessageToPlayer(player *MatchRequest, message map[string]interface{}) {
 	if player.Connection != nil {
-		jsonData, _ := json.Marshal(message)
-		player.Connection.WriteMessage(websocket.TextMessage, jsonData)
+		jsonData, err := json.Marshal(message)
+		if err != nil {
+			log.Printf("failed to marshal matchmaker message: %v", err)
+			return
+		}
+		if err := player.Connection.WriteMessage(websocket.TextMessage, jsonData); err != nil {
+			log.Printf("failed to send message to player %s: %v", player.PlayerID, err)
+		}
 	}
 }
 
@@ -422,8 +428,8 @@ func (mm *Matchmaker) getPlayerInfoList(players []*MatchRequest) []map[string]in
 	var result []map[string]interface{}
 	for _, player := range players {
 		result = append(result, map[string]interface{}{
-			"player_id": player.PlayerID,
-			"platform": player.Platform,
+			"player_id":   player.PlayerID,
+			"platform":    player.Platform,
 			"skill_level": player.SkillLevel,
 		})
 	}
@@ -532,10 +538,10 @@ func (mm *Matchmaker) GetQueueStatus(gameType string) map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"game_type": gameType,
-		"queue_length": len(queue),
+		"game_type":      gameType,
+		"queue_length":   len(queue),
 		"estimated_wait": mm.estimateWaitTime(gameType),
-		"active_rooms": len(mm.activeRooms),
+		"active_rooms":   len(mm.activeRooms),
 	}
 }
 

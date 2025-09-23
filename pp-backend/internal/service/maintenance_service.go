@@ -74,12 +74,16 @@ func (s *maintenanceService) Start() {
 				}
 
 				if diff <= 0 && sched.Status == "scheduled" {
-					s.repo.UpdateStatus(sched.ID, "in_progress")
+					if err := s.repo.UpdateStatus(sched.ID, "in_progress"); err != nil {
+						continue
+					}
 					s.broadcastAnnouncement("System maintenance has begun.")
 				}
 
 				if now.After(sched.End) && sched.Status == "in_progress" {
-					s.repo.UpdateStatus(sched.ID, "completed")
+					if err := s.repo.UpdateStatus(sched.ID, "completed"); err != nil {
+						continue
+					}
 					s.broadcastAnnouncement("System maintenance has ended.")
 				}
 			}

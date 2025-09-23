@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,17 +41,17 @@ type Config struct {
 	Format      string // json or text
 	ServiceName string
 	Environment string
-	
+
 	// File logging
 	EnableFile bool
 	FilePath   string
 	MaxSize    int // megabytes
 	MaxBackups int
 	MaxAge     int // days
-	
+
 	// Console logging
 	EnableConsole bool
-	
+
 	// Structured logging fields
 	DefaultFields Fields
 }
@@ -58,14 +59,14 @@ type Config struct {
 // Init initializes the global logger
 func Init(config Config) error {
 	logger := logrus.New()
-	
+
 	// Set log level
 	level, err := logrus.ParseLevel(config.Level)
 	if err != nil {
 		return fmt.Errorf("invalid log level: %w", err)
 	}
 	logger.SetLevel(level)
-	
+
 	// Set formatter
 	switch config.Format {
 	case "json":
@@ -84,14 +85,14 @@ func Init(config Config) error {
 			FullTimestamp:   true,
 		})
 	}
-	
+
 	// Configure output
 	if config.EnableFile && config.FilePath != "" {
 		// Ensure directory exists
 		if err := os.MkdirAll(filepath.Dir(config.FilePath), 0755); err != nil {
 			return fmt.Errorf("failed to create log directory: %w", err)
 		}
-		
+
 		// Setup file rotation
 		fileWriter := &lumberjack.Logger{
 			Filename:   config.FilePath,
@@ -100,7 +101,7 @@ func Init(config Config) error {
 			MaxAge:     config.MaxAge,
 			Compress:   true,
 		}
-		
+
 		if config.EnableConsole {
 			// Log to both file and console
 			logger.SetOutput(os.Stdout)
@@ -112,27 +113,27 @@ func Init(config Config) error {
 	} else if config.EnableConsole {
 		logger.SetOutput(os.Stdout)
 	}
-	
+
 	// Set default fields
 	defaultFields := logrus.Fields{
 		"service":     config.ServiceName,
 		"environment": config.Environment,
 		"version":     os.Getenv("APP_VERSION"),
 	}
-	
+
 	// Add custom default fields
 	for k, v := range config.DefaultFields {
 		defaultFields[k] = v
 	}
-	
+
 	defaultLogger = &Logger{
 		Logger:      logger,
 		serviceName: config.ServiceName,
 	}
-	
+
 	// Add default fields to all logs
 	defaultLogger.Logger = defaultLogger.Logger.WithFields(defaultFields).Logger
-	
+
 	return nil
 }
 
@@ -140,13 +141,15 @@ func Init(config Config) error {
 func GetLogger() *Logger {
 	if defaultLogger == nil {
 		// Fallback logger
-		Init(Config{
+		if err := Init(Config{
 			Level:         InfoLevel,
 			Format:        "text",
 			ServiceName:   "pitturu",
 			Environment:   "development",
 			EnableConsole: true,
-		})
+		}); err != nil {
+			log.Printf("failed to initialize fallback logger: %v", err)
+		}
 	}
 	return defaultLogger
 }
@@ -159,7 +162,7 @@ func (l *Logger) WithFields(fields Fields) *logrus.Entry {
 // WithContext creates a logger with context
 func (l *Logger) WithContext(ctx context.Context) *logrus.Entry {
 	entry := l.Logger.WithContext(ctx)
-	
+
 	// Extract common context values
 	if requestID := ctx.Value("request_id"); requestID != nil {
 		entry = entry.WithField("request_id", requestID)
@@ -170,7 +173,7 @@ func (l *Logger) WithContext(ctx context.Context) *logrus.Entry {
 	if traceID := ctx.Value("trace_id"); traceID != nil {
 		entry = entry.WithField("trace_id", traceID)
 	}
-	
+
 	return entry
 }
 
@@ -184,11 +187,11 @@ func (l *Logger) LogHTTPRequest(method, path string, statusCode int, duration ti
 		"user_id":     userID,
 		"type":        "http_request",
 	}
-	
+
 	entry := l.WithFields(fields)
-	
+
 	message := fmt.Sprintf("%s %s - %d (%dms)", method, path, statusCode, duration.Milliseconds())
-	
+
 	if statusCode >= 500 {
 		entry.Error(message)
 	} else if statusCode >= 400 {
@@ -206,9 +209,9 @@ func (l *Logger) LogDBOperation(operation, table string, duration time.Duration,
 		"duration_ms": duration.Milliseconds(),
 		"type":        "db_operation",
 	}
-	
+
 	entry := l.WithFields(fields)
-	
+
 	if err != nil {
 		entry.WithError(err).Error(fmt.Sprintf("DB %s on %s failed", operation, table))
 	} else {
@@ -225,9 +228,9 @@ func (l *Logger) LogPaymentOperation(operation, paymentID, userID string, amount
 		"amount":     amount,
 		"type":       "payment_operation",
 	}
-	
+
 	entry := l.WithFields(fields)
-	
+
 	if err != nil {
 		entry.WithError(err).Error(fmt.Sprintf("Payment %s failed", operation))
 	} else {
@@ -243,11 +246,11 @@ func (l *Logger) LogSecurityEvent(event, userID, clientIP string, details Fields
 		"client_ip": clientIP,
 		"type":      "security_event",
 	}
-	
+
 	for k, v := range details {
 		fields[k] = v
 	}
-	
+
 	l.WithFields(fields).Warn(fmt.Sprintf("Security event: %s", event))
 }
 
@@ -258,11 +261,11 @@ func (l *Logger) LogBusinessEvent(event string, userID string, details Fields) {
 		"user_id": userID,
 		"type":    "business_event",
 	}
-	
+
 	for k, v := range details {
 		fields[k] = v
 	}
-	
+
 	l.WithFields(fields).Info(fmt.Sprintf("Business event: %s", event))
 }
 
@@ -273,13 +276,13 @@ func (l *Logger) LogPerformance(operation string, duration time.Duration, detail
 		"duration_ms": duration.Milliseconds(),
 		"type":        "performance",
 	}
-	
+
 	for k, v := range details {
 		fields[k] = v
 	}
-	
+
 	entry := l.WithFields(fields)
-	
+
 	// Performance thresholds
 	if duration > 5*time.Second {
 		entry.Error(fmt.Sprintf("Slow operation detected: %s", operation))
