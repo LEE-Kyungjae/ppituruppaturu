@@ -4,9 +4,9 @@ package mocks
 
 import (
 	"database/sql"
-	"time"
 	"github.com/pitturu-ppaturu/backend/internal/chat"
 	"github.com/pitturu-ppaturu/backend/internal/repository"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
@@ -107,6 +107,21 @@ func (m *MockUserRepository) List() ([]*repository.User, error) {
 	return args.Get(0).([]*repository.User), args.Error(1)
 }
 
+func (m *MockUserRepository) CountTotalUsers() (int, error) {
+	args := m.Called()
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockUserRepository) CountActiveUsers(since time.Time) (int, error) {
+	args := m.Called(since)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockUserRepository) CountNewUsers(since time.Time) (int, error) {
+	args := m.Called(since)
+	return args.Int(0), args.Error(1)
+}
+
 func (m *MockUserRepository) UpdatePasswordHash(username, newPasswordHash string) error {
 	args := m.Called(username, newPasswordHash)
 	return args.Error(0)
@@ -123,8 +138,8 @@ func (m *MockUserRepository) DeleteUser(username string) error {
 }
 
 func (m *MockUserRepository) BanUser(username string) error {
-    args := m.Called(username)
-    return args.Error(0)
+	args := m.Called(username)
+	return args.Error(0)
 }
 
 // MockMessageRepository is a mock implementation of repository.MessageRepository
@@ -242,8 +257,8 @@ func (m *MockUserService) ValidatePassword(user *repository.User, password strin
 }
 
 func (m *MockUserService) BanUser(username string) error {
-    args := m.Called(username)
-    return args.Error(0)
+	args := m.Called(username)
+	return args.Error(0)
 }
 
 // MockAuthService is a mock implementation of service.AuthService
@@ -287,8 +302,8 @@ func (m *MockKakaoAuthService) LoginOrRegister(authCode string) (*repository.Use
 }
 
 func (m *MockKakaoAuthService) SocialLoginOrRegister(kakaoID, nickname, email, profileImage, accessToken string) (*repository.User, string, string, error) {
-    args := m.Called(kakaoID, nickname, email, profileImage, accessToken)
-    return args.Get(0).(*repository.User), args.String(1), args.String(2), args.Error(3)
+	args := m.Called(kakaoID, nickname, email, profileImage, accessToken)
+	return args.Get(0).(*repository.User), args.String(1), args.String(2), args.Error(3)
 }
 
 // MockPostRepository is a mock implementation of repository.PostRepository
@@ -408,6 +423,32 @@ func (m *MockGameRepository) ListGames() ([]*repository.Game, error) {
 	return args.Get(0).([]*repository.Game), args.Error(1)
 }
 
+func (m *MockGameRepository) ListActiveGames() ([]*repository.Game, error) {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*repository.Game), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockGameRepository) ListAllGamesForAdmin() ([]*repository.Game, error) {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*repository.Game), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockGameRepository) UpdateGameVisibility(id uuid.UUID, isActive bool) error {
+	args := m.Called(id, isActive)
+	return args.Error(0)
+}
+
+func (m *MockGameRepository) UpdateGameDisplayOrder(id uuid.UUID, displayOrder int) error {
+	args := m.Called(id, displayOrder)
+	return args.Error(0)
+}
+
 func (m *MockGameRepository) CreateGameSession(gameID uuid.UUID, playerUsername string) (*repository.GameSession, error) {
 	args := m.Called(gameID, playerUsername)
 	return args.Get(0).(*repository.GameSession), args.Error(1)
@@ -455,17 +496,17 @@ type MockTransactionRepository struct {
 
 func (m *MockTransactionRepository) CreateTransaction(tx *repository.Transaction) (*repository.Transaction, error) {
 	args := m.Called(tx)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*repository.Transaction), args.Error(1)
 }
 
 func (m *MockTransactionRepository) GetTransactionByID(id uuid.UUID) (*repository.Transaction, error) {
 	args := m.Called(id)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*repository.Transaction), args.Error(1)
 }
 
@@ -476,25 +517,25 @@ func (m *MockTransactionRepository) UpdateTransactionStatus(id uuid.UUID, status
 
 func (m *MockTransactionRepository) ListTransactionsByUsername(username string, limit, offset int) ([]*repository.Transaction, error) {
 	args := m.Called(username, limit, offset)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).([]*repository.Transaction), args.Error(1)
 }
 
 func (m *MockTransactionRepository) CreatePointTransaction(ptx *repository.PointTransaction) (*repository.PointTransaction, error) {
 	args := m.Called(ptx)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*repository.PointTransaction), args.Error(1)
 }
 
 func (m *MockTransactionRepository) ListPointTransactionsByUsername(username string, limit, offset int) ([]*repository.PointTransaction, error) {
 	args := m.Called(username, limit, offset)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).([]*repository.PointTransaction), args.Error(1)
 }
 
