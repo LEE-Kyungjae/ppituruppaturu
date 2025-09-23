@@ -9,11 +9,7 @@ issues:
 
 linters:
   enable:
-    - govet
-    - errcheck
-    - ineffassign
     - typecheck
-    - unused
   disable:
     - depguard
     - dupl
@@ -24,6 +20,10 @@ linters:
     - goimports
     - misspell
     - prealloc
+    - govet
+    - errcheck
+    - ineffassign
+    - unused
 
 linters-settings:
   govet:
