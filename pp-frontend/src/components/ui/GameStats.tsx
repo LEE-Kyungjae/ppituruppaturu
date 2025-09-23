@@ -86,6 +86,8 @@ const GameStats: React.FC<GameStatsProps> = ({
 
       return () => clearInterval(interval)
     }
+
+    return undefined
   }, [stats, isLoading])
 
   const formatPlayTime = (seconds: number): string => {

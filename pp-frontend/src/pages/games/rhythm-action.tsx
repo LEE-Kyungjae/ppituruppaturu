@@ -64,7 +64,7 @@ export default function RhythmActionPage() {
     autoStart: settings.autoStart,
     maxPlayers: settings.maxPlayers,
     gameMode: settings.gameMode,
-    difficulty: settings.difficulty,
+    difficulty: settings.difficulty === 'expert' ? 'hard' : settings.difficulty,
     timeLimit: 180, // 3분 (곡 길이에 따라 동적 조정)
     enablePhysics: false, // 리듬 게임은 물리 엔진 불필요
     enableAudio: settings.enableAudio,
@@ -235,10 +235,6 @@ export default function RhythmActionPage() {
                   <CardContent noPadding>
                     {gameStarted ? (
                       <GameCanvas
-                        gameType="rhythm_action" as GameType
-                        gameConfig={gameConfig}
-                        onGameEnd={handleGameEnd}
-                        onError={handleGameError}
                         className="w-full aspect-[4/3]"
                       />
                     ) : (

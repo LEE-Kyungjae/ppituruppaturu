@@ -241,13 +241,17 @@ export default function GamesAdminPage() {
       if (direction === 'up' && gameIndex > 0) {
         // Swap with previous game
         const previousGame = newGames[gameIndex - 1]
-        newGames[gameIndex - 1] = { ...currentGame, displayOrder: previousGame.displayOrder }
-        newGames[gameIndex] = { ...previousGame, displayOrder: currentGame.displayOrder }
+        if (previousGame && currentGame) {
+          newGames[gameIndex - 1] = { ...currentGame, displayOrder: previousGame.displayOrder }
+          newGames[gameIndex] = { ...previousGame, displayOrder: currentGame.displayOrder }
+        }
       } else if (direction === 'down' && gameIndex < newGames.length - 1) {
         // Swap with next game
         const nextGame = newGames[gameIndex + 1]
-        newGames[gameIndex + 1] = { ...currentGame, displayOrder: nextGame.displayOrder }
-        newGames[gameIndex] = { ...nextGame, displayOrder: currentGame.displayOrder }
+        if (nextGame && currentGame) {
+          newGames[gameIndex + 1] = { ...currentGame, displayOrder: nextGame.displayOrder }
+          newGames[gameIndex] = { ...nextGame, displayOrder: currentGame.displayOrder }
+        }
       }
 
       // Sort by display order

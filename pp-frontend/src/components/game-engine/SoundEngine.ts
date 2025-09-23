@@ -141,8 +141,11 @@ export class SoundEngine {
       }
       
       // 볼륨 감쇠 (페이드 아웃)
-      if (i > length * 0.8 && data[i] !== undefined) {
-        data[i] *= (length - i) / (length * 0.2)
+      if (i > length * 0.8) {
+        const currentValue = data[i];
+        if (currentValue !== undefined) {
+          data[i] = currentValue * (length - i) / (length * 0.2);
+        }
       }
     }
 

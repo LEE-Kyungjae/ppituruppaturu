@@ -141,7 +141,8 @@ test.describe('Critical Game Flows', () => {
 
   test('should handle mobile responsive design', async ({ page, isMobile }) => {
     if (!isMobile) {
-      test.skip('This test is only for mobile viewports');
+      test.skip();
+      return;
     }
 
     await page.goto('/games');
