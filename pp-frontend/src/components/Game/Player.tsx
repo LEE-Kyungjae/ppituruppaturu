@@ -13,7 +13,7 @@ export interface PlayerState {
 export class Player {
   public mesh: THREE.Group;
   public state: PlayerState;
-  private bodyMesh: THREE.Mesh;
+  private bodyMesh: THREE.Mesh | null = null;
   private scene: THREE.Scene;
 
   constructor(scene: THREE.Scene, playerId: string, color: number = 0x4a90e2) {
@@ -120,16 +120,16 @@ export class Player {
 
   private animateWeaponRecoil(): void {
     // 무기가 없으므로 간단한 몸체 흔들림으로 대체
-    if (this.bodyMesh) {
-      const originalScale = this.bodyMesh.scale.clone();
-      this.bodyMesh.scale.setScalar(0.9);
+    if (!this.bodyMesh) return;
 
-      setTimeout(() => {
-        if (this.bodyMesh) {
-          this.bodyMesh.scale.copy(originalScale);
-        }
-      }, 100);
-    }
+    const originalScale = this.bodyMesh.scale.clone();
+    this.bodyMesh.scale.setScalar(0.9);
+
+    setTimeout(() => {
+      if (this.bodyMesh) {
+        this.bodyMesh.scale.copy(originalScale);
+      }
+    }, 100);
   }
 
   public takeDamage(damage: number): boolean {
@@ -142,15 +142,17 @@ export class Player {
   }
 
   private animateDamage(): void {
-    if (!(this.bodyMesh.material instanceof THREE.MeshLambertMaterial)) return;
+    if (!this.bodyMesh) return;
+    const material = this.bodyMesh.material;
+    if (!(material instanceof THREE.MeshLambertMaterial)) return;
 
-    const originalColor = this.bodyMesh.material.color.clone();
+    const originalColor = material.color.clone();
 
     // 빨간색으로 깜빡임
-    this.bodyMesh.material.color.setHex(0xff0000);
+    material.color.setHex(0xff0000);
 
     setTimeout(() => {
-      if (this.bodyMesh.material instanceof THREE.MeshLambertMaterial) {
+      if (this.bodyMesh && this.bodyMesh.material instanceof THREE.MeshLambertMaterial) {
         this.bodyMesh.material.color.copy(originalColor);
       }
     }, 200);
@@ -162,7 +164,7 @@ export class Player {
 
   public changeColor(newColor: number): void {
     this.state.color = newColor;
-    if (this.bodyMesh.material instanceof THREE.MeshBasicMaterial) {
+    if (this.bodyMesh && this.bodyMesh.material instanceof THREE.MeshBasicMaterial) {
       this.bodyMesh.material.color.setHex(newColor);
     }
   }

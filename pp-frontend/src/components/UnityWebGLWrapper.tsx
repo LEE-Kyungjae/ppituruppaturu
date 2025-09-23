@@ -23,7 +23,11 @@ interface UnityWebGLProps {
 
 declare global {
   interface Window {
-    createUnityInstance: (canvas: HTMLCanvasElement, config: any) => Promise<any>
+    createUnityInstance: (
+      canvas: HTMLCanvasElement,
+      config: any,
+      onProgress?: (progress: number) => void
+    ) => Promise<any>
     unityInstance?: any
     sendMessageToUnity?: (objectName: string, methodName: string, parameter?: any) => void
     receiveMessageFromUnity?: (message: string) => void

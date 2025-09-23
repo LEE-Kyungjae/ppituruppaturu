@@ -151,7 +151,9 @@ export function useInputManager({ callbacks, isActive = true }: InputManagerProp
   const handleTouchStart = useCallback((event: TouchEvent) => {
     if (!isActive || event.touches.length === 0) return;
 
-    const touch = event.touches[0];
+    const touch = event.touches.item(0);
+    if (!touch) return;
+
     inputStateRef.current.touch = {
       isActive: true,
       startX: touch.clientX,
@@ -167,14 +169,16 @@ export function useInputManager({ callbacks, isActive = true }: InputManagerProp
     if (!isActive || !inputStateRef.current.touch.isActive || event.touches.length === 0) return;
 
     event.preventDefault();
-    const touch = event.touches[0];
+    const touchState = inputStateRef.current.touch;
+    const touch = event.touches.item(0);
+    if (!touch) return;
 
-    inputStateRef.current.touch.currentX = touch.clientX;
-    inputStateRef.current.touch.currentY = touch.clientY;
+    touchState.currentX = touch.clientX;
+    touchState.currentY = touch.clientY;
 
     // 터치 이동 델타 계산
-    const deltaX = touch.clientX - inputStateRef.current.touch.startX;
-    const deltaY = touch.clientY - inputStateRef.current.touch.startY;
+    const deltaX = touch.clientX - touchState.startX;
+    const deltaY = touch.clientY - touchState.startY;
 
     callbacks.onMouseMove?.(deltaX * 0.1, deltaY * 0.1);
   }, [isActive, callbacks]);

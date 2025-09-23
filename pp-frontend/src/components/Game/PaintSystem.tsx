@@ -22,10 +22,10 @@ export interface PaintProjectile {
 
 export class PaintSystem {
   private scene: THREE.Scene;
-  private paintMap: Uint8Array;
-  private paintTexture: THREE.DataTexture;
-  private paintMaterial: THREE.MeshBasicMaterial;
-  private paintPlane: THREE.Mesh;
+  private paintMap!: Uint8Array;
+  private paintTexture!: THREE.DataTexture;
+  private paintMaterial!: THREE.MeshStandardMaterial;
+  private paintPlane!: THREE.Mesh;
   private projectiles: Map<string, PaintProjectile> = new Map();
   private paintSplats: Map<string, PaintSplat> = new Map();
 
@@ -62,9 +62,11 @@ export class PaintSystem {
 
     // 페인트 평면 생성
     const planeGeometry = new THREE.PlaneGeometry(this.worldSize, this.worldSize);
-    this.paintMaterial = new THREE.MeshBasicMaterial({
+    this.paintMaterial = new THREE.MeshStandardMaterial({
       map: this.paintTexture,
       transparent: true,
+      roughness: 0.8,
+      metalness: 0.0,
     });
 
     this.paintPlane = new THREE.Mesh(planeGeometry, this.paintMaterial);
@@ -85,16 +87,16 @@ export class PaintSystem {
 
     // 페인트 발사체 생성 (더 시각적으로 개선)
     const geometry = new THREE.SphereGeometry(0.08, 12, 12);
-    const material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color,
       transparent: true,
-      opacity: 0.9
+      opacity: 0.9,
+      metalness: 0.2,
+      roughness: 0.3,
+      emissive: new THREE.Color(color),
+      emissiveIntensity: 0.3,
     });
     const mesh = new THREE.Mesh(geometry, material);
-
-    // 발광 효과 추가
-    material.emissive = new THREE.Color(color);
-    material.emissiveIntensity = 0.3;
 
     const projectile: PaintProjectile = {
       id: projectileId,
@@ -228,20 +230,18 @@ export class PaintSystem {
 
     // 각 플레이어별 페인트된 픽셀 수 계산
     this.paintSplats.forEach((splat) => {
-      if (!scores[splat.playerId]) {
-        scores[splat.playerId] = 0;
-      }
-
       // 각 스플랫의 면적 계산 (간단히 반지름의 제곱으로 계산)
       const area = Math.PI * splat.size * splat.size;
-      scores[splat.playerId] += area;
+      const current = scores[splat.playerId] ?? 0;
+      scores[splat.playerId] = current + area;
       totalPaintedPixels += area;
     });
 
     // 백분율로 변환
     Object.keys(scores).forEach((playerId) => {
+      const value = scores[playerId] ?? 0;
       scores[playerId] = totalPaintedPixels > 0
-        ? (scores[playerId] / totalPaintedPixels) * 100
+        ? (value / totalPaintedPixels) * 100
         : 0;
     });
 
