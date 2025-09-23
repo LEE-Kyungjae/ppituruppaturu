@@ -3,7 +3,6 @@
 package mocks
 
 import (
-	"context"
 	"database/sql"
 	"time"
 	"github.com/pitturu-ppaturu/backend/internal/chat"
@@ -123,8 +122,8 @@ func (m *MockUserRepository) DeleteUser(username string) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) BanUser(ctx context.Context, userID int64, reason string) error {
-    args := m.Called(ctx, userID, reason)
+func (m *MockUserRepository) BanUser(username string) error {
+    args := m.Called(username)
     return args.Error(0)
 }
 
@@ -242,8 +241,8 @@ func (m *MockUserService) ValidatePassword(user *repository.User, password strin
 	return args.Error(0)
 }
 
-func (m *MockUserService) BanUser(ctx context.Context, userID int64, reason string) error {
-    args := m.Called(ctx, userID, reason)
+func (m *MockUserService) BanUser(username string) error {
+    args := m.Called(username)
     return args.Error(0)
 }
 
@@ -287,9 +286,9 @@ func (m *MockKakaoAuthService) LoginOrRegister(authCode string) (*repository.Use
 	return args.Get(0).(*repository.User), args.String(1), args.String(2), args.Error(3)
 }
 
-func (m *MockKakaoAuthService) SocialLoginOrRegister(ctx context.Context, token string) (*repository.User, error) {
-    args := m.Called(ctx, token)
-    return args.Get(0).(*repository.User), args.Error(1)
+func (m *MockKakaoAuthService) SocialLoginOrRegister(kakaoID, nickname, email, profileImage, accessToken string) (*repository.User, string, string, error) {
+    args := m.Called(kakaoID, nickname, email, profileImage, accessToken)
+    return args.Get(0).(*repository.User), args.String(1), args.String(2), args.Error(3)
 }
 
 // MockPostRepository is a mock implementation of repository.PostRepository

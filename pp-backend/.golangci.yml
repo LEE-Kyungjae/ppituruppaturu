@@ -33,4 +33,4 @@ linters-settings:
 
 output:
   formats:
-    - format: github-actions
+    - format: colored-line-number
