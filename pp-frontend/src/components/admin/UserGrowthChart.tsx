@@ -13,8 +13,15 @@ export default function UserGrowthChart() {
     { month: '6월', users: 12547 }
   ]
 
+  const firstEntry = mockData[0]
+  const lastEntry = mockData[mockData.length - 1]
+
+  if (!firstEntry || !lastEntry) {
+    return null
+  }
+
   const maxUsers = Math.max(...mockData.map(d => d.users))
-  const growthRate = ((mockData[mockData.length - 1].users - mockData[0].users) / mockData[0].users * 100).toFixed(1)
+  const growthRate = ((lastEntry.users - firstEntry.users) / firstEntry.users * 100).toFixed(1)
 
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
@@ -60,13 +67,13 @@ export default function UserGrowthChart() {
           <div>
             <span className="text-gray-600">현재 회원수</span>
             <p className="font-bold text-lg text-flutter-blue-600">
-              {mockData[mockData.length - 1].users.toLocaleString()}명
+              {lastEntry.users.toLocaleString()}명
             </p>
           </div>
           <div>
             <span className="text-gray-600">월평균 증가</span>
             <p className="font-bold text-lg text-green-600">
-              +{Math.floor((mockData[mockData.length - 1].users - mockData[0].users) / mockData.length)}명
+              +{Math.floor((lastEntry.users - firstEntry.users) / mockData.length)}명
             </p>
           </div>
         </div>

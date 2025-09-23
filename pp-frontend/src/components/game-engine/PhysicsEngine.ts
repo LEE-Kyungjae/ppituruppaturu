@@ -218,6 +218,9 @@ export class PhysicsEngine {
       for (let j = i + 1; j < this.objects.length; j++) {
         const objectA = this.objects[i]
         const objectB = this.objects[j]
+        if (!objectA || !objectB) {
+          continue
+        }
         
         let collision: Collision | null = null
         

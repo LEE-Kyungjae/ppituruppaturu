@@ -108,37 +108,37 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement> & {
     gradient?: boolean
     neon?: boolean
     level?: 1 | 2 | 3 | 4 | 5 | 6
   }
 >(({ className, gradient = false, neon = false, level = 3, children, ...props }, ref) => {
-  const Component = `h${level}` as keyof JSX.IntrinsicElements
+  const Element = level === 1 ? 'h1' :
+    level === 2 ? 'h2' :
+    level === 4 ? 'h4' :
+    level === 5 ? 'h5' :
+    level === 6 ? 'h6' : 'h3';
 
-  return (
-    <Component
-      ref={ref}
-      className={cn(
-        "font-semibold leading-none tracking-tight",
-        {
-          "text-3xl": level === 1,
-          "text-2xl": level === 2,
-          "text-xl": level === 3,
-          "text-lg": level === 4,
-          "text-base": level === 5,
-          "text-sm": level === 6,
-        },
-        gradient && "gradient-text",
-        neon && "neon-text text-primary",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </Component>
-  )
+  return React.createElement(Element, {
+    ref,
+    className: cn(
+      "font-semibold leading-none tracking-tight",
+      {
+        "text-3xl": level === 1,
+        "text-2xl": level === 2,
+        "text-xl": level === 3,
+        "text-lg": level === 4,
+        "text-base": level === 5,
+        "text-sm": level === 6,
+      },
+      gradient && "gradient-text",
+      neon && "neon-text text-primary",
+      className
+    ),
+    ...props
+  }, children)
 })
 CardTitle.displayName = "CardTitle"
 

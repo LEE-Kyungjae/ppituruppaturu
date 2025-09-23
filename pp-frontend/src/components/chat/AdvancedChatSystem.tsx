@@ -231,20 +231,24 @@ export const AdvancedChatSystem: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() < 0.1) {
-        const randomUser = onlineUsers[Math.floor(Math.random() * onlineUsers.length)]
-        if (randomUser.id !== currentUser.id) {
-          setTypingUsers(prev => {
-            const existing = prev.find(t => t.userId === randomUser.id)
-            if (!existing) {
-              return [...prev, { userId: randomUser.id, username: randomUser.displayName, timestamp: new Date() }]
-            }
-            return prev
-          })
-          
-          setTimeout(() => {
-            setTypingUsers(prev => prev.filter(t => t.userId !== randomUser.id))
-          }, 2000)
+        if (onlineUsers.length === 0) {
+          return
         }
+        const randomUser = onlineUsers[Math.floor(Math.random() * onlineUsers.length)]
+        if (!randomUser || randomUser.id === currentUser.id) {
+          return
+        }
+        setTypingUsers(prev => {
+          const existing = prev.find(t => t.userId === randomUser.id)
+          if (!existing) {
+            return [...prev, { userId: randomUser.id, username: randomUser.displayName, timestamp: new Date() }]
+          }
+          return prev
+        })
+
+        setTimeout(() => {
+          setTypingUsers(prev => prev.filter(t => t.userId !== randomUser.id))
+        }, 2000)
       }
     }, 5000)
 

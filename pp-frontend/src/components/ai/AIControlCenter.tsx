@@ -123,26 +123,37 @@ const AIControlCenter: React.FC<AIControlCenterProps> = ({ isOpen, onClose }) =>
           <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
           AI SYSTEM STATUS
         </h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Active AI Players:</span>
-            <span className="text-white">{Array.from(aiPlayers.keys()).length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Strategy Clusters:</span>
-            <span className="text-white">{strategyClusters.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Decisions/min:</span>
-            <span className="text-cyber-green">{decisionHistory.filter(d => Date.now() - (d as any).timestamp < 60000).length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Learning Rate:</span>
-            <span className="text-yellow-400">
-              {aiPlayers.size > 0 ? (Array.from(aiPlayers.values())[0].learning_rate * 100).toFixed(1) : 0}%
-            </span>
-          </div>
-        </div>
+        {(() => {
+          const firstPlayer = aiPlayers.values().next().value as (AIPlayerBehavior & { learning_rate?: number }) | undefined
+          const learningRate = firstPlayer?.learning_rate ?? 0
+          const decisionsLastMinute = decisionHistory.reduce((count, decision) => {
+            const timestamp = (decision as { timestamp?: number }).timestamp
+            return typeof timestamp === 'number' && Date.now() - timestamp < 60000 ? count + 1 : count
+          }, 0)
+
+          return (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Active AI Players:</span>
+                <span className="text-white">{Array.from(aiPlayers.keys()).length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Strategy Clusters:</span>
+                <span className="text-white">{strategyClusters.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Decisions/min:</span>
+                <span className="text-cyber-green">{decisionsLastMinute}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Learning Rate:</span>
+                <span className="text-yellow-400">
+                  {(learningRate * 100).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* Game Balance Monitor */}

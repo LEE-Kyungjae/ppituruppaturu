@@ -58,7 +58,12 @@ const NumberGuessGame: React.FC<NumberGuessGameProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const difficulties = {
+  const difficulties: Record<'easy' | 'medium' | 'hard', {
+    min: number
+    max: number
+    attempts: number
+    name: string
+  }> = {
     easy: { min: 1, max: 50, attempts: 8, name: '쉬움 (1-50)' },
     medium: { min: 1, max: 100, attempts: 7, name: '보통 (1-100)' },
     hard: { min: 1, max: 1000, attempts: 10, name: '어려움 (1-1000)' }
@@ -205,7 +210,7 @@ const NumberGuessGame: React.FC<NumberGuessGameProps> = ({
     const target = gameState.targetNumber
     const lastAttempts = gameState.hints.slice(-3).map(hint => {
       const match = hint.match(/시도 \d+: (\d+)/)
-      return match ? parseInt(match[1]) : 0
+      return match ? parseInt(match[1] ?? '0', 10) : 0
     })
 
     let hintMessage = ''

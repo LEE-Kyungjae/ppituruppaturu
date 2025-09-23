@@ -108,13 +108,16 @@ export function GameLobby({
 
       setTimeout(() => {
         if (Math.random() > 0.3) {
+          const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)] ?? 'Guest'
+          const randomColor = colors[Math.floor(Math.random() * colors.length)] ?? '#888888'
+
           const newPlayer: GamePlayer = {
             id: 'player_' + Math.random().toString(36).substr(2, 9),
-            username: fakeNames[Math.floor(Math.random() * fakeNames.length)],
+            username: randomName,
             score: 0,
             isReady: Math.random() > 0.5,
             isConnected: true,
-            color: colors[Math.floor(Math.random() * colors.length)]
+            color: randomColor
           }
 
           setRoom(prev => prev ? {
