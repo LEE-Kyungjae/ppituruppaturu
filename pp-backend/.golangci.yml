@@ -10,26 +10,24 @@ issues:
 linters:
   enable:
     - govet
-    - staticcheck
     - errcheck
-    - revive
     - ineffassign
-    - gosimple
     - typecheck
     - unused
-    - gocritic
+  disable:
+    - depguard
     - dupl
-    - gofmt
+    - gocritic
+    - gosimple
+    - staticcheck
+    - revive
     - goimports
     - misspell
     - prealloc
-  disable:
-    - depguard
 
 linters-settings:
   govet:
-    enable:
-      - shadow   # linters.govet.check-shadowing 대체
+    enable-all: false
 
 output:
   formats:

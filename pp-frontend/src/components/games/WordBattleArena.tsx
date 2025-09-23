@@ -455,7 +455,7 @@ export const WordBattleArena: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-red-400 text-xl font-bold">
-                  ❌ 틀렸습니다. 정답은 "{currentQuiz.answer}"
+                  ❌ 틀렸습니다. 정답은 &quot;{currentQuiz.answer}&quot;
                 </div>
               )}
             </motion.div>
