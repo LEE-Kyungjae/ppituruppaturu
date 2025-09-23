@@ -58,20 +58,20 @@ type MotionButtonProps = Omit<MotionProps, keyof React.ButtonHTMLAttributes<HTML
   Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps>
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
-    asChild = false, 
+  ({
+    className,
+    variant,
+    size,
+    asChild = false,
     loading = false,
     leftIcon,
     rightIcon,
     animate = false,
     children,
     disabled,
-    ...props 
+    ...props
   }, ref) => {
-    const Comp = asChild ? Slot : motion.button
+    const Comp = asChild ? Slot : "button"
     
     const buttonContent = (
       <>
@@ -125,7 +125,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
-        {...(asChild ? props : props)}
+        {...props}
       >
         {buttonContent}
       </Comp>

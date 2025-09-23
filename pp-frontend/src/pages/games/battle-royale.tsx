@@ -195,6 +195,10 @@ export default function BattleRoyalePage() {
                   <CardContent noPadding>
                     {gameStarted ? (
                       <GameCanvas
+                        gameType="physics_battle_royale"
+                        gameConfig={gameConfig}
+                        onGameEnd={handleGameEnd}
+                        onError={handleGameError}
                         className="w-full aspect-[4/3]"
                       />
                     ) : (

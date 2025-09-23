@@ -65,7 +65,7 @@ const FeatureCard = ({ icon, title, description, index }: {
       className="bg-gray-800 p-8 rounded-2xl border border-gray-700"
     >
       <div className="bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center mb-4">
-        <Icon size={24} />
+        <Icon />
       </div>
       <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
       <p className="text-gray-400">{description}</p>

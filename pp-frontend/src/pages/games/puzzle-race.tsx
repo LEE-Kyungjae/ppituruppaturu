@@ -211,6 +211,10 @@ export default function PuzzleRacePage() {
                   <CardContent noPadding>
                     {gameStarted ? (
                       <GameCanvas
+                        gameType="puzzle_race"
+                        gameConfig={gameConfig}
+                        onGameEnd={handleGameEnd}
+                        onError={handleGameError}
                         className="w-full aspect-[4/3]"
                       />
                     ) : (

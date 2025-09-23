@@ -235,6 +235,10 @@ export default function RhythmActionPage() {
                   <CardContent noPadding>
                     {gameStarted ? (
                       <GameCanvas
+                        gameType="rhythm_action"
+                        gameConfig={gameConfig}
+                        onGameEnd={handleGameEnd}
+                        onError={handleGameError}
                         className="w-full aspect-[4/3]"
                       />
                     ) : (
