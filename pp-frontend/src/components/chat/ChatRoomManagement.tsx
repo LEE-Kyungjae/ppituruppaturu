@@ -363,7 +363,7 @@ export default function ChatRoomManagement({
                       <div className="space-y-3">
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-gray-300">사용자 'Player123'가 입장했습니다</span>
+                          <span className="text-gray-300">사용자 &lsquo;Player123&rsquo;가 입장했습니다</span>
                           <span className="text-sm text-gray-500">5분 전</span>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -373,7 +373,7 @@ export default function ChatRoomManagement({
                         </div>
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                          <span className="text-gray-300">사용자 'Spammer'가 음소거되었습니다</span>
+                          <span className="text-gray-300">사용자 &lsquo;Spammer&rsquo;가 음소거되었습니다</span>
                           <span className="text-sm text-gray-500">15분 전</span>
                         </div>
                       </div>

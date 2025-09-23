@@ -474,8 +474,8 @@ export default function Settings() {
           </div>
           <div>
             <h4 className="font-bold mb-2">제2조 (정의)</h4>
-            <p>1. "서비스"란 회사가 제공하는 모든 게임 및 관련 서비스를 의미합니다.</p>
-            <p>2. "이용자"란 이 약관에 따라 서비스를 이용하는 회원을 말합니다.</p>
+            <p>1. &quot;서비스&quot;란 회사가 제공하는 모든 게임 및 관련 서비스를 의미합니다.</p>
+            <p>2. &quot;이용자&quot;란 이 약관에 따라 서비스를 이용하는 회원을 말합니다.</p>
           </div>
           <div>
             <h4 className="font-bold mb-2">제3조 (포인트 정책)</h4>

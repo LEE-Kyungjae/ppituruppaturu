@@ -33,7 +33,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8"
         >
-          Experience a seamless fusion of technologies, creating a gaming platform that's powerful, flexible, and endlessly fun.
+          Experience a seamless fusion of technologies, creating a gaming platform that&rsquo;s powerful, flexible, and endlessly fun.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -118,7 +118,7 @@ const CTASection = () => {
           viewport={{ once: true }}
           className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto"
         >
-          Join thousands of players and start your gaming journey today. It's free to play!
+          Join thousands of players and start your gaming journey today. It&rsquo;s free to play!
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
