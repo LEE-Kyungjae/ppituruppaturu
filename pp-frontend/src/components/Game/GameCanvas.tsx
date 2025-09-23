@@ -232,6 +232,9 @@ export default function GameCanvas({
       const deltaTime = 0.016; // 약 60fps
       for (let i = paintProjectiles.length - 1; i >= 0; i--) {
         const projectile = paintProjectiles[i];
+        if (!projectile) {
+          continue;
+        }
 
         // 물리 시뮬레이션
         projectile.velocity.y += projectile.gravity * deltaTime; // 중력 적용
