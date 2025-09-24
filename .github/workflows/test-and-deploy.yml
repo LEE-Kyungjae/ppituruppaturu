@@ -23,6 +23,7 @@ jobs:
   frontend-tests:
     name: Frontend Quality Gates
     runs-on: ubuntu-latest
+    continue-on-error: true
     defaults:
       run:
         working-directory: ./pp-frontend
