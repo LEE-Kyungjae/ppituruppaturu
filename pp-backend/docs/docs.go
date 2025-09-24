@@ -11,9 +11,9 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "PittuRu Team",
-            "url": "https://pitturu.com",
-            "email": "support@pitturu.com"
+            "name": "삐뚜루빠뚜루 팀",
+            "url": "https://ppituruppaturu.com",
+            "email": "support@ppituruppaturu.com"
         },
         "license": {
             "name": "Apache 2.0",
@@ -5392,8 +5392,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
-	Title:            "PittuRu API",
-	Description:      "PittuRu 게임 플랫폼 REST API 서버",
+	Title:            "삐뚜루빠뚜루 API",
+	Description:      "삐뚜루빠뚜루 게임 플랫폼 REST API 서버",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

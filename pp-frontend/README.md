@@ -1,4 +1,4 @@
-# PittuRu Frontend - Next.js 14 App
+# 삐뚜루빠뚜루 Frontend - Next.js 14 App
 
 **현대적인 React 웹 애플리케이션**: Next.js 14, App Router, TypeScript, Tailwind CSS를 활용한 게임 플랫폼 프론트엔드
 
@@ -343,7 +343,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const game = await getGame(params.gameId)
   
   return {
-    title: `${game.name} - PittuRu PpattuRu`,
+    title: `${game.name} - 삐뚜루빠뚜루`,
     description: game.description,
     openGraph: {
       title: game.name,
@@ -365,8 +365,8 @@ npm run build
 npm run analyze
 
 # 컨테이너 빌드
-docker build -t pitturu-frontend .
-docker run -p 3000:3000 pitturu-frontend
+docker build -t ppituru-frontend .
+docker run -p 3000:3000 ppituru-frontend
 ```
 
 ### Vercel 배포 (권장)

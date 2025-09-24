@@ -247,7 +247,7 @@ class AdminAuthService {
           user: {
             id: 'dev_admin',
             username: 'admin',
-            email: 'admin@pitturu.com',
+            email: 'admin@ppituruppaturu.com',
             role: 'super_admin',
             permissions: ['*'],
             lastLogin: new Date().toISOString(),

@@ -1,23 +1,23 @@
-# PittuRu Core Infrastructure Stack
+# 삐뚜루빠뚜루 핵심 인프라 스택
 # DB/Redis 공유 네트워크 - Blue/Green 모두가 참조하는 코어 서비스들
 
 networks:
-  pitturu-core:
-    name: pitturu-core
+  ppituru-core:
+    name: ppituru-core
     driver: bridge
 
 services:
   postgres:
     image: postgres:15
-    container_name: pitturu-postgres
+    container_name: ppituru-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pitturu_dev_2024}
-      POSTGRES_DB: ${POSTGRES_DB:-pitturu_db}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ppituru_dev_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-ppituru_db}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - pitturu-core
+      - ppituru-core
     ports:
       - "5432:5432"
     healthcheck:
@@ -29,9 +29,9 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: pitturu-redis
+    container_name: ppituru-redis
     networks:
-      - pitturu-core
+      - ppituru-core
     ports:
       - "6379:6379"
     healthcheck:
@@ -46,6 +46,6 @@ services:
 
 volumes:
   pgdata:
-    name: pitturu-pgdata
+    name: ppituru-pgdata
   redisdata:
-    name: pitturu-redisdata
+    name: ppituru-redisdata

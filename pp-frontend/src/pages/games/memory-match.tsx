@@ -20,7 +20,7 @@ export default function MemoryMatchPage() {
   return (
     <>
       <Head>
-        <title>메모리 매치 게임 - Gaming Platform</title>
+        <title>메모리 매치 게임 - 삐뚜루빠뚜루 게임 플랫폼</title>
         <meta name="description" content="같은 그림의 카드를 찾아 짝을 맞춰보세요!" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>

@@ -4,19 +4,19 @@ services:
   # PostgreSQL 데이터베이스
   postgres:
     image: postgres:15-alpine
-    container_name: pitturu_postgres
+    container_name: ppituru_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-pitturu_db}
+      POSTGRES_DB: ${POSTGRES_DB:-ppituru_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pitturu_2024}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ppituru_2024}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./pp-backend/internal/migrations/initdb:/docker-entrypoint-initdb.d
     networks:
-      - pitturu_network
+      - ppituru_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 30s
@@ -26,14 +26,14 @@ services:
   # Redis 캐시
   redis:
     image: redis:7-alpine
-    container_name: pitturu_redis
+    container_name: ppituru_redis
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
-      - pitturu_network
+      - ppituru_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -46,14 +46,14 @@ services:
       context: ./pp-backend
       dockerfile: Dockerfile
       target: ${BUILD_TARGET:-production}
-    container_name: pitturu_backend
+    container_name: ppituru_backend
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8080}:8080"
       - "${WEBSOCKET_PORT:-8082}:8082"
     environment:
       - GO_ENV=${GO_ENV:-production}
-      - DSN=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pitturu_2024}@postgres:5432/${POSTGRES_DB:-pitturu_db}?sslmode=disable
+      - DSN=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-ppituru_2024}@postgres:5432/${POSTGRES_DB:-ppituru_db}?sslmode=disable
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
@@ -65,7 +65,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - pitturu_network
+      - ppituru_network
     healthcheck:
       test: ["CMD", "/server", "--healthcheck"]
       interval: 30s
@@ -79,7 +79,7 @@ services:
       context: ./pp-frontend
       dockerfile: Dockerfile
       target: ${BUILD_TARGET:-production}
-    container_name: pitturu_frontend
+    container_name: ppituru_frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -92,7 +92,7 @@ services:
       backend:
         condition: service_healthy
     networks:
-      - pitturu_network
+      - ppituru_network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -107,5 +107,5 @@ volumes:
     driver: local
 
 networks:
-  pitturu_network:
+  ppituru_network:
     driver: bridge

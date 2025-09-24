@@ -1,6 +1,6 @@
 # 배포 성공 체크리스트
 
-이 문서는 PittuRu 프로젝트 배포 시 필요한 모든 수정사항과 설정을 정리한 것입니다.
+이 문서는 삐뚜루빠뚜루 프로젝트 배포 시 필요한 모든 수정사항과 설정을 정리한 것입니다.
 
 ## 1. 코드 수정사항
 
@@ -117,21 +117,21 @@ AUTO_COMMIT=true ./deploy.sh
 ### A. Docker 컨테이너 설정
 ```bash
 # 1. 기존 컨테이너 정리
-docker stop pitturu-backend pitturu-frontend
-docker rm pitturu-backend pitturu-frontend
+docker stop ppituru-backend ppituru-frontend
+docker rm ppituru-backend ppituru-frontend
 
 # 2. 백엔드 컨테이너 (host 네트워킹)
-docker run -d --name pitturu-fixed-backend --network host \
-  -e DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_db?sslmode=disable" \
+docker run -d --name ppituru-fixed-backend --network host \
+  -e DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_db?sslmode=disable" \
   ze2l/ppituruppaturu-backend:latest
 
 # 3. 프론트엔드 컨테이너 확인 및 시작
 docker ps -a | grep frontend
-docker start pitturu-blue-frontend-1
+docker start ppituru-blue-frontend-1
 ```
 
 ### B. Nginx 설정
-**파일**: `/etc/nginx/sites-available/pitturu.conf`
+**파일**: `/etc/nginx/sites-available/ppituru.conf`
 
 ```nginx
 server {
@@ -188,8 +188,8 @@ server {
 
 **적용 명령어**:
 ```bash
-sudo cp /tmp/nginx.conf /etc/nginx/sites-available/pitturu.conf
-sudo ln -sf /etc/nginx/sites-available/pitturu.conf /etc/nginx/sites-enabled/
+sudo cp /tmp/nginx.conf /etc/nginx/sites-available/ppituru.conf
+sudo ln -sf /etc/nginx/sites-available/ppituru.conf /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo rm -f /etc/nginx/sites-enabled/*-http.conf  # 중복 설정 제거
 sudo nginx -t && sudo systemctl reload nginx

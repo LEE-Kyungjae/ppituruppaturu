@@ -16,9 +16,9 @@ const MobileAppPromotion: React.FC<MobileAppPromotionProps> = ({
   const handleDownload = (platform: 'ios' | 'android') => {
     // 실제 앱스토어 링크로 교체
     if (platform === 'ios') {
-      window.open('https://apps.apple.com/app/pitturu-ppaturu', '_blank');
+      window.open('https://apps.apple.com/app/ppituru-ppaturu', '_blank');
     } else {
-      window.open('https://play.google.com/store/apps/details?id=com.pitturu.ppaturu', '_blank');
+      window.open('https://play.google.com/store/apps/details?id=com.ppituru.ppaturu', '_blank');
     }
   };
 

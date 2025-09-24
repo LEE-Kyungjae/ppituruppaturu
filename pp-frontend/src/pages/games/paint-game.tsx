@@ -20,7 +20,7 @@ export default function PaintGamePage() {
       <header className="bg-black bg-opacity-50 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">PittuRu Paint Game</h1>
+            <h1 className="text-2xl font-bold">삐뚜루빠뚜루 페인트 게임</h1>
             <p className="text-sm text-gray-300">스플래툰 스타일 물감 영역 확장 게임</p>
           </div>
           <div className="flex gap-4">
@@ -68,7 +68,7 @@ export default function PaintGamePage() {
 
       {/* 푸터 */}
       <footer className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-center text-xs">
-        <p>PittuRu PpattuRu © 2024 - Splatoon-style Paint Territory Game</p>
+        <p>삐뚜루빠뚜루 © 2024 - 스플래툰 스타일의 페인트 영역 확장 게임</p>
       </footer>
     </div>
   );

@@ -6,29 +6,29 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'PittuRu PpattuRu - 게임 플랫폼',
-    template: '%s | PittuRu PpattuRu'
+    default: '삐뚜루빠뚜루 - 게임 플랫폼',
+    template: '%s | 삐뚜루빠뚜루'
   },
   description: '실시간 채팅과 소셜 기능이 있는 미니게임 플랫폼',
   keywords: ['게임', '미니게임', '채팅', '소셜', '플랫폼'],
-  authors: [{ name: 'PittuRu PpattuRu Team' }],
-  creator: 'PittuRu PpattuRu',
-  publisher: 'PittuRu PpattuRu',
+  authors: [{ name: '삐뚜루빠뚜루 Team' }],
+  creator: '삐뚜루빠뚜루',
+  publisher: '삐뚜루빠뚜루',
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
     type: 'website',
-    siteName: 'PittuRu PpattuRu',
-    title: 'PittuRu PpattuRu - 게임 플랫폼',
+    siteName: '삐뚜루빠뚜루',
+    title: '삐뚜루빠뚜루 - 게임 플랫폼',
     description: '실시간 채팅과 소셜 기능이 있는 미니게임 플랫폼',
-    url: 'https://pitturu-ppaturu.com',
+    url: 'https://ppituru-ppaturu.com',
     locale: 'ko_KR',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PittuRu PpattuRu - 게임 플랫폼',
+    title: '삐뚜루빠뚜루 - 게임 플랫폼',
     description: '실시간 채팅과 소셜 기능이 있는 미니게임 플랫폼',
   },
   manifest: '/manifest.json',

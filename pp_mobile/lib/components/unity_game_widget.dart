@@ -276,7 +276,7 @@ class _UnityGameWidgetState extends State<UnityGameWidget> {
                       CircularProgressIndicator(color: Color(0xFF00FF88)),
                       SizedBox(height: 16),
                       Text(
-                        'PittuRu Unity 게임 로딩 중...',
+                        '삐뚜루빠뚜루 Unity 게임 로딩 중...',
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     ],

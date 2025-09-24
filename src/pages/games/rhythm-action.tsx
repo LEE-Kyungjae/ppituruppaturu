@@ -43,7 +43,7 @@ interface SongInfo {
 const songList: SongInfo[] = [
   {
     title: "Electric Storm",
-    artist: "PittuRu",
+    artist: "삐뚜루빠뚜루",
     bpm: 128,
     difficulty: 7,
     duration: "2:43",
@@ -51,7 +51,7 @@ const songList: SongInfo[] = [
   },
   {
     title: "Neon Dreams",
-    artist: "PittuRu",
+    artist: "삐뚜루빠뚜루",
     bpm: 140,
     difficulty: 8,
     duration: "3:12",
@@ -59,7 +59,7 @@ const songList: SongInfo[] = [
   },
   {
     title: "Digital Pulse",
-    artist: "PittuRu",
+    artist: "삐뚜루빠뚜루",
     bpm: 160,
     difficulty: 9,
     duration: "2:58",

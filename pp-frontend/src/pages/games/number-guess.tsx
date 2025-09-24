@@ -20,7 +20,7 @@ export default function NumberGuessPage() {
   return (
     <>
       <Head>
-        <title>숫자 맞추기 게임 - Gaming Platform</title>
+        <title>숫자 맞추기 게임 - 삐뚜루빠뚜루 게임 플랫폼</title>
         <meta name="description" content="컴퓨터가 생각한 숫자를 최소한의 시도로 맞춰보세요!" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>

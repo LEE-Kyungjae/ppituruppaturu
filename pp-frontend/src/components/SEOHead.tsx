@@ -52,7 +52,7 @@ export default function SEOHead({
       {image && <meta property="og:image" content={image} />}
       {image && <meta property="og:image:width" content="1200" />}
       {image && <meta property="og:image:height" content="630" />}
-      <meta property="og:site_name" content="PittuRu Gaming Platform" />
+      <meta property="og:site_name" content="삐뚜루빠뚜루 게임 플랫폼" />
       <meta property="og:locale" content="ko_KR" />
       {publishedTime && <meta property="article:published_time" content={publishedTime} />}
       {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
@@ -62,8 +62,8 @@ export default function SEOHead({
       
       {/* Twitter Cards */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@pitturu" />
-      <meta name="twitter:creator" content="@pitturu" />
+      <meta name="twitter:site" content="@ppituru" />
+      <meta name="twitter:creator" content="@ppituru" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {image && <meta name="twitter:image" content={image} />}

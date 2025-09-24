@@ -1,9 +1,9 @@
 {
-  "name": "pitturu-ppaturu-frontend",
+  "name": "ppituru-ppaturu-frontend",
   "version": "2.0.0",
   "private": true,
-  "description": "PittuRu PpattuRu 게임 플랫폼 프론트엔드",
-  "author": "PittuRu PpattuRu Team",
+  "description": "삐뚜루빠뚜루 게임 플랫폼 프론트엔드",
+  "author": "삐뚜루빠뚜루 팀",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

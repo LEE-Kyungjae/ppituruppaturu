@@ -132,7 +132,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             <div>
               <p className="font-medium text-gray-900">{currentUser?.username || '관리자'}</p>
-              <p className="text-sm text-gray-600">{currentUser?.email || 'admin@pitturu.com'}</p>
+              <p className="text-sm text-gray-600">{currentUser?.email || 'admin@ppituruppaturu.com'}</p>
               <div className="flex items-center gap-1 mt-1">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   currentUser?.role === 'super_admin'

@@ -132,11 +132,11 @@ export function GameResultModal({
   }
 
   const handleShare = () => {
-    const shareText = `PittuRu에서 ${GameUtils.getGameTypeIcon(gameType)} ${getGameTypeName(gameType)}을(를) 플레이했어요!\n점수: ${GameUtils.formatScore(score)}\n등급: ${scoreAnalysis?.grade}\n#PittuRu #게임`
+    const shareText = `삐뚜루빠뚜루에서 ${GameUtils.getGameTypeIcon(gameType)} ${getGameTypeName(gameType)}을(를) 플레이했어요!\n점수: ${GameUtils.formatScore(score)}\n등급: ${scoreAnalysis?.grade}\n#삐뚜루빠뚜루 #게임`
 
     if (navigator.share) {
       navigator.share({
-        title: 'PittuRu 게임 결과',
+        title: '삐뚜루빠뚜루 게임 결과',
         text: shareText
       })
     } else {

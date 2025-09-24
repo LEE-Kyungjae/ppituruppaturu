@@ -14,7 +14,7 @@ export interface SEOProps {
 }
 
 export const defaultSEO: SEOProps = {
-  title: 'PittuRu Gaming Platform - 무료 미니게임',
+  title: '삐뚜루빠뚜루 게임 플랫폼 - 무료 미니게임',
   description: '5종 미니게임을 플레이하고 포인트를 획득하세요! 클릭 스피드, 메모리 매치, 숫자 맞추기 등 다양한 게임을 무료로 즐기세요.',
   keywords: [
     '무료게임',
@@ -26,13 +26,13 @@ export const defaultSEO: SEOProps = {
     '온라인게임',
     '캐주얼게임',
     '게임플랫폼',
-    'pitturu',
+    'ppituru',
     '피투루'
   ],
   image: 'https://ppituruppaturu.com/og-image.png',
   url: 'https://ppituruppaturu.com',
   type: 'website',
-  author: 'PittuRu Team'
+  author: '삐뚜루빠뚜루 팀'
 }
 
 export const generateSEO = (props: SEOProps = {}): SEOProps => {
@@ -40,7 +40,7 @@ export const generateSEO = (props: SEOProps = {}): SEOProps => {
     ...defaultSEO,
     ...props,
     keywords: props.keywords ? [...defaultSEO.keywords!, ...props.keywords] : defaultSEO.keywords,
-    title: props.title ? `${props.title} | PittuRu Gaming Platform` : defaultSEO.title,
+    title: props.title ? `${props.title} | 삐뚜루빠뚜루 게임 플랫폼` : defaultSEO.title,
     url: props.url ? `https://ppituruppaturu.com${props.url}` : defaultSEO.url,
   }
 }
@@ -99,7 +99,7 @@ export const generateGameStructuredData = (gameKey: keyof typeof gamesSEO) => {
     },
     "publisher": {
       "@type": "Organization",
-      "name": "PittuRu"
+      "name": "삐뚜루빠뚜루"
     },
     "inLanguage": "ko",
     "isAccessibleForFree": true,

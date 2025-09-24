@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "PittuRu PpattuRu mobile app with WebView integration",
+    "description": "삐뚜루빠뚜루 mobile app with WebView integration",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

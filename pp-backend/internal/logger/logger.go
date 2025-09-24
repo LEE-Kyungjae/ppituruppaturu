@@ -144,7 +144,7 @@ func GetLogger() *Logger {
 		if err := Init(Config{
 			Level:         InfoLevel,
 			Format:        "text",
-			ServiceName:   "pitturu",
+			ServiceName:   "ppituru",
 			Environment:   "development",
 			EnableConsole: true,
 		}); err != nil {

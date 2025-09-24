@@ -1,10 +1,10 @@
-// @title           PittuRu API
+// @title           삐뚜루빠뚜루 API
 // @version         1.0
-// @description     PittuRu 게임 플랫폼 REST API 서버
+// @description     삐뚜루빠뚜루 게임 플랫폼 REST API 서버
 // @termsOfService  http://swagger.io/terms/
-// @contact.name    PittuRu Team
-// @contact.url     https://pitturu.com
-// @contact.email   support@pitturu.com
+// @contact.name    삐뚜루빠뚜루 팀
+// @contact.url     https://ppituruppaturu.com
+// @contact.email   support@ppituruppaturu.com
 // @license.name    Apache 2.0
 // @license.url     http://www.apache.org/licenses/LICENSE-2.0.html
 // @host            localhost:8080

@@ -225,7 +225,7 @@ export default function GamesPage() {
   return (
     <>
       <Head>
-        <title>게임 센터 - PittuRu</title>
+        <title>게임 센터 - 삐뚜루빠뚜루</title>
         <meta name="description" content="다양한 멀티플레이어 게임을 즐겨보세요!" />
       </Head>
 

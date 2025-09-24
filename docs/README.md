@@ -1,4 +1,4 @@
-# 📚 PittuRu PpattuRu Documentation
+# 📚 삐뚜루빠뚜루 Documentation
 
 종합 게임 플랫폼의 전체 문서 모음입니다.
 

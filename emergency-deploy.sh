@@ -77,14 +77,14 @@ docker pull ze2l/ppituruppaturu-backend:emergency
 docker pull ze2l/ppituruppaturu-frontend:emergency
 
 log "PostgreSQL & Redis 시작..."
-docker run -d --name pitturu-postgres \
-  -e POSTGRES_DB=pitturu_db \
+docker run -d --name ppituru-postgres \
+  -e POSTGRES_DB=ppituru_db \
   -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=pitturu_dev_2024 \
+  -e POSTGRES_PASSWORD=ppituru_dev_2024 \
   -p 5432:5432 \
   postgres:15-alpine
 
-docker run -d --name pitturu-redis \
+docker run -d --name ppituru-redis \
   -p 6379:6379 \
   redis:7-alpine
 
@@ -92,10 +92,10 @@ log "서비스 시작 대기..."
 sleep 10
 
 log "백엔드 시작..."
-docker run -d --name pitturu-backend \
-  --link pitturu-postgres:postgres \
-  --link pitturu-redis:redis \
-  -e DSN="postgres://postgres:pitturu_dev_2024@postgres:5432/pitturu_db?sslmode=disable" \
+docker run -d --name ppituru-backend \
+  --link ppituru-postgres:postgres \
+  --link ppituru-redis:redis \
+  -e DSN="postgres://postgres:ppituru_dev_2024@postgres:5432/ppituru_db?sslmode=disable" \
   -e REDIS_URL="redis://redis:6379" \
   -e JWT_SECRET="emergency_jwt_secret_$(date +%s)" \
   -e REFRESH_SECRET="emergency_refresh_secret_$(date +%s)" \
@@ -104,8 +104,8 @@ docker run -d --name pitturu-backend \
   ze2l/ppituruppaturu-backend:emergency
 
 log "프론트엔드 시작..."
-docker run -d --name pitturu-frontend \
-  --link pitturu-backend:backend \
+docker run -d --name ppituru-frontend \
+  --link ppituru-backend:backend \
   -e NEXT_PUBLIC_API_URL="http://152.67.201.101:8080/api" \
   -e NEXT_PUBLIC_WS_URL="ws://152.67.201.101:8082/ws" \
   -e NODE_ENV=production \

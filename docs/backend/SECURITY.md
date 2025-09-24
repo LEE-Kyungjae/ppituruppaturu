@@ -1,5 +1,5 @@
 <!-- /Users/ze/work/go/SECURITY.md -->
-# 🔐 PittuRu PpattuRu Security Guide
+# 🔐 삐뚜루빠뚜루 Security Guide
 
 ## 📁 Sensitive Files Management
 

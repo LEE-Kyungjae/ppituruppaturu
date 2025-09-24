@@ -68,7 +68,7 @@ export default function KakaoCallback() {
   return (
     <>
       <Head>
-        <title>카카오 로그인 처리 중... - PittuRu PpattuRu</title>
+        <title>카카오 로그인 처리 중... - 삐뚜루빠뚜루</title>
       </Head>
 
       <div className="game-container">

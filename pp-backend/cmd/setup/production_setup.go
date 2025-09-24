@@ -120,8 +120,8 @@ func collectDatabaseConfig(config *ProductionConfig) error {
 
 	config.DatabaseHost = promptString("Database Host", "localhost")
 	config.DatabasePort = promptString("Database Port", "5432")
-	config.DatabaseName = promptString("Database Name", "pitturu_production")
-	config.DatabaseUser = promptString("Database User", "pitturu")
+	config.DatabaseName = promptString("Database Name", "ppituru_production")
+	config.DatabaseUser = promptString("Database User", "ppituru")
 	config.DatabasePassword = promptPassword("Database Password")
 	config.DatabaseSSL = promptBool("Enable SSL for database connection", true)
 
@@ -289,7 +289,7 @@ REDIS_DB=0`, config.RedisHost, config.RedisPassword)
 LOG_LEVEL=info
 LOG_FORMAT=json
 LOG_FILE_ENABLED=true
-LOG_FILE_PATH=/var/log/pitturu/app.log
+LOG_FILE_PATH=/var/log/ppituru/app.log
 
 # =============================================================================
 # MONITORING
@@ -309,11 +309,11 @@ func generateDockerCompose(config *ProductionConfig) error {
 	composeContent := fmt.Sprintf(`version: '3.8'
 
 services:
-  pitturu-backend:
+  ppituru-backend:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    container_name: pitturu-backend
+    container_name: ppituru-backend
     restart: unless-stopped
     ports:
       - "%s:%s"
@@ -323,11 +323,11 @@ services:
     env_file:
       - .env.production
     volumes:
-      - ./logs:/var/log/pitturu
+      - ./logs:/var/log/ppituru
     depends_on:
       - postgres
     networks:
-      - pitturu-network
+      - ppituru-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:%s/health"]
       interval: 30s
@@ -336,7 +336,7 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    container_name: pitturu-postgres
+    container_name: ppituru-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: %s
@@ -348,7 +348,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - pitturu-network
+      - ppituru-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U %s -d %s"]
       interval: 10s
@@ -357,7 +357,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: pitturu-nginx
+    container_name: ppituru-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -366,9 +366,9 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - pitturu-backend
+      - ppituru-backend
     networks:
-      - pitturu-network`,
+      - ppituru-network`,
 		config.Port, config.Port, config.Port,
 		config.DatabaseName, config.DatabaseUser, config.DatabasePassword,
 		config.DatabaseUser, config.DatabaseName,
@@ -379,7 +379,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: pitturu-redis
+    container_name: ppituru-redis
     restart: unless-stopped
     command: redis-server --requirepass %s
     volumes:
@@ -387,7 +387,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - pitturu-network
+      - ppituru-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -409,7 +409,7 @@ volumes:
 	composeContent += `
 
 networks:
-  pitturu-network:
+  ppituru-network:
     driver: bridge
 `
 
@@ -460,16 +460,16 @@ sleep 10
 
 # Run database migrations
 echo "📊 Running database migrations..."
-docker-compose -f docker-compose.prod.yml exec pitturu-backend /app/migrate
+docker-compose -f docker-compose.prod.yml exec ppituru-backend /app/migrate
 
 # Check service health
 echo "🏥 Checking service health..."
-if docker-compose -f docker-compose.prod.yml exec pitturu-backend wget --quiet --tries=1 --spider http://localhost:8080/health; then
+if docker-compose -f docker-compose.prod.yml exec ppituru-backend wget --quiet --tries=1 --spider http://localhost:8080/health; then
     echo "✅ Application is healthy and ready!"
 else
     echo "❌ Application health check failed!"
     echo "Checking logs..."
-    docker-compose -f docker-compose.prod.yml logs pitturu-backend
+    docker-compose -f docker-compose.prod.yml logs ppituru-backend
     exit 1
 fi
 
@@ -487,7 +487,7 @@ set -e
 
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="./backups"
-BACKUP_FILE="pitturu_backup_${DATE}.sql"
+BACKUP_FILE="ppituru_backup_${DATE}.sql"
 
 echo "📦 Creating database backup..."
 
@@ -495,7 +495,7 @@ echo "📦 Creating database backup..."
 mkdir -p ${BACKUP_DIR}
 
 # Create database backup
-docker-compose -f docker-compose.prod.yml exec -T postgres pg_dump -U pitturu pitturu_production > ${BACKUP_DIR}/${BACKUP_FILE}
+docker-compose -f docker-compose.prod.yml exec -T postgres pg_dump -U ppituru ppituru_production > ${BACKUP_DIR}/${BACKUP_FILE}
 
 # Compress backup
 gzip ${BACKUP_DIR}/${BACKUP_FILE}
@@ -503,7 +503,7 @@ gzip ${BACKUP_DIR}/${BACKUP_FILE}
 echo "✅ Backup created: ${BACKUP_DIR}/${BACKUP_FILE}.gz"
 
 # Keep only last 30 backups
-find ${BACKUP_DIR} -name "pitturu_backup_*.sql.gz" -mtime +30 -delete
+find ${BACKUP_DIR} -name "ppituru_backup_*.sql.gz" -mtime +30 -delete
 
 echo "🧹 Old backups cleaned up"
 `
@@ -541,7 +541,7 @@ http {
     limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/s;
 
     upstream backend {
-        server pitturu-backend:%s;
+        server ppituru-backend:%s;
         keepalive 32;
     }
 

@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: '홈',
-  description: 'PittuRu PpattuRu 메인 게임 플랫폼',
+  description: '삐뚜루빠뚜루 메인 게임 플랫폼',
 }
 
 export default function HomePage() {
@@ -11,7 +11,7 @@ export default function HomePage() {
       <div className="container mx-auto max-w-4xl">
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-4">
-            🎮 PittuRu PpattuRu
+            🎮 삐뚜루빠뚜루
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             실시간 채팅과 소셜 기능이 있는 미니게임 플랫폼

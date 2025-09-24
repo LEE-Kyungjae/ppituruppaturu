@@ -26,7 +26,7 @@ test.describe('Critical Game Flows', () => {
     await page.goto('/games/ai-paint-battle');
 
     // Check page title
-    await expect(page).toHaveTitle('AI Paint Battle - PittuRu PpattuRu');
+    await expect(page).toHaveTitle('AI Paint Battle - 삐뚜루빠뚜루');
 
     // Should display game header
     await expect(page.locator('text=AI Paint Battle')).toBeVisible();

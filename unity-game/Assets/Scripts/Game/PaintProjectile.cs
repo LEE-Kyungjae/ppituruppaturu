@@ -1,7 +1,7 @@
 using UnityEngine;
-using PittuRu.Core;
+using Pppituru.Core;
 
-namespace PittuRu.Game
+namespace Pppituru.Game
 {
     public class PaintProjectile : MonoBehaviour
     {

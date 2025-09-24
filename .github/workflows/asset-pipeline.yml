@@ -166,7 +166,7 @@ jobs:
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: pitturu-assets-${{ github.sha }}
+          name: ppituru-assets-${{ github.sha }}
           path: |
             assets/dist/
             asset_report.md
@@ -208,7 +208,7 @@ jobs:
       - name: Download assets
         uses: actions/download-artifact@v4
         with:
-          name: pitturu-assets-${{ github.sha }}
+          name: ppituru-assets-${{ github.sha }}
 
       - name: Advanced quality checks
         run: |

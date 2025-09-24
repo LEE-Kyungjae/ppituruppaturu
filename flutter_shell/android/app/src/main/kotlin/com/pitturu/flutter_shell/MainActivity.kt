@@ -1,4 +1,4 @@
-package com.pitturu.flutter_shell
+package com.ppituru.flutter_shell
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,8 +11,8 @@ import org.json.JSONObject
 import java.util.*
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "pitturu.game/unity"
-    private val EVENT_CHANNEL = "pitturu.game/unity_events"
+    private val CHANNEL = "ppituru.game/unity"
+    private val EVENT_CHANNEL = "ppituru.game/unity_events"
     private lateinit var methodChannel: MethodChannel
     private lateinit var eventChannel: EventChannel
     private var eventSink: EventChannel.EventSink? = null

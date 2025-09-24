@@ -107,7 +107,7 @@ jobs:
           echo "🧹 배포 전 포트 충돌 방지..."
           ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
-            cd /opt/pitturu
+            cd /opt/ppituru
 
             echo "🔍 8082 포트 점유 상태 확인"
             docker ps --filter "publish=8082" --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}' || echo "8082 포트 비어있음"
@@ -128,21 +128,21 @@ jobs:
           set -euxo pipefail
 
           echo "📁 Uploading deployment files..."
-          scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
-          scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
-          scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
+          scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
+          scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
+          scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
           scp -v nginx-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-backend-api-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-backend-api-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-backend-ws-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           scp -v nginx-backend-ws-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
-          scp -v nginx-pitturu-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -v nginx-ppituru-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
 
           echo "🚀 Starting Blue/Green deployment..."
           ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
-            cd /opt/pitturu
+            cd /opt/ppituru
 
             echo "📁 Current directory: $(pwd)"
             echo "📁 Directory contents:"
@@ -157,7 +157,7 @@ jobs:
             sudo mv /tmp/nginx-backend-api-green.conf /etc/nginx/upstreams/nginx-backend-api-green.conf
             sudo mv /tmp/nginx-backend-ws-blue.conf /etc/nginx/upstreams/nginx-backend-ws-blue.conf
             sudo mv /tmp/nginx-backend-ws-green.conf /etc/nginx/upstreams/nginx-backend-ws-green.conf
-            sudo mv /tmp/nginx-pitturu-site.conf /etc/nginx/sites-available/pitturu
+            sudo mv /tmp/nginx-ppituru-site.conf /etc/nginx/sites-available/ppituru
 
             echo "🔐 Docker Hub login..."
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
@@ -175,7 +175,7 @@ jobs:
             docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | egrep 'green|blue|8081|8082|8083|8084' || true
 
             echo "=== Green 백엔드 헬스 로그 (최근 10회) ==="
-            docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}} {{.Output}}{{printf "\n"}}{{end}}' pitturu-green-backend-1 | tail -n 10 || true
+            docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}} {{.Output}}{{printf "\n"}}{{end}}' ppituru-green-backend-1 | tail -n 10 || true
 
             echo "=== 헬스 엔드포인트 직접 확인 ==="
             curl -I --max-time 5 http://127.0.0.1:3002/api/health || true

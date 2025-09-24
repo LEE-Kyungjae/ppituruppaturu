@@ -1,8 +1,8 @@
-# PittuRu 실시간 게임서버 통합 가이드
+# 삐뚜루빠뚜루 실시간 게임서버 통합 가이드
 
 ## 개요
 
-PittuRu 백엔드에 실시간 게임서버가 성공적으로 통합되었습니다. 이 문서는 통합된 게임서버의 사용법과 API 엔드포인트를 설명합니다.
+삐뚜루빠뚜루 백엔드에 실시간 게임서버가 성공적으로 통합되었습니다. 이 문서는 통합된 게임서버의 사용법과 API 엔드포인트를 설명합니다.
 
 ## 아키텍처
 
@@ -25,7 +25,7 @@ GAME_SERVER_ENABLED=true
 WS_PORT=8081
 
 # CORS 설정 (프론트엔드 도메인)
-CORS_ORIGINS=http://localhost:3000,https://pitturu.com
+CORS_ORIGINS=http://localhost:3000,https://ppituruppaturu.com
 ```
 
 ## API 엔드포인트

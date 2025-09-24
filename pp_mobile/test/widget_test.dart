@@ -1,4 +1,4 @@
-// This is a basic Flutter widget test for PittuRu WebView app.
+// This is a basic Flutter widget test for 삐뚜루빠뚜루 WebView app.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -228,14 +228,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   WebViewPlatform.instance = _FakeWebViewPlatform();
 
-  testWidgets('PittuRu app loads correctly', (WidgetTester tester) async {
+  testWidgets('삐뚜루빠뚜루 app loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const PittuRuApp());
+    await tester.pumpWidget(const PppituruApp());
 
     await tester.pumpAndSettle();
 
     // Verify that the main hub title is displayed
-    expect(find.text('PittuRu Game Hub'), findsOneWidget);
+    expect(find.text('삐뚜루빠뚜루 게임 허브'), findsOneWidget);
 
     // Verify that key UI sections render
     expect(find.text('게임을 선택하세요'), findsOneWidget);

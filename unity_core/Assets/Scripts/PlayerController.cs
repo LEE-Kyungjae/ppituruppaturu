@@ -1,8 +1,8 @@
 using System.Collections;
 using UnityEngine;
-using PittuRu.Core;
+using Pppituru.Core;
 
-namespace PittuRu.Core
+namespace Pppituru.Core
 {
     /// <summary>
     /// Player controller for the cyberpunk ninja painter character

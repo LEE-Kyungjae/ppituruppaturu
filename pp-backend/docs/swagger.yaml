@@ -756,15 +756,15 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@pitturu.com
-    name: PittuRu Team
-    url: https://pitturu.com
-  description: PittuRu 게임 플랫폼 REST API 서버
+    email: support@ppituruppaturu.com
+    name: 삐뚜루빠뚜루 팀
+    url: https://ppituruppaturu.com
+  description: 삐뚜루빠뚜루 게임 플랫폼 REST API 서버
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: PittuRu API
+  title: 삐뚜루빠뚜루 API
   version: "1.0"
 paths:
   /admin/games:

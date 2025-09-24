@@ -16,12 +16,12 @@ export default function Document() {
         
         {/* Open Graph 기본 설정 */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="PittuRu Gaming Platform" />
+        <meta property="og:site_name" content="삐뚜루빠뚜루 게임 플랫폼" />
         <meta property="og:locale" content="ko_KR" />
         
         {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@pitturu" />
+        <meta name="twitter:site" content="@ppituru" />
         
         {/* 파비콘 */}
         <link rel="icon" href="/favicon.ico" />
@@ -47,7 +47,7 @@ export default function Document() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              "name": "PittuRu Gaming Platform",
+              "name": "삐뚜루빠뚜루 게임 플랫폼",
               "alternateName": "피투루 게임 플랫폼",
               "url": "https://ppituruppaturu.com",
               "description": "5종 미니게임을 플레이하고 포인트를 획득하는 무료 게임 플랫폼",
@@ -60,8 +60,8 @@ export default function Document() {
                 "query-input": "required name=search_term_string"
               },
               "sameAs": [
-                "https://github.com/pitturu",
-                "https://discord.gg/pitturu"
+                "https://github.com/ppituru",
+                "https://discord.gg/ppituru"
               ]
             })
           }}
@@ -74,7 +74,7 @@ export default function Document() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "GameApplication",
-              "name": "PittuRu Gaming Platform",
+              "name": "삐뚜루빠뚜루 게임 플랫폼",
               "applicationCategory": "Game",
               "operatingSystem": "Web Browser",
               "offers": {
@@ -91,7 +91,7 @@ export default function Document() {
               },
               "author": {
                 "@type": "Organization",
-                "name": "PittuRu"
+                "name": "삐뚜루빠뚜루"
               },
               "datePublished": "2024-01-01",
               "description": "클릭 스피드, 메모리 매치, 숫자 맞추기 등 다양한 미니게임을 무료로 즐기고 포인트를 획득하세요"

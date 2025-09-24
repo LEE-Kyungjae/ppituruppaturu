@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
-namespace PittuRu.Core
+namespace Pppituru.Core
 {
     public enum GameState
     {

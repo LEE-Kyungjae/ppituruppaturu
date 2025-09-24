@@ -7,8 +7,8 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>로그인 - PittuRu PpattuRu</title>
-        <meta name="description" content="PittuRu PpattuRu 로그인" />
+        <title>로그인 - 삐뚜루빠뚜루</title>
+        <meta name="description" content="삐뚜루빠뚜루 로그인" />
       </Head>
 
       <div className="game-container">
@@ -16,7 +16,7 @@ export default function Login() {
           <div className="max-w-md w-full space-y-8">
             <div className="text-center">
               <Link href="/" className="text-4xl font-bold hover:text-purple-400 transition-colors">
-                🎮 PittuRu PpattuRu
+                🎮 삐뚜루빠뚜루
               </Link>
               <h2 className="mt-6 text-3xl font-extrabold">
                 게임을 시작해보세요!

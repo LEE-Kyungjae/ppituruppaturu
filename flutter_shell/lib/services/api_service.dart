@@ -23,7 +23,7 @@ class ApiService {
           // Add common headers
           options.headers['Content-Type'] = 'application/json';
           options.headers['Accept'] = 'application/json';
-          options.headers['User-Agent'] = 'PittuRu-Flutter/1.0.0';
+          options.headers['User-Agent'] = 'ppituru-flutter/1.0.0';
 
           print('[API] ${options.method} ${options.path}');
           if (options.data != null) {

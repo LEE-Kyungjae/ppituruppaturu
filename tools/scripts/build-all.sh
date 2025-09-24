@@ -1,5 +1,5 @@
 #!/bin/bash
-# PittuRu Hybrid Build Script - Unity + Flutter 통합 빌드
+# 삐뚜루빠뚜루 Hybrid Build Script - Unity + Flutter 통합 빌드
 set -e
 
 # 색상 출력용
@@ -203,7 +203,7 @@ cleanup() {
 
 # 메인 빌드 프로세스
 main() {
-    log_info "PittuRu 하이브리드 빌드 시작"
+    log_info "삐뚜루빠뚜루 하이브리드 빌드 시작"
     log_info "Unity: $UNITY_PROJECT_PATH"
     log_info "Flutter: $FLUTTER_PROJECT_PATH"
 

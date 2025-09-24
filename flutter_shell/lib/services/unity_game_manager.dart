@@ -2,8 +2,8 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 class UnityGameManager {
-  static const MethodChannel _channel = MethodChannel('pitturu.game/unity');
-  static const EventChannel _eventChannel = EventChannel('pitturu.game/unity_events');
+  static const MethodChannel _channel = MethodChannel('ppituru.game/unity');
+  static const EventChannel _eventChannel = EventChannel('ppituru.game/unity_events');
 
   static final StreamController<GameEvent> _gameEventController =
       StreamController<GameEvent>.broadcast();

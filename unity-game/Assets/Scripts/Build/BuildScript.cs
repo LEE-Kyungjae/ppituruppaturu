@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Build.Reporting;
 using System.IO;
 
-namespace PittuRu.Build
+namespace Pppituru.Build
 {
     public class BuildScript
     {
@@ -11,19 +11,19 @@ namespace PittuRu.Build
         private const string ANDROID_BUILD_PATH = BUILD_PATH + "/Android";
         private const string IOS_BUILD_PATH = BUILD_PATH + "/iOS";
 
-        [MenuItem("PittuRu/Build/Android")]
+        [MenuItem("Pppituru/Build/Android")]
         public static void BuildAndroid()
         {
             BuildForPlatform(BuildTarget.Android, ANDROID_BUILD_PATH);
         }
 
-        [MenuItem("PittuRu/Build/iOS")]
+        [MenuItem("Pppituru/Build/iOS")]
         public static void BuildIOS()
         {
             BuildForPlatform(BuildTarget.iOS, IOS_BUILD_PATH);
         }
 
-        [MenuItem("PittuRu/Build/Android for Flutter")]
+        [MenuItem("Pppituru/Build/Android for Flutter")]
         public static void BuildAndroidForFlutter()
         {
             BuildForFlutter();
@@ -326,7 +326,7 @@ namespace PittuRu.Build
             }
         }
 
-        [MenuItem("PittuRu/Build/Clean Build Folder")]
+        [MenuItem("Pppituru/Build/Clean Build Folder")]
         public static void CleanBuildFolder()
         {
             if (Directory.Exists(BUILD_PATH))
@@ -340,7 +340,7 @@ namespace PittuRu.Build
             }
         }
 
-        [MenuItem("PittuRu/Build/Open Build Folder")]
+        [MenuItem("Pppituru/Build/Open Build Folder")]
         public static void OpenBuildFolder()
         {
             if (!Directory.Exists(BUILD_PATH))

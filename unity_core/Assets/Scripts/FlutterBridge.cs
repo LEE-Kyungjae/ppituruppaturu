@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Newtonsoft.Json;
 
-namespace PittuRu.Core
+namespace Pppituru.Core
 {
     /// <summary>
     /// Bridge for communication between Unity and Flutter

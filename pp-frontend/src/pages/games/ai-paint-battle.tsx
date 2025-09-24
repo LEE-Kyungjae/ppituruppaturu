@@ -31,7 +31,7 @@ export default function AIPaintBattle() {
   return (
     <>
       <Head>
-        <title>AI Paint Battle - PittuRu PpattuRu</title>
+        <title>AI Paint Battle - 삐뚜루빠뚜루</title>
         <meta name="description" content="AI와 함께하는 실시간 페인팅 배틀" />
       </Head>
       <div className="ai-paint-battle min-h-screen bg-gray-900 text-white p-4">

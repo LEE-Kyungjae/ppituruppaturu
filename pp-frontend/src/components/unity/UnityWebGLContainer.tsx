@@ -23,7 +23,7 @@ declare global {
   interface Window {
     createUnityInstance: (canvas: HTMLCanvasElement, config: any, onProgress?: (progress: number) => void) => Promise<UnityInstance>
     unityInstances: Map<string, UnityInstance>
-    PittuRuUnityBridge: {
+    ppituruUnityBridge: {
       sendToFlutter: (message: any) => void
       receiveFromFlutter: (message: any) => void
     }
@@ -31,7 +31,7 @@ declare global {
 }
 
 export function UnityWebGLContainer({
-  unityBuildPath = '/unity-builds/pitturu-game',
+  unityBuildPath = '/unity-builds/ppituru-game',
   width = '100%',
   height = '600px',
   className = '',
@@ -51,7 +51,7 @@ export function UnityWebGLContainer({
   useEffect(() => {
     const checkUnityBuild = async () => {
       try {
-        const response = await fetch(`${unityBuildPath}/Build/pitturu-game.loader.js`)
+        const response = await fetch(`${unityBuildPath}/Build/ppituru-game.loader.js`)
         setIsUnityAvailable(response.ok)
 
         if (!response.ok) {
@@ -76,16 +76,16 @@ export function UnityWebGLContainer({
       try {
         // Unity 로더 스크립트 동적 로드
         if (!window.createUnityInstance) {
-          await loadUnityScript(`${unityBuildPath}/Build/pitturu-game.loader.js`)
+          await loadUnityScript(`${unityBuildPath}/Build/ppituru-game.loader.js`)
         }
 
         const config = {
-          dataUrl: `${unityBuildPath}/Build/pitturu-game.data`,
-          frameworkUrl: `${unityBuildPath}/Build/pitturu-game.framework.js`,
-          codeUrl: `${unityBuildPath}/Build/pitturu-game.wasm`,
+          dataUrl: `${unityBuildPath}/Build/ppituru-game.data`,
+          frameworkUrl: `${unityBuildPath}/Build/ppituru-game.framework.js`,
+          codeUrl: `${unityBuildPath}/Build/ppituru-game.wasm`,
           streamingAssetsUrl: 'StreamingAssets',
-          companyName: 'PittuRu',
-          productName: 'PittuRu Paint Battle',
+          companyName: '삐뚜루빠뚜루',
+          productName: '삐뚜루빠뚜루 페인트 배틀',
           productVersion: '1.0.0',
         }
 
@@ -122,8 +122,8 @@ export function UnityWebGLContainer({
 
   // Unity 브리지 설정
   useEffect(() => {
-    if (!window.PittuRuUnityBridge) {
-      window.PittuRuUnityBridge = {
+    if (!window.ppituruUnityBridge) {
+      window.ppituruUnityBridge = {
         sendToFlutter: (message: any) => {
           console.log('Unity → Flutter:', message)
           // Flutter와의 메시지 전달 구현
@@ -146,7 +146,7 @@ export function UnityWebGLContainer({
     // Flutter에서 온 메시지 수신
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'flutter-to-unity') {
-        window.PittuRuUnityBridge.receiveFromFlutter(event.data.data)
+        window.ppituruUnityBridge.receiveFromFlutter(event.data.data)
       }
     }
 
@@ -205,7 +205,7 @@ export function UnityWebGLContainer({
     ctx.fillStyle = '#00ff88'
     ctx.font = '24px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('PittuRu Unity WebGL', width / 2, 50)
+    ctx.fillText('삐뚜루빠뚜루 Unity WebGL', width / 2, 50)
 
     // 상태 표시
     ctx.fillStyle = '#ffffff'
@@ -225,7 +225,7 @@ export function UnityWebGLContainer({
       ctx.fillStyle = '#00ff88'
       ctx.font = '24px Arial'
       ctx.textAlign = 'center'
-      ctx.fillText('PittuRu Unity WebGL', width / 2, 50)
+      ctx.fillText('삐뚜루빠뚜루 Unity WebGL', width / 2, 50)
 
       ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
       ctx.font = '16px Arial'

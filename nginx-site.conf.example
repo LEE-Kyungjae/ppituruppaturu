@@ -1,5 +1,5 @@
-# PittuRu Blue/Green 배포용 Nginx 설정 예시
-# /etc/nginx/sites-available/pitturu.conf
+# 삐뚜루빠뚜루 블루/그린 배포용 Nginx 설정 예시
+# /etc/nginx/sites-available/ppituru.conf
 
 server {
     listen 80;

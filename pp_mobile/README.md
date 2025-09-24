@@ -1,6 +1,6 @@
-# PittuRu PpattuRu Mobile App
+# 삐뚜루빠뚜루 Mobile App
 
-Flutter WebView 앱으로 PittuRu 게임 플랫폼에 모바일에서 접속할 수 있습니다.
+Flutter WebView 앱으로 삐뚜루빠뚜루 게임 플랫폼에 모바일에서 접속할 수 있습니다.
 
 ## 기능
 

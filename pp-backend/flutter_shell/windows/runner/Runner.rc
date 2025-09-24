@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.pitturu.game" "\0"
+            VALUE "CompanyName", "com.ppituru.game" "\0"
             VALUE "FileDescription", "flutter_shell" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "flutter_shell" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.pitturu.game. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.ppituru.game. All rights reserved." "\0"
             VALUE "OriginalFilename", "flutter_shell.exe" "\0"
             VALUE "ProductName", "flutter_shell" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

@@ -1,4 +1,4 @@
-# PittuRu Backend - Go API Server
+# 삐뚜루빠뚜루 Backend - Go API Server
 
 **현대적인 Go 웹 애플리케이션**: Gin, GORM, PostgreSQL, Redis를 활용한 고성능 게임 플랫폼 백엔드
 
@@ -130,7 +130,7 @@ PORT=8080
 GIN_MODE=debug
 
 # 데이터베이스
-DATABASE_URL=postgres://user:password@localhost:5432/pitturu?sslmode=disable
+DATABASE_URL=postgres://user:password@localhost:5432/ppituru?sslmode=disable
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -243,7 +243,7 @@ make docker-build
 make docker-run
 
 # 또는 직접 실행
-docker run -p 8080:8080 --env-file .env pitturu-backend:latest
+docker run -p 8080:8080 --env-file .env ppituru-backend:latest
 ```
 
 ### 환경별 설정
@@ -284,7 +284,7 @@ curl http://localhost:8080/health
 pg_isready -h localhost -p 5432
 
 # 연결 테스트
-psql -h localhost -U pitturu -d pitturu
+psql -h localhost -U ppituru -d ppituru
 ```
 
 #### 2. Redis 연결 실패

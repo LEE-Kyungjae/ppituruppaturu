@@ -2,10 +2,10 @@ import { GameType, GameScore, GameResult, GameStats } from './game-engine/types'
 
 // 로컬 스토리지 키 상수
 const STORAGE_KEYS = {
-  USER_STATS: 'pitturu_user_stats',
-  GAME_SCORES: 'pitturu_game_scores',
-  GAME_SETTINGS: 'pitturu_game_settings',
-  LEADERBOARD: 'pitturu_leaderboard'
+  USER_STATS: 'ppituru_user_stats',
+  GAME_SCORES: 'ppituru_game_scores',
+  GAME_SETTINGS: 'ppituru_game_settings',
+  LEADERBOARD: 'ppituru_leaderboard'
 } as const
 
 // 사용자 통계 인터페이스

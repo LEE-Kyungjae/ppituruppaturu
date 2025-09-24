@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AI Asset Generation Pipeline
-Automated asset generation for the PittuRu game using multiple AI services.
+Automated asset generation for the 삐뚜루빠뚜루 game using multiple AI services.
 """
 
 import os

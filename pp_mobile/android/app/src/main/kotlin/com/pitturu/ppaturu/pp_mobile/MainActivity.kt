@@ -1,4 +1,4 @@
-package com.pitturu.ppaturu.pp_mobile
+package com.ppituru.ppaturu.pp_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

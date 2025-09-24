@@ -1,4 +1,4 @@
-# PittuRu Project - AI-Powered 1-Person Development Makefile
+# 삐뚜루빠뚜루 프로젝트 - AI 기반 1인 개발 Makefile
 # Comprehensive automation for Unity + Flutter + Go backend hybrid architecture
 
 .PHONY: help setup build test deploy clean ai-generate assets unity flutter backend all
@@ -16,7 +16,7 @@ CYAN := \033[0;36m
 NC := \033[0m # No Color
 
 # Project Configuration
-PROJECT_NAME := pitturu
+PROJECT_NAME := ppituru
 UNITY_PROJECT := unity_core
 FLUTTER_PROJECT := flutter_shell
 BACKEND_PROJECT := pp-backend
@@ -33,7 +33,7 @@ AI_CONFIG := tools/configs/game_assets.json
 AI_SCRIPT := tools/scripts/generate_assets.py
 
 help: ## Show this help message
-	@echo "$(CYAN)🎮 PittuRu Project - AI-Powered Development$(NC)"
+	@echo "$(CYAN)🎮 삐뚜루빠뚜루 프로젝트 - AI 기반 개발$(NC)"
 	@echo "$(YELLOW)Usage: make [target]$(NC)"
 	@echo ""
 	@echo "$(BLUE)📋 Main Targets:$(NC)"
@@ -167,7 +167,7 @@ build-flutter: ## Flutter 앱 빌드
 
 build-backend: ## 백엔드 빌드
 	@echo -e "$(BLUE)백엔드 빌드 시작...$(NC)"
-	@cd $(BACKEND_PROJECT) && go build -o ../build/pitturu-server ./cmd/server/
+	@cd $(BACKEND_PROJECT) && go build -o ../build/ppituru-server ./cmd/server/
 	@echo -e "$(GREEN)백엔드 빌드 완료!$(NC)"
 
 build-all: ## 전체 프로젝트 빌드 (Unity + Flutter)
@@ -180,7 +180,7 @@ build-all: ## 전체 프로젝트 빌드 (Unity + Flutter)
 dev-backend: ## 백엔드 개발 서버 시작
 	@echo -e "$(BLUE)백엔드 개발 서버 시작...$(NC)"
 	@cd $(BACKEND_PROJECT) && \
-		DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" \
+		DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" \
 		go run cmd/server/main.go
 
 dev-frontend: ## 프론트엔드 개발 서버 시작
@@ -315,7 +315,7 @@ status: ## 프로젝트 상태 확인
 	@echo -e "$(YELLOW)=== 빌드 결과물 ====$(NC)"
 	@[ -f "build/unity/unityLibrary/build.gradle" ] && echo "✅ Unity 빌드" || echo "❌ Unity 빌드"
 	@[ -f "$(FLUTTER_PROJECT)/build/app/outputs/flutter-apk/app-release.apk" ] && echo "✅ Flutter APK" || echo "❌ Flutter APK"
-	@[ -f "build/pitturu-server" ] && echo "✅ 백엔드 바이너리" || echo "❌ 백엔드 바이너리"
+	@[ -f "build/ppituru-server" ] && echo "✅ 백엔드 바이너리" || echo "❌ 백엔드 바이너리"
 
 # 통합 워크플로우
 workflow-full: ## 전체 개발 워크플로우 (AI 생성 → 빌드 → 테스트)

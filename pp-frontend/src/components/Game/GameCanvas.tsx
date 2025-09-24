@@ -75,12 +75,12 @@ export default function GameCanvas({
         const userData = localStorage.getItem('user');
         if (userData) {
           const user = JSON.parse(userData);
-          return user.nickname || 'PittuRu Player';
+          return user.nickname || '삐뚜루빠뚜루 플레이어';
         }
       } catch (error) {
         console.error('Failed to get user data:', error);
       }
-      return 'PittuRu Player'; // 기본값
+      return '삐뚜루빠뚜루 플레이어'; // 기본값
     };
 
     // 닉네임 표시 (플레이어 위에)

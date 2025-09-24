@@ -1,12 +1,12 @@
-# 🚀 PittuRu 배포 가이드
+# 🚀 삐뚜루빠뚜루 배포 가이드
 
 ## 🏗️ 인프라 설정 (한 번만 실행)
 
 pp-infra 레포지토리에서 서버 환경을 설정합니다:
 
 ```bash
-# pp-infra/scripts/setup-pitturu-server.sh를 서버에서 실행
-sudo ./setup-pitturu-server.sh
+# pp-infra/scripts/setup-ppituru-server.sh를 서버에서 실행
+sudo ./setup-ppituru-server.sh
 ```
 
 **설치되는 것들:**
@@ -14,7 +14,7 @@ sudo ./setup-pitturu-server.sh
 - Nginx (리버스 프록시)
 - UFW 방화벽
 - Fail2Ban 보안
-- /opt/pitturu 디렉토리
+- /opt/ppituru 디렉토리
 
 ## 🎯 애플리케이션 배포 (자동)
 
@@ -48,7 +48,7 @@ Repository Settings → Secrets and variables → Actions:
 ssh ubuntu@152.67.201.101
 
 # 환경변수 파일 생성
-cd /opt/pitturu
+cd /opt/ppituru
 cp .env.example .env
 nano .env  # 실제 값으로 수정
 ```
@@ -78,7 +78,7 @@ REFRESH_SECRET=32글자_이상_시크릿
 ### 배포 실패시
 ```bash
 # 서버에서 확인
-cd /opt/pitturu
+cd /opt/ppituru
 docker-compose logs
 
 # 수동 재시작

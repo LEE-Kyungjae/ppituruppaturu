@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 
 async function openWebsite() {
-  console.log('🌐 PittuRu 웹사이트 열기 시작...');
+  console.log('🌐 삐뚜루빠뚜루 웹사이트 열기 시작...');
 
   const browser = await chromium.launch({
     headless: false,  // 브라우저 창이 보이도록
@@ -34,10 +34,10 @@ async function openWebsite() {
 
     // 스크린샷 촬영
     await page.screenshot({
-      path: '/Users/ze/work/pp/pitturu-screenshot.png',
+      path: '/Users/ze/work/pp/ppituru-screenshot.png',
       fullPage: true
     });
-    console.log('📸 스크린샷 저장: /Users/ze/work/pp/pitturu-screenshot.png');
+    console.log('📸 스크린샷 저장: /Users/ze/work/pp/ppituru-screenshot.png');
 
     // 5초 동안 브라우저 유지
     console.log('⏱️  5초 후 브라우저가 닫힙니다...');

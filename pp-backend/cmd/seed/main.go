@@ -297,7 +297,7 @@ func hardCleanData(db *sql.DB) {
 
 func printHelp() {
 	fmt.Print(`
-🎮 PittuRu 더미 데이터 시딩 도구
+🎮 삐뚜루빠뚜루 더미 데이터 시딩 도구
 
 사용법:
   go run cmd/seed/main.go -action=<command>

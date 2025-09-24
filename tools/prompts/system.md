@@ -1,4 +1,4 @@
-# PittuRu AI System Prompts & Guardrails
+# 삐뚜루빠뚜루 AI System Prompts & Guardrails
 
 ## 🚨 절대 규칙 (Never Break)
 
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour, IGameSystem
 // Flutter ↔ Unity 통신은 이 클래스를 통해서만
 public static class FlutterBridge
 {
-    private const string CHANNEL_NAME = "pitturu.game/unity";
+    private const string CHANNEL_NAME = "ppituru.game/unity";
 
     public static void SendToFlutter(string method, Dictionary<string, object> data) { }
     public static void RegisterCallback(string method, Action<Dictionary<string, object>> callback) { }
@@ -84,7 +84,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final gameState = ref.watch(gameStateProvider);
 
     return Scaffold(
-      appBar: const PitturuAppBar(title: 'Game'),
+      appBar: const ppituruAppBar(title: 'Game'),
       body: const GameView(),
       floatingActionButton: const GameFAB(),
     );
@@ -113,7 +113,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 ```dart
 // Unity 임베딩 매니저
 class UnityGameManager {
-  static const MethodChannel _channel = MethodChannel('pitturu.game/unity');
+  static const MethodChannel _channel = MethodChannel('ppituru.game/unity');
 
   static Future<bool> startGame(GameConfig config) async { }
   static Future<GameResult> getGameResult() async { }

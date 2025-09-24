@@ -304,7 +304,7 @@ jobs:
         echo "🧹 배포 전 포트 충돌 방지..."
         ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'EOF'
           set -euxo pipefail
-          cd /opt/pitturu
+          cd /opt/ppituru
 
           for port in 8081 8082 8083 8084; do
             echo "🔍 포트 점유 상태 확인: $port"
@@ -323,22 +323,22 @@ jobs:
 
     - name: Upload deployment artefacts
       run: |
-        scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
-        scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
-        scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
+        scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
+        scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
+        scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ppituru/
         scp -v nginx-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-backend-api-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-backend-api-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-backend-ws-blue.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-backend-ws-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
-        scp -v nginx-pitturu-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        scp -v nginx-ppituru-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
 
     - name: Execute blue/green deployment
       run: |
         ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'EOF'
           set -euxo pipefail
-          cd /opt/pitturu
+          cd /opt/ppituru
 
           echo "🔐 Docker Hub 로그인"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin

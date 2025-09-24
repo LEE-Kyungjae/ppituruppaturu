@@ -46,8 +46,8 @@ export default function HybridGame() {
     frameworkUrl: '/unity/Build/WebGL.framework.js',
     codeUrl: '/unity/Build/WebGL.wasm',
     streamingAssetsUrl: '/unity/StreamingAssets',
-    companyName: 'PittuRu',
-    productName: 'PittuRu Paint Game',
+    companyName: '삐뚜루빠뚜루',
+    productName: '삐뚜루빠뚜루 페인트 게임',
     productVersion: '1.0'
   }
 
@@ -218,7 +218,7 @@ export default function HybridGame() {
   return (
     <>
       <Head>
-        <title>PittuRu - Hybrid Game</title>
+        <title>삐뚜루빠뚜루 - Hybrid Game</title>
         <meta name="description" content="Unity + Flutter + Web 하이브리드 게임" />
       </Head>
 

@@ -108,7 +108,7 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
       backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
         title: const Text(
-          'PittuRu Game Hub',
+          '삐뚜루빠뚜루 게임 허브',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

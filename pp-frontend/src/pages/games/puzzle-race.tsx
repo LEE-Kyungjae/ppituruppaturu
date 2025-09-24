@@ -150,7 +150,7 @@ export default function PuzzleRacePage() {
   return (
     <>
       <Head>
-        <title>퍼즐 레이스 - PittuRu</title>
+        <title>퍼즐 레이스 - 삐뚜루빠뚜루</title>
         <meta name="description" content="빠르게 퍼즐을 풀고 상대를 이기세요! 두뇌와 속도의 경쟁" />
       </Head>
 

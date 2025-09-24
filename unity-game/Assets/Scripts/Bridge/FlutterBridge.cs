@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System;
 using System.Runtime.InteropServices;
 
-namespace PittuRu.Bridge
+namespace Pppituru.Bridge
 {
     public static class FlutterBridge
     {
-        private const string CHANNEL_NAME = "pitturu.game/unity";
+        private const string CHANNEL_NAME = "ppituru.game/unity";
         private static Dictionary<string, Action<Dictionary<string, object>>> _callbacks =
             new Dictionary<string, Action<Dictionary<string, object>>>();
 
@@ -155,7 +155,7 @@ namespace PittuRu.Bridge
             else
             {
                 // Fallback to direct Unity static method call
-                using (var unityClass = new AndroidJavaClass("com.pitturu.game.UnityBridge"))
+                using (var unityClass = new AndroidJavaClass("com.ppituru.game.UnityBridge"))
                 {
                     unityClass.CallStatic("sendToFlutter", method, jsonData);
                 }

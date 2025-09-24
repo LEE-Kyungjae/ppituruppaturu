@@ -1,4 +1,4 @@
-# PittuRu Project
+# 삐뚜루빠뚜루 Project
 
 ## 프로젝트 구조
 

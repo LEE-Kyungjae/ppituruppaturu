@@ -1,4 +1,4 @@
-# 🎮 PittuRu - 물리 엔진 기반 멀티플레이어 게임 플랫폼
+# 🎮 삐뚜루빠뚜루 - 물리 엔진 기반 멀티플레이어 게임 플랫폼
 
 > **실시간 물리 시뮬레이션 기반 온라인 게임 플랫폼**
 
@@ -39,7 +39,7 @@ docker-compose -f docker-compose.dev.yml up -d
 ```bash
 cd pp-backend
 # 환경변수 설정
-export DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable"
+export DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable"
 export JWT_SECRET="your-jwt-secret-key-here"
 export REFRESH_SECRET="your-refresh-secret-key-here"
 
@@ -112,7 +112,7 @@ curl http://localhost:8080/health
 curl http://localhost:8082/health
 
 # 데이터베이스 연결 확인
-docker exec pitturu_postgres_dev pg_isready -U postgres
+docker exec ppituru_postgres_dev pg_isready -U postgres
 ```
 
 ## 🚨 중요 사항

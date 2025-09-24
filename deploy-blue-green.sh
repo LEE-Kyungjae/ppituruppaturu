@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-STACK_DIR="/opt/pitturu"
+STACK_DIR="/opt/ppituru"
 
 BACKEND_IMAGE=${BACKEND_IMAGE:-ze2l/ppituruppaturu-backend:latest}
 FRONTEND_IMAGE=${FRONTEND_IMAGE:-ze2l/ppituruppaturu-frontend:latest}
@@ -12,7 +12,7 @@ echo "📦 Frontend image: $FRONTEND_IMAGE"
 
 # 네트워크 생성 함수
 ensure_network(){
-  local network_name="pitturu-core"
+  local network_name="ppituru-core"
   if ! docker network inspect "$network_name" >/dev/null 2>&1; then
     echo "🌐 Creating Docker network: $network_name"
     docker network create --driver bridge "$network_name"
@@ -21,7 +21,7 @@ ensure_network(){
   fi
 }
 BLUE_PORT=3001; GREEN_PORT=3002
-BLUE_NAME="pitturu-blue"; GREEN_NAME="pitturu-green"
+BLUE_NAME="ppituru-blue"; GREEN_NAME="ppituru-green"
 COMPOSE_BLUE="$STACK_DIR/docker-compose.blue.yml"
 COMPOSE_GREEN="$STACK_DIR/docker-compose.green.yml"
 UPSTREAM_DIR="/etc/nginx/upstreams"

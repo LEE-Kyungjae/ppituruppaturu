@@ -473,7 +473,7 @@ const AIPaintBattlePageInner: React.FC = () => {
   return (
     <>
       <Head>
-        <title>AI Paint Battle - PittuRu</title>
+        <title>AI Paint Battle - 삐뚜루빠뚜루</title>
         <meta name="description" content="AI-powered collaborative paint battle game" />
       </Head>
 

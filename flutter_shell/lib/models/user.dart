@@ -74,7 +74,7 @@ class User {
     return User(
       id: 'demo_user_001',
       username: 'DemoPlayer',
-      email: 'demo@pitturu.com',
+      email: 'demo@ppituruppaturu.com',
       avatar: null,
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
       lastLoginAt: DateTime.now(),

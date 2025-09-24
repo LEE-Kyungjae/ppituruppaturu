@@ -91,7 +91,7 @@ const FeaturesSection = () => {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl font-bold text-center mb-12"
         >
-          Why PittuRu?
+          왜 삐뚜루빠뚜루인가요?
         </motion.h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, i) => (
@@ -114,7 +114,7 @@ const CTASection = () => {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl font-bold mb-4"
         >
-          Ready to Dive In?
+          지금 바로 시작해 볼까요?
         </motion.h2>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
@@ -170,7 +170,7 @@ export default function Home() {
   };
 
   const seoProps = generateSEO({
-    title: 'PittuRu - The Next Dimension of Gaming',
+    title: '삐뚜루빠뚜루 - The Next Dimension of Gaming',
     description: 'Experience a seamless fusion of technologies, creating a gaming platform that\'s powerful, flexible, and endlessly fun.',
     keywords: ['mini-games', 'browser games', 'free games', 'online gaming'],
     url: '/'

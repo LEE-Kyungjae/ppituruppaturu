@@ -186,7 +186,7 @@ const GameDashboard = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">
-            🎮 Gaming Platform
+            🎮 삐뚜루빠뚜루 게임 플랫폼
           </h1>
           <p className="text-xl text-gray-300">
             미니게임으로 포인트를 모으고 순위를 올려보세요!

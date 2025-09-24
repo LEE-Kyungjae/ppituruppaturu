@@ -1,9 +1,9 @@
 #!/bin/bash
-# PittuRu 통합 배포 스크립트
+# 삐뚜루빠뚜루 통합 배포 스크립트
 
 # set -e  # 더 관대한 배포를 위해 strict mode 비활성화
 
-echo "🚀 PittuRu 통합 배포 시작..."
+echo "🚀 삐뚜루빠뚜루 통합 배포 시작..."
 
 # 색상 코드
 GREEN='\033[0;32m'

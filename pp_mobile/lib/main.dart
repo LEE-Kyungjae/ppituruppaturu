@@ -5,16 +5,16 @@ import 'screens/game_hub_screen.dart';
 import 'games/simple_jump_game.dart';
 
 void main() {
-  runApp(const PittuRuApp());
+  runApp(const PppituruApp());
 }
 
-class PittuRuApp extends StatelessWidget {
-  const PittuRuApp({super.key});
+class PppituruApp extends StatelessWidget {
+  const PppituruApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PittuRu PpattuRu',
+      title: '삐뚜루빠뚜루',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.purple,
@@ -138,7 +138,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          '🎮 PittuRu PpattuRu',
+          '🎮 삐뚜루빠뚜루',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

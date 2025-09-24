@@ -65,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <span className={`text-xl font-bold hidden sm:block transition-colors duration-300 ${
               isScrolled ? 'text-flutter-gray-800' : 'text-flutter-gray-800'
             }`}>
-              PittuRu Gaming
+              삐뚜루빠뚜루 게임
             </span>
           </motion.div>
 

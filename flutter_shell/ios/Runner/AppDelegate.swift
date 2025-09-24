@@ -3,8 +3,8 @@ import Flutter
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
-    private let CHANNEL = "pitturu.game/unity"
-    private let EVENT_CHANNEL = "pitturu.game/unity_events"
+    private let CHANNEL = "ppituru.game/unity"
+    private let EVENT_CHANNEL = "ppituru.game/unity_events"
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
     private var eventSink: FlutterEventSink?

@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using PittuRu.Core;
+using Pppituru.Core;
 
-namespace PittuRu.Core
+namespace Pppituru.Core
 {
     /// <summary>
     /// Main game manager for the paint coverage game

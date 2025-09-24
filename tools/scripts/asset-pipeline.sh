@@ -1,5 +1,5 @@
 #!/bin/bash
-# PittuRu AI Asset Pipeline - 2D/3D 에셋 자동 생성 및 최적화
+# 삐뚜루빠뚜루 AI Asset Pipeline - 2D/3D 에셋 자동 생성 및 최적화
 set -e
 
 # 색상 출력용
@@ -341,7 +341,7 @@ cleanup() {
 
 # 메인 함수
 main() {
-    log_info "🎨 PittuRu AI 에셋 파이프라인 시작"
+    log_info "🎨 삐뚜루빠뚜루 AI 에셋 파이프라인 시작"
 
     case "${1:-all}" in
         "characters")
@@ -385,7 +385,7 @@ main() {
 
 # 도움말
 show_help() {
-    echo "PittuRu AI Asset Pipeline"
+    echo "삐뚜루빠뚜루 AI Asset Pipeline"
     echo ""
     echo "사용법: $0 [command]"
     echo ""

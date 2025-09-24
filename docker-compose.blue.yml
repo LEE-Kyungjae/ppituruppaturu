@@ -1,7 +1,7 @@
-name: pitturu-blue
+name: ppituru-blue
 
 networks:
-  pitturu-core:
+  ppituru-core:
     external: true
 
 services:
@@ -12,10 +12,10 @@ services:
       - "127.0.0.1:8081:8080"
       - "127.0.0.1:8083:8082"
     networks:
-      - pitturu-core
+      - ppituru-core
     environment:
-      - DSN=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pitturu-postgres:5432/${POSTGRES_DB:-pitturu_db}?sslmode=disable
-      - REDIS_URL=redis://pitturu-redis:6379
+      - DSN=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@ppituru-postgres:5432/${POSTGRES_DB:-ppituru_db}?sslmode=disable
+      - REDIS_URL=redis://ppituru-redis:6379
       - JWT_SECRET=${JWT_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
     healthcheck:
@@ -31,7 +31,7 @@ services:
     ports:
       - "127.0.0.1:3001:3000"
     networks:
-      - pitturu-core
+      - ppituru-core
     environment:
       - NEXT_PUBLIC_API_URL=/api
       - NEXT_PUBLIC_WS_URL=/ws

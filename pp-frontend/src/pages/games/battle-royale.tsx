@@ -134,7 +134,7 @@ export default function BattleRoyalePage() {
   return (
     <>
       <Head>
-        <title>물리 배틀로얄 - PittuRu</title>
+        <title>물리 배틀로얄 - 삐뚜루빠뚜루</title>
         <meta name="description" content="물리 엔진을 활용한 실시간 배틀로얄 게임!" />
       </Head>
 

@@ -159,12 +159,12 @@ sudo chmod +x /usr/local/bin/ctop
 ### 애플리케이션 디렉토리
 ```bash
 # 배포 디렉토리 생성
-sudo mkdir -p /opt/pitturu
-sudo chown ubuntu:ubuntu /opt/pitturu
+sudo mkdir -p /opt/ppituru
+sudo chown ubuntu:ubuntu /opt/ppituru
 
 # 로그 디렉토리
-sudo mkdir -p /var/log/pitturu
-sudo chown ubuntu:ubuntu /var/log/pitturu
+sudo mkdir -p /var/log/ppituru
+sudo chown ubuntu:ubuntu /var/log/ppituru
 
 # 백업 디렉토리
 sudo mkdir -p /opt/backups
@@ -187,7 +187,7 @@ DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/opt/backups"
 
 # PostgreSQL 백업
-docker exec pitturu_postgres pg_dump -U postgres pitturu_db > $BACKUP_DIR/db_backup_$DATE.sql
+docker exec ppituru_postgres pg_dump -U postgres ppituru_db > $BACKUP_DIR/db_backup_$DATE.sql
 
 # 7일 이상 된 백업 삭제
 find $BACKUP_DIR -name "db_backup_*.sql" -mtime +7 -delete
@@ -199,7 +199,7 @@ echo "Database backup completed: db_backup_$DATE.sql"
 ```bash
 # 매일 새벽 2시 백업
 sudo crontab -e
-# 추가: 0 2 * * * /opt/backups/backup-db.sh >> /var/log/pitturu/backup.log 2>&1
+# 추가: 0 2 * * * /opt/backups/backup-db.sh >> /var/log/ppituru/backup.log 2>&1
 ```
 
 ## SSH 키 설정
@@ -207,13 +207,13 @@ sudo crontab -e
 ### GitHub Actions용 SSH 키
 ```bash
 # 배포용 SSH 키 생성 (pp-infra에서 실행)
-ssh-keygen -t ed25519 -f ~/.ssh/pitturu_deploy -N ""
+ssh-keygen -t ed25519 -f ~/.ssh/ppituru_deploy -N ""
 
 # 공개키를 서버에 추가
-cat ~/.ssh/pitturu_deploy.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/ppituru_deploy.pub >> ~/.ssh/authorized_keys
 
 # 개인키는 GitHub Secrets에 등록: DEPLOY_SSH_KEY
-cat ~/.ssh/pitturu_deploy
+cat ~/.ssh/ppituru_deploy
 ```
 
 ## 성능 최적화

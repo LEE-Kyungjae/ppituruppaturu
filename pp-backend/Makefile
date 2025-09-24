@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Project configuration
-PROJECT_NAME := pitturu-backend
+PROJECT_NAME := ppituru-backend
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -195,7 +195,7 @@ docs-check: ## Check documentation links
 .PHONY: db-migrate-up
 db-migrate-up: ## Run database migrations up
 	@echo "⬆️  Running database migrations up..."
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/migrate/main.go up
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/migrate/main.go up
 
 .PHONY: db-migrate-down
 db-migrate-down: ## Run database migrations down (usage: make db-migrate-down STEPS=1)
@@ -230,27 +230,27 @@ db-reset: ## Reset database (WARNING: destructive)
 .PHONY: db-seed
 db-seed: ## Seed database with sample data
 	@echo "🌱 Seeding database with sample data..."
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=seed
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/seed/main.go -action=seed
 
 .PHONY: db-clean
 db-clean: ## Clean sample/test data only (safe)
 	@echo "🧹 Cleaning sample data only..."
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=clean
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/seed/main.go -action=clean
 
 .PHONY: db-clean-all
 db-clean-all: ## Clean ALL data from database (WARNING: destructive)
 	@echo "🚨 WARNING: This will delete ALL data!"
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-clean
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-clean
 
 .PHONY: db-seed-reset
 db-seed-reset: ## Reset sample data only (safe)
 	@echo "🔄 Resetting sample data only..."
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=reset
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/seed/main.go -action=reset
 
 .PHONY: db-reset-all
 db-reset-all: ## Reset ALL data with fresh sample data (WARNING: destructive)
 	@echo "🚨 WARNING: This will delete ALL data and reseed!"
-	@DSN="postgres://postgres:pitturu_dev_2024@localhost:5432/pitturu_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-reset
+	@DSN="postgres://postgres:ppituru_dev_2024@localhost:5432/ppituru_dev_db?sslmode=disable" go run cmd/seed/main.go -action=hard-reset
 
 # =============================================================================
 # DOCKER & DEPLOYMENT

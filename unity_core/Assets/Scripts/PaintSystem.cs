@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PittuRu.Core;
+using Pppituru.Core;
 
-namespace PittuRu.Core
+namespace Pppituru.Core
 {
     /// <summary>
     /// Handles paint application, coverage calculation, and visual effects

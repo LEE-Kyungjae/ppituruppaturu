@@ -22,18 +22,18 @@ void main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const PittuRuApp(),
+      child: const PppituruApp(),
     ),
   );
 }
 
-class PittuRuApp extends ConsumerWidget {
-  const PittuRuApp({super.key});
+class PppituruApp extends ConsumerWidget {
+  const PppituruApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'PittuRu Game',
+      title: '삐뚜루빠뚜루 게임',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
@@ -101,7 +101,7 @@ class SplashScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const Text(
-              'PittuRu',
+              '삐뚜루빠뚜루',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

@@ -70,7 +70,7 @@ export default function GameLobbyPage() {
   return (
     <>
       <Head>
-        <title>{gameName} 로비 - PittuRu</title>
+        <title>{gameName} 로비 - 삐뚜루빠뚜루</title>
         <meta name="description" content={`${gameName} 멀티플레이어 로비에서 다른 플레이어들과 함께 게임을 즐기세요!`} />
       </Head>
 

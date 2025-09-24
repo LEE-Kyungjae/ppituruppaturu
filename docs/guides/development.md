@@ -1,6 +1,6 @@
 # 개발 가이드
 
-PittuRu PpattuRu 플랫폼 개발을 위한 가이드
+삐뚜루빠뚜루 플랫폼 개발을 위한 가이드
 
 ## 🚀 시작하기
 
@@ -9,7 +9,7 @@ PittuRu PpattuRu 플랫폼 개발을 위한 가이드
 ```bash
 # 1. 레포지토리 클론
 git clone <repository-url>
-cd pitturu-ppaturu
+cd ppituru-ppaturu
 
 # 2. Frontend 설정
 cd frontend

@@ -169,7 +169,7 @@ export default function RhythmActionPage() {
   return (
     <>
       <Head>
-        <title>리듬 액션 - PittuRu</title>
+        <title>리듬 액션 - 삐뚜루빠뚜루</title>
         <meta name="description" content="음악에 맞춰 리듬을 맞추는 액션 게임! 완벽한 타이밍을 노려보세요" />
       </Head>
 
