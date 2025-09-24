@@ -40,8 +40,11 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <button className="bg-white text-black font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-colors duration-300 flex items-center gap-2 mx-auto">
-            Get Started <ArrowRight className="w-5 h-5" />
+          <button
+            onClick={() => window.location.href = '/games'}
+            className="bg-white text-black font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-colors duration-300 flex items-center gap-2 mx-auto"
+          >
+            게임 시작하기 <ArrowRight className="w-5 h-5" />
           </button>
         </motion.div>
       </div>
@@ -131,8 +134,11 @@ const CTASection = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <button className="bg-blue-500 text-white font-bold py-4 px-10 rounded-full text-xl hover:bg-blue-600 transition-colors duration-300">
-            Create Your Account
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="bg-blue-500 text-white font-bold py-4 px-10 rounded-full text-xl hover:bg-blue-600 transition-colors duration-300"
+          >
+            지금 시작하기
           </button>
         </motion.div>
       </div>

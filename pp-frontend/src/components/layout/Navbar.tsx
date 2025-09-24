@@ -33,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const menuItems = [
     { name: '홈', href: '/', icon: '🏠' },
-    { name: '게임', href: '/#games', icon: '🎮' },
+    { name: '게임', href: '/games', icon: '🎮' },
     { name: '리더보드', href: '/leaderboard', icon: '🏆' },
     { name: '상점', href: '/shop', icon: '🛒' },
     { name: '채팅', href: '/chat', icon: '💬' },
