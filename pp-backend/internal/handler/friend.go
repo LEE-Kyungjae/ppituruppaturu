@@ -29,7 +29,7 @@ func NewFriendHandler(fs service.FriendService) *FriendHandler {
 // @Accept       json
 // @Produce      json
 // @Param        username path string true "Receiver username"
-// @Success      201 {object} repository.FriendRequest
+// @Success      201 {object} FriendRequestResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      409 {object} Response
@@ -229,7 +229,7 @@ func (h *FriendHandler) RemoveFriend(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        username path string true "Username to block"
-// @Success      201 {object} repository.BlockedUser
+// @Success      201 {object} BlockedUserResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      409 {object} Response
@@ -302,7 +302,7 @@ func (h *FriendHandler) UnblockUser(c *gin.Context) {
 // @Description  Retrieves a list of the authenticated user's friends.
 // @Tags         Friend
 // @Produce      json
-// @Success      200 {array} repository.User
+// @Success      200 {array} UserResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -328,7 +328,7 @@ func (h *FriendHandler) ListFriends(c *gin.Context) {
 // @Description  Retrieves a list of pending friend requests received by the authenticated user.
 // @Tags         Friend
 // @Produce      json
-// @Success      200 {array} repository.FriendRequest
+// @Success      200 {array} FriendRequestResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -354,7 +354,7 @@ func (h *FriendHandler) ListIncomingFriendRequests(c *gin.Context) {
 // @Description  Retrieves a list of pending friend requests sent by the authenticated user.
 // @Tags         Friend
 // @Produce      json
-// @Success      200 {array} repository.FriendRequest
+// @Success      200 {array} FriendRequestResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -380,7 +380,7 @@ func (h *FriendHandler) ListOutgoingFriendRequests(c *gin.Context) {
 // @Description  Retrieves a list of users blocked by the authenticated user.
 // @Tags         Friend
 // @Produce      json
-// @Success      200 {array} repository.BlockedUser
+// @Success      200 {array} BlockedUserResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth

@@ -29,7 +29,7 @@ func NewCommunityHandler(cs service.CommunityService) *CommunityHandler {
 // @Accept       json
 // @Produce      json
 // @Param        post body CreatePostRequest true "Post details"
-// @Success      201 {object} repository.Post
+// @Success      201 {object} PostResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
@@ -67,7 +67,7 @@ func (h *CommunityHandler) CreatePost(c *gin.Context) {
 // @Tags         Community
 // @Produce      json
 // @Param        post_id path string true "Post ID"
-// @Success      200 {object} repository.Post
+// @Success      200 {object} PostResponse
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
 // @Router       /posts/{post_id} [get]
@@ -98,7 +98,7 @@ func (h *CommunityHandler) GetPostByID(c *gin.Context) {
 // @Produce      json
 // @Param        limit query int false "Limit the number of posts returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.Post
+// @Success      200 {array} PostResponse
 // @Failure      500 {object} Response
 // @Router       /posts [get]
 func (h *CommunityHandler) ListPosts(c *gin.Context) {
@@ -133,7 +133,7 @@ func (h *CommunityHandler) ListPosts(c *gin.Context) {
 // @Produce      json
 // @Param        post_id path string true "Post ID"
 // @Param        post body UpdatePostRequest true "Updated post details"
-// @Success      200 {object} repository.Post
+// @Success      200 {object} PostResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -222,7 +222,7 @@ func (h *CommunityHandler) DeletePost(c *gin.Context) {
 // @Produce      json
 // @Param        post_id path string true "Post ID"
 // @Param        comment body CreateCommentRequest true "Comment details"
-// @Success      201 {object} repository.Comment
+// @Success      201 {object} CommentResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      404 {object} Response
@@ -267,7 +267,7 @@ func (h *CommunityHandler) CreateComment(c *gin.Context) {
 // @Tags         Community
 // @Produce      json
 // @Param        comment_id path string true "Comment ID"
-// @Success      200 {object} repository.Comment
+// @Success      200 {object} CommentResponse
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
 // @Router       /comments/{comment_id} [get]
@@ -299,7 +299,7 @@ func (h *CommunityHandler) GetCommentByID(c *gin.Context) {
 // @Param        post_id path string true "Post ID"
 // @Param        limit query int false "Limit the number of comments returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.Comment
+// @Success      200 {array} CommentResponse
 // @Failure      400 {object} Response
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
@@ -346,7 +346,7 @@ func (h *CommunityHandler) ListCommentsByPostID(c *gin.Context) {
 // @Produce      json
 // @Param        comment_id path string true "Comment ID"
 // @Param        comment body UpdateCommentRequest true "Updated comment details"
-// @Success      200 {object} repository.Comment
+// @Success      200 {object} CommentResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response

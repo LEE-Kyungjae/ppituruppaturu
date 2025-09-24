@@ -22,59 +22,59 @@ type MockGameService struct {
 	mock.Mock
 }
 
-func (m *MockGameService) CreateGame(name, description string) (*repository.Game, error) {
+func (m *MockGameService) CreateGame(name, description string) (*GameResponse, error) {
 	args := m.Called(name, description)
-	return args.Get(0).(*repository.Game), args.Error(1)
+	return args.Get(0).(*GameResponse), args.Error(1)
 }
 
-func (m *MockGameService) GetGameByID(id uuid.UUID) (*repository.Game, error) {
+func (m *MockGameService) GetGameByID(id uuid.UUID) (*GameResponse, error) {
 	args := m.Called(id)
-	return args.Get(0).(*repository.Game), args.Error(1)
+	return args.Get(0).(*GameResponse), args.Error(1)
 }
 
-func (m *MockGameService) GetGameByName(name string) (*repository.Game, error) {
+func (m *MockGameService) GetGameByName(name string) (*GameResponse, error) {
 	args := m.Called(name)
-	return args.Get(0).(*repository.Game), args.Error(1)
+	return args.Get(0).(*GameResponse), args.Error(1)
 }
 
-func (m *MockGameService) ListGames() ([]*repository.Game, error) {
+func (m *MockGameService) ListGames() ([]*GameResponse, error) {
 	args := m.Called()
-	return args.Get(0).([]*repository.Game), args.Error(1)
+	return args.Get(0).([]*GameResponse), args.Error(1)
 }
 
-func (m *MockGameService) CreateGameSession(gameID uuid.UUID, playerUsername string) (*repository.GameSession, error) {
+func (m *MockGameService) CreateGameSession(gameID uuid.UUID, playerUsername string) (*GameResponseSession, error) {
 	args := m.Called(gameID, playerUsername)
-	return args.Get(0).(*repository.GameSession), args.Error(1)
+	return args.Get(0).(*GameResponseSession), args.Error(1)
 }
 
-func (m *MockGameService) GetGameSessionByID(id uuid.UUID) (*repository.GameSession, error) {
+func (m *MockGameService) GetGameSessionByID(id uuid.UUID) (*GameResponseSession, error) {
 	args := m.Called(id)
-	return args.Get(0).(*repository.GameSession), args.Error(1)
+	return args.Get(0).(*GameResponseSession), args.Error(1)
 }
 
-func (m *MockGameService) EndGameSession(sessionID uuid.UUID, playerUsername string, score int) (*repository.GameSession, error) {
+func (m *MockGameService) EndGameSession(sessionID uuid.UUID, playerUsername string, score int) (*GameResponseSession, error) {
 	args := m.Called(sessionID, playerUsername, score)
-	return args.Get(0).(*repository.GameSession), args.Error(1)
+	return args.Get(0).(*GameResponseSession), args.Error(1)
 }
 
-func (m *MockGameService) SubmitGameScore(sessionID uuid.UUID, playerUsername string, score int) (*repository.GameScore, error) {
+func (m *MockGameService) SubmitGameScore(sessionID uuid.UUID, playerUsername string, score int) (*GameResponseScore, error) {
 	args := m.Called(sessionID, playerUsername, score)
-	return args.Get(0).(*repository.GameScore), args.Error(1)
+	return args.Get(0).(*GameResponseScore), args.Error(1)
 }
 
-func (m *MockGameService) GetGameScoreBySessionAndPlayer(sessionID uuid.UUID, playerUsername string) (*repository.GameScore, error) {
+func (m *MockGameService) GetGameScoreBySessionAndPlayer(sessionID uuid.UUID, playerUsername string) (*GameResponseScore, error) {
 	args := m.Called(sessionID, playerUsername)
-	return args.Get(0).(*repository.GameScore), args.Error(1)
+	return args.Get(0).(*GameResponseScore), args.Error(1)
 }
 
-func (m *MockGameService) ListGameScoresByGameID(gameID uuid.UUID, limit, offset int) ([]*repository.GameScore, error) {
+func (m *MockGameService) ListGameScoresByGameID(gameID uuid.UUID, limit, offset int) ([]*GameResponseScore, error) {
 	args := m.Called(gameID, limit, offset)
-	return args.Get(0).([]*repository.GameScore), args.Error(1)
+	return args.Get(0).([]*GameResponseScore), args.Error(1)
 }
 
-func (m *MockGameService) ListGameScoresByPlayerUsername(playerUsername string, limit, offset int) ([]*repository.GameScore, error) {
+func (m *MockGameService) ListGameScoresByPlayerUsername(playerUsername string, limit, offset int) ([]*GameResponseScore, error) {
 	args := m.Called(playerUsername, limit, offset)
-	return args.Get(0).([]*repository.GameScore), args.Error(1)
+	return args.Get(0).([]*GameResponseScore), args.Error(1)
 }
 
 func TestGameHandler_CreateGame(t *testing.T) {
@@ -96,7 +96,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	c.Request = req
 
-	mockGameService.On("CreateGame", "New Game", "A new game").Return(&repository.Game{}, nil).Once()
+	mockGameService.On("CreateGame", "New Game", "A new game").Return(&GameResponse{}, nil).Once()
 
 	h.CreateGame(c)
 
@@ -121,7 +121,7 @@ func TestGameHandler_GetGameByID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/games/"+gameID.String(), nil)
 	c.Request = req
 
-	mockGameService.On("GetGameByID", gameID).Return(&repository.Game{}, nil).Once()
+	mockGameService.On("GetGameByID", gameID).Return(&GameResponse{}, nil).Once()
 
 	h.GetGameByID(c)
 
@@ -143,7 +143,7 @@ func TestGameHandler_ListGames(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/games", nil)
 	r.ServeHTTP(w, req)
 
-	expectedGames := []*repository.Game{{Name: "Game1"}, {Name: "Game2"}}
+	expectedGames := []*GameResponse{{Name: "Game1"}, {Name: "Game2"}}
 	mockGameService.On("ListGames").Return(expectedGames, nil).Once()
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -168,7 +168,7 @@ func TestGameHandler_CreateGameSession(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/games/"+gameID.String()+"/sessions", nil)
 	c.Request = req
 
-	mockGameService.On("CreateGameSession", gameID, "player1").Return(&repository.GameSession{}, nil).Once()
+	mockGameService.On("CreateGameSession", gameID, "player1").Return(&GameResponseSession{}, nil).Once()
 
 	h.CreateGameSession(c)
 
@@ -198,7 +198,7 @@ func TestGameHandler_EndGameSession(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	c.Request = req
 
-	mockGameService.On("EndGameSession", sessionID, "player1", 100).Return(&repository.GameSession{}, nil).Once()
+	mockGameService.On("EndGameSession", sessionID, "player1", 100).Return(&GameResponseSession{}, nil).Once()
 
 	h.EndGameSession(c)
 
@@ -221,7 +221,7 @@ func TestGameHandler_ListGameScoresByGameID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/games/"+gameID.String()+"/scores?limit=5&offset=0", nil)
 	r.ServeHTTP(w, req)
 
-	expectedScores := []*repository.GameScore{{Score: 100}, {Score: 200}}
+	expectedScores := []*GameResponseScore{{Score: 100}, {Score: 200}}
 	mockGameService.On("ListGameScoresByGameID", gameID, 5, 0).Return(expectedScores, nil).Once()
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -242,7 +242,7 @@ func TestGameHandler_ListGameScoresByPlayerUsername(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/users/testuser/scores?limit=5&offset=0", nil)
 	r.ServeHTTP(w, req)
 
-	expectedScores := []*repository.GameScore{{Score: 100}, {Score: 200}}
+	expectedScores := []*GameResponseScore{{Score: 100}, {Score: 200}}
 	mockGameService.On("ListGameScoresByPlayerUsername", "testuser", 5, 0).Return(expectedScores, nil).Once()
 
 	assert.Equal(t, http.StatusOK, w.Code)

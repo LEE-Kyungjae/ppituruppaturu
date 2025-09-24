@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/pitturu-ppaturu/backend/internal/repository"
 	"github.com/pitturu-ppaturu/backend/internal/service"
@@ -32,7 +33,7 @@ func NewPaymentHandler(ps service.PaymentService) *PaymentHandler {
 // @Accept       json
 // @Produce      json
 // @Param        item body CreateItemRequest true "Item details"
-// @Success      201 {object} repository.Item
+// @Success      201 {object} ItemResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
@@ -46,12 +47,21 @@ func (h *PaymentHandler) CreateItem(c *gin.Context) {
 	}
 
 	item := &repository.Item{
-		Name:        req.Name,
-		Description: req.Description,
-		Type:        req.Type,
-		PriceCash:   req.PriceCash,
-		PricePoints: req.PricePoints,
-		ImageURL:    req.ImageURL,
+		Name: req.Name,
+		Type: req.Type,
+	}
+
+	if req.Description != nil {
+		item.Description = sql.NullString{String: *req.Description, Valid: true}
+	}
+	if req.PriceCash != nil {
+		item.PriceCash = sql.NullInt32{Int32: *req.PriceCash, Valid: true}
+	}
+	if req.PricePoints != nil {
+		item.PricePoints = sql.NullInt32{Int32: *req.PricePoints, Valid: true}
+	}
+	if req.ImageURL != nil {
+		item.ImageURL = sql.NullString{String: *req.ImageURL, Valid: true}
 	}
 
 	createdItem, err := h.paymentService.CreateItem(item)
@@ -60,7 +70,7 @@ func (h *PaymentHandler) CreateItem(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, createdItem)
+	respondJSON(c, http.StatusCreated, toItemResponse(createdItem))
 }
 
 // GetItemByID handles retrieving an item definition by its ID.
@@ -69,7 +79,7 @@ func (h *PaymentHandler) CreateItem(c *gin.Context) {
 // @Tags         Payment
 // @Produce      json
 // @Param        item_id path string true "Item ID"
-// @Success      200 {object} repository.Item
+// @Success      200 {object} ItemResponse
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
 // @Router       /items/{item_id} [get]
@@ -90,7 +100,7 @@ func (h *PaymentHandler) GetItemByID(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, item)
+	respondJSON(c, http.StatusOK, toItemResponse(item))
 }
 
 // ListItems handles listing all item definitions.
@@ -98,7 +108,7 @@ func (h *PaymentHandler) GetItemByID(c *gin.Context) {
 // @Description  Retrieves a list of all item definitions.
 // @Tags         Payment
 // @Produce      json
-// @Success      200 {array} repository.Item
+// @Success      200 {array} ItemResponse
 // @Failure      500 {object} Response
 // @Router       /items [get]
 func (h *PaymentHandler) ListItems(c *gin.Context) {
@@ -108,7 +118,11 @@ func (h *PaymentHandler) ListItems(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, items)
+	itemResponses := make([]ItemResponse, len(items))
+	for i, item := range items {
+		itemResponses[i] = toItemResponse(item)
+	}
+	respondJSON(c, http.StatusOK, itemResponses)
 }
 
 // PurchaseItemWithCash handles purchasing an item with cash.
@@ -118,7 +132,7 @@ func (h *PaymentHandler) ListItems(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        purchase body PurchaseItemWithCashRequest true "Purchase details"
-// @Success      201 {object} repository.Transaction
+// @Success      201 {object} TransactionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      404 {object} Response
@@ -152,7 +166,7 @@ func (h *PaymentHandler) PurchaseItemWithCash(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, transaction)
+	respondJSON(c, http.StatusCreated, toTransactionResponse(transaction))
 }
 
 // PurchaseItemWithPoints handles purchasing an item with points.
@@ -162,7 +176,7 @@ func (h *PaymentHandler) PurchaseItemWithCash(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        purchase body PurchaseItemWithPointsRequest true "Purchase details"
-// @Success      201 {object} repository.Transaction
+// @Success      201 {object} TransactionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      404 {object} Response
@@ -197,7 +211,7 @@ func (h *PaymentHandler) PurchaseItemWithPoints(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, transaction)
+	respondJSON(c, http.StatusCreated, toTransactionResponse(transaction))
 }
 
 // GetUserInventory handles listing a user's inventory.
@@ -205,7 +219,7 @@ func (h *PaymentHandler) PurchaseItemWithPoints(c *gin.Context) {
 // @Description  Retrieves the authenticated user's item inventory.
 // @Tags         Payment
 // @Produce      json
-// @Success      200 {array} repository.UserInventory
+// @Success      200 {array} UserInventoryResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -223,7 +237,11 @@ func (h *PaymentHandler) GetUserInventory(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, inventory)
+	inventoryResponses := make([]UserInventoryResponse, len(inventory))
+	for i, item := range inventory {
+		inventoryResponses[i] = toUserInventoryResponse(item)
+	}
+	respondJSON(c, http.StatusOK, inventoryResponses)
 }
 
 // UseInventoryItem handles using an item from a user's inventory.
@@ -276,7 +294,7 @@ func (h *PaymentHandler) UseInventoryItem(c *gin.Context) {
 // @Produce      json
 // @Param        username path string true "Username to add points to"
 // @Param        points_details body AddPointsRequest true "Points and description"
-// @Success      200 {object} repository.PointTransaction
+// @Success      200 {object} PointTransactionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -313,7 +331,7 @@ func (h *PaymentHandler) AddPoints(c *gin.Context) {
 // @Produce      json
 // @Param        username path string true "Username to spend points from"
 // @Param        points_details body SpendPointsRequest true "Points and description"
-// @Success      200 {object} repository.PointTransaction
+// @Success      200 {object} PointTransactionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -381,7 +399,7 @@ func (h *PaymentHandler) GetUserPoints(c *gin.Context) {
 // @Produce      json
 // @Param        limit query int false "Limit the number of transactions returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.PointTransaction
+// @Success      200 {array} PointTransactionResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -413,16 +431,20 @@ func (h *PaymentHandler) ListPointTransactions(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, transactions)
+	transactionResponses := make([]PointTransactionResponse, len(transactions))
+	for i, tx := range transactions {
+		transactionResponses[i] = toPointTransactionResponse(tx)
+	}
+	respondJSON(c, http.StatusOK, transactionResponses)
 }
 
 type CreateItemRequest struct {
-	Name        string         `json:"name" binding:"required"`
-	Description sql.NullString `json:"description"`
-	Type        string         `json:"type" binding:"required"`
-	PriceCash   sql.NullInt32  `json:"price_cash"`
-	PricePoints sql.NullInt32  `json:"price_points"`
-	ImageURL    sql.NullString `json:"image_url"`
+	Name        string  `json:"name" binding:"required"`
+	Description *string `json:"description,omitempty"`
+	Type        string  `json:"type" binding:"required"`
+	PriceCash   *int32  `json:"price_cash,omitempty"`
+	PricePoints *int32  `json:"price_points,omitempty"`
+	ImageURL    *string `json:"image_url,omitempty"`
 }
 
 type PurchaseItemWithCashRequest struct {
@@ -447,4 +469,101 @@ type AddPointsRequest struct {
 type SpendPointsRequest struct {
 	Amount      int    `json:"amount" binding:"required,min=1"`
 	Description string `json:"description"`
+}
+
+func toItemResponse(item *repository.Item) ItemResponse {
+	var description *string
+	if item.Description.Valid {
+		description = &item.Description.String
+	}
+
+	var priceCash *int32
+	if item.PriceCash.Valid {
+		priceCash = &item.PriceCash.Int32
+	}
+
+	var pricePoints *int32
+	if item.PricePoints.Valid {
+		pricePoints = &item.PricePoints.Int32
+	}
+
+	var imageURL *string
+	if item.ImageURL.Valid {
+		imageURL = &item.ImageURL.String
+	}
+
+	return ItemResponse{
+		ID:          item.ID,
+		Name:        item.Name,
+		Description: description,
+		Type:        item.Type,
+		PriceCash:   priceCash,
+		PricePoints: pricePoints,
+		ImageURL:    imageURL,
+		CreatedAt:   item.CreatedAt,
+		UpdatedAt:   item.UpdatedAt,
+	}
+}
+
+func toUserInventoryResponse(inventory *repository.UserInventory) UserInventoryResponse {
+	var expiresAt *time.Time
+	if inventory.ExpiresAt.Valid {
+		expiresAt = &inventory.ExpiresAt.Time
+	}
+
+	return UserInventoryResponse{
+		ID:           inventory.ID,
+		UserUsername: inventory.UserUsername,
+		ItemID:       inventory.ItemID,
+		Quantity:     inventory.Quantity,
+		ExpiresAt:    expiresAt,
+		CreatedAt:    inventory.PurchasedAt,
+		UpdatedAt:    inventory.PurchasedAt,
+	}
+}
+
+func toTransactionResponse(transaction *repository.Transaction) TransactionResponse {
+	var itemID *uuid.UUID
+	if transaction.ItemID.Valid {
+		itemID = &transaction.ItemID.V
+	}
+
+	var paymentGatewayID *string
+	if transaction.PaymentGatewayID.Valid {
+		paymentGatewayID = &transaction.PaymentGatewayID.String
+	}
+
+	return TransactionResponse{
+		ID:               transaction.ID,
+		UserUsername:     transaction.UserUsername,
+		ItemID:           itemID,
+		Amount:           int32(transaction.Amount),
+		Currency:         transaction.Currency,
+		Status:           transaction.Status,
+		PaymentGatewayID: paymentGatewayID,
+		CreatedAt:        transaction.PurchasedAt,
+		UpdatedAt:        transaction.UpdatedAt,
+	}
+}
+
+func toPointTransactionResponse(transaction *repository.PointTransaction) PointTransactionResponse {
+	var description *string
+	if transaction.Description.Valid {
+		description = &transaction.Description.String
+	}
+
+	var balanceAfter *int32
+	if transaction.BalanceAfter.Valid {
+		balanceAfter = &transaction.BalanceAfter.Int32
+	}
+
+	return PointTransactionResponse{
+		ID:           transaction.ID,
+		UserUsername: transaction.UserUsername,
+		Type:         transaction.Type,
+		Amount:       int32(transaction.Amount),
+		Description:  description,
+		BalanceAfter: balanceAfter,
+		CreatedAt:    transaction.RecordedAt,
+	}
 }

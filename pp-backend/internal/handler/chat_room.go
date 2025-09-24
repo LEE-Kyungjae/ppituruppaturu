@@ -30,7 +30,7 @@ func NewChatRoomHandler(crs service.ChatRoomService) *ChatRoomHandler {
 // @Accept       json
 // @Produce      json
 // @Param        room body CreateChatRoomRequest true "Chat room details"
-// @Success      201 {object} repository.ChatRoom
+// @Success      201 {object} ChatRoomResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      409 {object} Response
@@ -69,7 +69,7 @@ func (h *ChatRoomHandler) CreateChatRoom(c *gin.Context) {
 // @Tags         Chat Rooms
 // @Produce      json
 // @Param        room_id path string true "Chat Room ID"
-// @Success      200 {object} repository.ChatRoom
+// @Success      200 {object} ChatRoomResponse
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
 // @Router       /chat-rooms/{room_id} [get]
@@ -100,7 +100,7 @@ func (h *ChatRoomHandler) GetChatRoomByID(c *gin.Context) {
 // @Produce      json
 // @Param        limit query int false "Limit the number of rooms returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.ChatRoom
+// @Success      200 {array} ChatRoomResponse
 // @Failure      500 {object} Response
 // @Router       /chat-rooms [get]
 func (h *ChatRoomHandler) ListChatRooms(c *gin.Context) {
@@ -135,7 +135,7 @@ func (h *ChatRoomHandler) ListChatRooms(c *gin.Context) {
 // @Produce      json
 // @Param        room_id path string true "Chat Room ID"
 // @Param        room body UpdateChatRoomRequest true "Updated chat room details"
-// @Success      200 {object} repository.ChatRoom
+// @Success      200 {object} ChatRoomResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -224,7 +224,7 @@ func (h *ChatRoomHandler) DeleteChatRoom(c *gin.Context) {
 // @Produce      json
 // @Param        room_id path string true "Chat Room ID"
 // @Param        member body AddRoomMemberRequest true "Member details"
-// @Success      201 {object} repository.RoomMember
+// @Success      201 {object} RoomMemberResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -314,7 +314,7 @@ func (h *ChatRoomHandler) RemoveRoomMember(c *gin.Context) {
 // @Tags         Chat Rooms
 // @Produce      json
 // @Param        room_id path string true "Chat Room ID"
-// @Success      200 {array} repository.User
+// @Success      200 {array} UserResponse
 // @Failure      400 {object} Response
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
@@ -344,7 +344,7 @@ func (h *ChatRoomHandler) ListRoomMembers(c *gin.Context) {
 // @Description  Retrieves a list of chat rooms the authenticated user is a member of.
 // @Tags         Chat Rooms
 // @Produce      json
-// @Success      200 {array} repository.ChatRoom
+// @Success      200 {array} ChatRoomResponse
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth

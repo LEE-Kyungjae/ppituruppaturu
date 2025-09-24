@@ -52,7 +52,7 @@ func (h *UserHandler) Me(c *gin.Context) {
 // @Description  Retrieves the authenticated user's full profile details.
 // @Tags         User
 // @Produce      json
-// @Success      200 {object} repository.User
+// @Success      200 {object} UserResponse
 // @Failure      401 {object} Response
 // @Failure      404 {object} Response
 // @Security     BearerAuth
@@ -84,7 +84,7 @@ func (h *UserHandler) GetMyProfile(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        profile body repository.User true "User Profile Info"
-// @Success      200 {object} repository.User
+// @Success      200 {object} UserResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response

@@ -1,4 +1,758 @@
 basePath: /api/v1
+definitions:
+  handler.AddPointsRequest:
+    properties:
+      amount:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+    required:
+    - amount
+    type: object
+  handler.AddRoomMemberRequest:
+    properties:
+      member_username:
+        type: string
+    required:
+    - member_username
+    type: object
+  handler.AdminGameInfo:
+    properties:
+      category:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      difficultyLevel:
+        type: string
+      displayOrder:
+        type: integer
+      iconEmoji:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      maxPlayers:
+        type: integer
+      minPlayers:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  handler.AdminGamesListResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/handler.AdminGameInfo'
+        type: array
+    type: object
+  handler.BlockedUserResponse:
+    properties:
+      blocked_username:
+        type: string
+      blocker_username:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+    type: object
+  handler.ChatRoomResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.CommentResponse:
+    properties:
+      author_username:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      post_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.CreateChatRoomRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        enum:
+        - public
+        - private
+        - group
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  handler.CreateCommentRequest:
+    properties:
+      content:
+        type: string
+    required:
+    - content
+    type: object
+  handler.CreateGameRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  handler.CreateItemRequest:
+    properties:
+      description:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      price_cash:
+        type: integer
+      price_points:
+        type: integer
+      type:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  handler.CreatePostRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  handler.DashboardStatsResponse:
+    properties:
+      activeUsers24h:
+        type: integer
+      failedPayments:
+        type: integer
+      newUsers24h:
+        type: integer
+      paymentSuccessRate:
+        type: number
+      pendingPayments:
+        type: integer
+      revenue24h:
+        type: number
+      successfulPayments:
+        type: integer
+      totalPayments:
+        type: integer
+      totalRevenue:
+        type: number
+      totalUsers:
+        type: integer
+      uptime:
+        type: string
+    type: object
+  handler.EndGameResponse:
+    properties:
+      duration:
+        description: in seconds
+        type: integer
+      finalScore:
+        type: integer
+      isValid:
+        type: boolean
+      leaderboard:
+        description: if score qualifies for leaderboard
+        type: boolean
+      pointsEarned:
+        type: integer
+      reason:
+        type: string
+      sessionId:
+        type: string
+    type: object
+  handler.EndGameSessionRequest:
+    properties:
+      score:
+        type: integer
+    required:
+    - score
+    type: object
+  handler.ForgotPasswordReq:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  handler.FriendRequestResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      receiver_username:
+        type: string
+      sender_username:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.GameActionRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    required:
+    - type
+    type: object
+  handler.GameResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.GameResponseScore:
+    properties:
+      id:
+        type: string
+      player_username:
+        type: string
+      recorded_at:
+        type: string
+      score:
+        type: integer
+      session_id:
+        type: string
+    type: object
+  handler.GameSessionResponse:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        type: string
+      game_id:
+        type: string
+      id:
+        type: string
+      player_username:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.GameStateResponse:
+    properties:
+      currentScore:
+        type: integer
+      gameData:
+        additionalProperties: true
+        type: object
+      gameType:
+        type: string
+      sessionId:
+        type: string
+      status:
+        type: string
+      timeLeft:
+        description: seconds remaining
+        type: integer
+    type: object
+  handler.GameTypeInfo:
+    properties:
+      description:
+        type: string
+      difficulty:
+        description: 1-5
+        type: integer
+      duration:
+        description: seconds
+        type: integer
+      maxScore:
+        type: integer
+      name:
+        type: string
+      pointsPerScore:
+        type: number
+      type:
+        type: string
+    type: object
+  handler.ItemResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      price_cash:
+        type: integer
+      price_points:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.KakaoSocialLoginReq:
+    properties:
+      accessToken:
+        type: string
+      email:
+        type: string
+      kakaoId:
+        type: string
+      nickname:
+        type: string
+      profileImage:
+        type: string
+    required:
+    - accessToken
+    - kakaoId
+    - nickname
+    type: object
+  handler.ListGameTypesResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/handler.GameTypeInfo'
+        type: array
+    type: object
+  handler.LoginReq:
+    properties:
+      password:
+        example: pass1234
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.MaintenanceScheduleResponse:
+    properties:
+      created_at:
+        type: string
+      end:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      start:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.PointTransactionResponse:
+    properties:
+      amount:
+        type: integer
+      balance_after:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      type:
+        type: string
+      user_username:
+        type: string
+    type: object
+  handler.PostResponse:
+    properties:
+      author_username:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.PurchaseItemWithCashRequest:
+    properties:
+      amount:
+        type: number
+      currency:
+        type: string
+      item_id:
+        type: string
+    required:
+    - amount
+    - currency
+    - item_id
+    type: object
+  handler.PurchaseItemWithPointsRequest:
+    properties:
+      item_id:
+        type: string
+    required:
+    - item_id
+    type: object
+  handler.RefreshReq:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  handler.ResetPasswordReq:
+    properties:
+      new_password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  handler.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  handler.RoomMemberResponse:
+    properties:
+      joined_at:
+        type: string
+      member_username:
+        type: string
+      room_id:
+        type: string
+    type: object
+  handler.ScheduleRequest:
+    properties:
+      endTime:
+        type: string
+      message:
+        type: string
+      startTime:
+        type: string
+    required:
+    - endTime
+    - startTime
+    type: object
+  handler.SpendPointsRequest:
+    properties:
+      amount:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+    required:
+    - amount
+    type: object
+  handler.StartGameRequest:
+    properties:
+      gameType:
+        type: string
+    required:
+    - gameType
+    type: object
+  handler.StartGameResponse:
+    properties:
+      duration:
+        description: in seconds
+        type: integer
+      gameData:
+        additionalProperties: true
+        type: object
+      gameType:
+        type: string
+      instructions:
+        type: string
+      sessionId:
+        type: string
+      startTime:
+        type: string
+    type: object
+  handler.TransactionResponse:
+    properties:
+      amount:
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      item_id:
+        type: string
+      payment_gateway_id:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_username:
+        type: string
+    type: object
+  handler.UpdateChatRoomRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        enum:
+        - public
+        - private
+        - group
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  handler.UpdateCommentRequest:
+    properties:
+      content:
+        type: string
+    required:
+    - content
+    type: object
+  handler.UpdateGameDisplayOrderRequest:
+    properties:
+      displayOrder:
+        type: integer
+    type: object
+  handler.UpdateGameVisibilityRequest:
+    properties:
+      isActive:
+        type: boolean
+    type: object
+  handler.UpdatePostRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  handler.UseInventoryItemRequest:
+    properties:
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  handler.UserInventoryResponse:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      item_id:
+        type: string
+      quantity:
+        type: integer
+      updated_at:
+        type: string
+      user_username:
+        type: string
+    type: object
+  handler.UserResponse:
+    properties:
+      created_at:
+        type: string
+      is_active:
+        type: boolean
+      last_online_at:
+        type: string
+      nickname:
+        type: string
+      profile_picture_url:
+        type: string
+      role:
+        type: string
+      status_message:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.changePasswordRequest:
+    properties:
+      new_password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  handler.loginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  handler.meResponse:
+    properties:
+      role:
+        example: user
+        type: string
+      user:
+        example: alice
+        type: string
+    type: object
+  handler.publicUserProfileResponse:
+    properties:
+      nickname:
+        type: string
+      profile_picture_url:
+        type: string
+      status_message:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.refreshResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  handler.registerRequest:
+    properties:
+      password:
+        example: password123
+        maxLength: 72
+        minLength: 8
+        type: string
+      username:
+        example: newuser
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.socialLoginResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      user:
+        additionalProperties: true
+        type: object
+    type: object
+  handler.updateUserRequest:
+    properties:
+      role:
+        enum:
+        - user
+        - admin
+        example: admin
+        type: string
+    required:
+    - role
+    type: object
+  handler.userResponse:
+    properties:
+      role:
+        example: user
+        type: string
+      username:
+        example: newuser
+        type: string
+    type: object
+  repository.User:
+    properties:
+      bannedAt:
+        type: string
+      deletedAt:
+        type: string
+      isActive:
+        type: boolean
+      kakaoID:
+        type: string
+      lastOnlineAt:
+        type: string
+      nickname:
+        type: string
+      passwordHash:
+        type: string
+      points:
+        type: integer
+      profilePictureURL:
+        type: string
+      role:
+        type: string
+      statusMessage:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -12,7 +766,2730 @@ info:
   termsOfService: http://swagger.io/terms/
   title: PittuRu API
   version: "1.0"
-paths: {}
+paths:
+  /admin/games:
+    get:
+      consumes:
+      - application/json
+      description: Get all games (active and inactive) for admin management
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.AdminGamesListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List all games for admin management
+      tags:
+      - Admin
+  /admin/games/{gameId}/order:
+    patch:
+      consumes:
+      - application/json
+      description: Update the display order of a game
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameId
+        required: true
+        type: string
+      - description: Display order update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateGameDisplayOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update game display order
+      tags:
+      - Admin
+  /admin/games/{gameId}/visibility:
+    patch:
+      consumes:
+      - application/json
+      description: Update the active status of a game
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameId
+        required: true
+        type: string
+      - description: Visibility update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateGameVisibilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update game visibility
+      tags:
+      - Admin
+  /admin/logs:
+    get:
+      description: Retrieves the last N lines of the system log file.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get system logs
+      tags:
+      - Admin
+  /admin/maintenance:
+    get:
+      description: Retrieves the currently scheduled maintenance.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MaintenanceScheduleResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get scheduled maintenance
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Schedules a new maintenance window.
+      parameters:
+      - description: Maintenance details
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.MaintenanceScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Schedule maintenance
+      tags:
+      - Admin
+  /admin/maintenance/{id}:
+    delete:
+      description: Cancels a scheduled maintenance by its ID.
+      parameters:
+      - description: Maintenance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Cancel maintenance
+      tags:
+      - Admin
+  /admin/stats:
+    get:
+      description: Retrieves a comprehensive set of application statistics for the
+        admin dashboard.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DashboardStatsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get application statistics for dashboard
+      tags:
+      - Admin
+  /admin/users:
+    get:
+      description: Retrieves a list of all users. Requires admin privileges.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.userResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - User Management
+  /admin/users/{username}:
+    delete:
+      description: Deletes a user by their username. Requires admin privileges.
+      parameters:
+      - description: Username to delete
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - User Management
+    put:
+      consumes:
+      - application/json
+      description: Updates a user's role. Requires admin privileges.
+      parameters:
+      - description: Username to update
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: New role for the user
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/handler.updateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a user's role
+      tags:
+      - User Management
+  /admin/users/{username}/ban:
+    post:
+      description: Bans a user by their username.
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Ban a user
+      tags:
+      - Admin
+  /api/v1/minigames/sessions/{sessionId}:
+    get:
+      consumes:
+      - application/json
+      description: Get the current status of an active game session
+      parameters:
+      - description: Game session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GameStateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get game session status
+      tags:
+      - minigames
+  /api/v1/minigames/sessions/{sessionId}/action:
+    post:
+      consumes:
+      - application/json
+      description: Submit an action during an active game session
+      parameters:
+      - description: Game session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Game action
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.GameActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GameStateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Submit a game action
+      tags:
+      - minigames
+  /api/v1/minigames/sessions/{sessionId}/end:
+    post:
+      consumes:
+      - application/json
+      description: End an active game session and calculate rewards
+      parameters:
+      - description: Game session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.EndGameResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: End a game session
+      tags:
+      - minigames
+  /api/v1/minigames/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a new mini game session for the authenticated user
+      parameters:
+      - description: Game start request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.StartGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.StartGameResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Start a new mini game session
+      tags:
+      - minigames
+  /api/v1/minigames/types:
+    get:
+      consumes:
+      - application/json
+      description: Get all available mini game types with their configurations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListGameTypesResponse'
+      summary: List available game types
+      tags:
+      - minigames
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends a password reset link to the user's email.
+      parameters:
+      - description: Username
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ForgotPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Forgot password
+      tags:
+      - Authentication
+  /auth/kakao/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handles the OAuth callback from Kakao, exchanges code for tokens,
+        and logs in/registers user.
+      parameters:
+      - description: Authorization Code from Kakao
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.loginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Kakao Login Callback
+      tags:
+      - Authentication
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT tokens.
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.loginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: User login
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidates a refresh token.
+      parameters:
+      - description: Refresh token to invalidate
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RefreshReq'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: User logout
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes an access token using a valid refresh token.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RefreshReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.refreshResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets the user's password using a valid token.
+      parameters:
+      - description: Token and new password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ResetPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Reset password
+      tags:
+      - Authentication
+  /auth/social/kakao:
+    post:
+      consumes:
+      - application/json
+      description: Processes Kakao user data from frontend and returns JWT tokens.
+      parameters:
+      - description: Kakao user data
+        in: body
+        name: userdata
+        required: true
+        schema:
+          $ref: '#/definitions/handler.KakaoSocialLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.socialLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Kakao Social Login
+      tags:
+      - Authentication
+  /chat-rooms:
+    get:
+      description: Retrieves a list of all chat rooms.
+      parameters:
+      - description: Limit the number of rooms returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ChatRoomResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List all chat rooms
+      tags:
+      - Chat Rooms
+    post:
+      consumes:
+      - application/json
+      description: Creates a new chat room.
+      parameters:
+      - description: Chat room details
+        in: body
+        name: room
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateChatRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.ChatRoomResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new chat room
+      tags:
+      - Chat Rooms
+  /chat-rooms/{room_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a chat room by its ID. Only members or admin can delete.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a chat room
+      tags:
+      - Chat Rooms
+    get:
+      description: Retrieves a single chat room by its unique ID.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ChatRoomResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get chat room by ID
+      tags:
+      - Chat Rooms
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing chat room by its ID. Only members or admin
+        can update.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Updated chat room details
+        in: body
+        name: room
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateChatRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ChatRoomResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a chat room
+      tags:
+      - Chat Rooms
+  /chat-rooms/{room_id}/members:
+    get:
+      description: Retrieves a list of members for a specific chat room.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.UserResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List room members
+      tags:
+      - Chat Rooms
+    post:
+      consumes:
+      - application/json
+      description: Adds a user as a member to a chat room.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Member details
+        in: body
+        name: member
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddRoomMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.RoomMemberResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Add room member
+      tags:
+      - Chat Rooms
+  /chat-rooms/{room_id}/members/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a user from a chat room. Only the member themselves or
+        admin can remove.
+      parameters:
+      - description: Chat Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Member username to remove
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Remove room member
+      tags:
+      - Chat Rooms
+  /comments/{comment_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a community comment by its ID. Only the author can delete.
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a comment
+      tags:
+      - Community
+    get:
+      description: Retrieves a single community comment by its unique ID.
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CommentResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get comment by ID
+      tags:
+      - Community
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing community comment by its ID. Only the author
+        can update.
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      - description: Updated comment details
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a comment
+      tags:
+      - Community
+  /game-sessions/{session_id}/end:
+    put:
+      consumes:
+      - application/json
+      description: Ends an active game session and submits the player's score.
+      parameters:
+      - description: Game Session ID
+        in: path
+        name: session_id
+        required: true
+        type: string
+      - description: Score details
+        in: body
+        name: score
+        required: true
+        schema:
+          $ref: '#/definitions/handler.EndGameSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GameSessionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: End a game session
+      tags:
+      - Game
+  /games:
+    get:
+      description: Retrieves a list of all game definitions.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.GameResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List all games
+      tags:
+      - Game
+    post:
+      consumes:
+      - application/json
+      description: Creates a new game definition (e.g., OX Quiz, Puzzle Game).
+      parameters:
+      - description: Game details
+        in: body
+        name: game
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateGameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.GameResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new game
+      tags:
+      - Game
+  /games/{game_id}:
+    get:
+      description: Retrieves a single game definition by its unique ID.
+      parameters:
+      - description: Game ID
+        in: path
+        name: game_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GameResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get game by ID
+      tags:
+      - Game
+  /games/{game_id}/scores:
+    get:
+      description: Retrieves a list of game scores for a specific game, ordered by
+        score.
+      parameters:
+      - description: Game ID
+        in: path
+        name: game_id
+        required: true
+        type: string
+      - description: Limit the number of scores returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.GameResponseScore'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List game scores by game ID
+      tags:
+      - Game
+  /games/{game_id}/sessions:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new session for a specific game.
+      parameters:
+      - description: Game ID
+        in: path
+        name: game_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.GameSessionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new game session
+      tags:
+      - Game
+  /items:
+    get:
+      description: Retrieves a list of all item definitions.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ItemResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List all items
+      tags:
+      - Payment
+    post:
+      consumes:
+      - application/json
+      description: Creates a new item definition for cash or points purchase.
+      parameters:
+      - description: Item details
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.ItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new item
+      tags:
+      - Payment
+  /items/{item_id}:
+    get:
+      description: Retrieves a single item definition by its unique ID.
+      parameters:
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ItemResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get item by ID
+      tags:
+      - Payment
+  /me:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the authenticated user's account permanently.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete user account
+      tags:
+      - User
+    get:
+      description: Retrieves the authenticated user's profile information from the
+        JWT.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.meResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get current user info
+      tags:
+      - User
+  /me/blocked-users:
+    get:
+      description: Retrieves a list of users blocked by the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.BlockedUserResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List blocked users
+      tags:
+      - Friend
+  /me/chat-rooms:
+    get:
+      description: Retrieves a list of chat rooms the authenticated user is a member
+        of.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ChatRoomResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List user chat rooms
+      tags:
+      - Chat Rooms
+  /me/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivates the authenticated user's account.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Deactivate user account
+      tags:
+      - User
+  /me/friend-requests/{request_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Cancels a pending outgoing friend request.
+      parameters:
+      - description: Friend request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Cancel friend request
+      tags:
+      - Friend
+  /me/friend-requests/{request_id}/accept:
+    put:
+      consumes:
+      - application/json
+      description: Accepts a pending friend request.
+      parameters:
+      - description: Friend request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Accept friend request
+      tags:
+      - Friend
+  /me/friend-requests/{request_id}/decline:
+    put:
+      consumes:
+      - application/json
+      description: Declines a pending friend request.
+      parameters:
+      - description: Friend request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Decline friend request
+      tags:
+      - Friend
+  /me/friend-requests/incoming:
+    get:
+      description: Retrieves a list of pending friend requests received by the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.FriendRequestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List incoming friend requests
+      tags:
+      - Friend
+  /me/friend-requests/outgoing:
+    get:
+      description: Retrieves a list of pending friend requests sent by the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.FriendRequestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List outgoing friend requests
+      tags:
+      - Friend
+  /me/friends:
+    get:
+      description: Retrieves a list of the authenticated user's friends.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.UserResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List friends
+      tags:
+      - Friend
+  /me/friends/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an existing friend from the user's friend list.
+      parameters:
+      - description: Friend username to remove
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Remove friend
+      tags:
+      - Friend
+  /me/inventory:
+    get:
+      description: Retrieves the authenticated user's item inventory.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.UserInventoryResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user inventory
+      tags:
+      - Payment
+  /me/inventory/{item_id}/use:
+    post:
+      consumes:
+      - application/json
+      description: Uses a specified quantity of an item from the authenticated user's
+        inventory.
+      parameters:
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Quantity to use
+        in: body
+        name: use_details
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UseInventoryItemRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Use inventory item
+      tags:
+      - Payment
+  /me/password:
+    put:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to change their password.
+      parameters:
+      - description: Old and new passwords
+        in: body
+        name: password_change
+        required: true
+        schema:
+          $ref: '#/definitions/handler.changePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - User
+  /me/point-transactions:
+    get:
+      description: Retrieves the authenticated user's point transaction history.
+      parameters:
+      - description: Limit the number of transactions returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.PointTransactionResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List point transactions
+      tags:
+      - Payment
+  /me/points:
+    get:
+      description: Retrieves the authenticated user's current point balance.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User's point balance
+          schema:
+            type: integer
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user points
+      tags:
+      - Payment
+  /me/profile:
+    get:
+      description: Retrieves the authenticated user's full profile details.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's profile details.
+      parameters:
+      - description: User Profile Info
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/repository.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
+      tags:
+      - User
+  /posts:
+    get:
+      description: Retrieves a list of all community posts.
+      parameters:
+      - description: Limit the number of posts returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.PostResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List all posts
+      tags:
+      - Community
+    post:
+      consumes:
+      - application/json
+      description: Creates a new community post.
+      parameters:
+      - description: Post details
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.PostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new post
+      tags:
+      - Community
+  /posts/{post_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a community post by its ID. Only the author can delete.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a post
+      tags:
+      - Community
+    get:
+      description: Retrieves a single community post by its unique ID.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PostResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get post by ID
+      tags:
+      - Community
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing community post by its ID. Only the author can
+        update.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Updated post details
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a post
+      tags:
+      - Community
+  /posts/{post_id}/comments:
+    get:
+      description: Retrieves a list of comments for a specific community post.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Limit the number of comments returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.CommentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List comments for a post
+      tags:
+      - Community
+    post:
+      consumes:
+      - application/json
+      description: Creates a new comment on a specific community post.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Comment details
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.CommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new comment
+      tags:
+      - Community
+  /purchase/cash:
+    post:
+      consumes:
+      - application/json
+      description: Initiates a purchase of an item using real money (IAP integration).
+      parameters:
+      - description: Purchase details
+        in: body
+        name: purchase
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PurchaseItemWithCashRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Purchase item with cash
+      tags:
+      - Payment
+  /purchase/points:
+    post:
+      consumes:
+      - application/json
+      description: Purchases an item using virtual points.
+      parameters:
+      - description: Purchase details
+        in: body
+        name: purchase
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PurchaseItemWithPointsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Purchase item with points
+      tags:
+      - Payment
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user with a username and password.
+      parameters:
+      - description: User Registration Info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.registerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Register a new user
+      tags:
+      - User Management
+  /users/{username}/block:
+    post:
+      consumes:
+      - application/json
+      description: Blocks another user, preventing communication and hiding activities.
+      parameters:
+      - description: Username to block
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.BlockedUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Block user
+      tags:
+      - Friend
+  /users/{username}/friend-request:
+    post:
+      consumes:
+      - application/json
+      description: Sends a friend request to another user.
+      parameters:
+      - description: Receiver username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.FriendRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Send friend request
+      tags:
+      - Friend
+  /users/{username}/points/add:
+    post:
+      consumes:
+      - application/json
+      description: Adds points to a user's balance. (Admin or internal use).
+      parameters:
+      - description: Username to add points to
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Points and description
+        in: body
+        name: points_details
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddPointsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PointTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Add points to user
+      tags:
+      - Payment
+  /users/{username}/points/spend:
+    post:
+      consumes:
+      - application/json
+      description: Spends points from a user's balance. (Admin or internal use).
+      parameters:
+      - description: Username to spend points from
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Points and description
+        in: body
+        name: points_details
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SpendPointsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PointTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Spend points from user
+      tags:
+      - Payment
+  /users/{username}/profile:
+    get:
+      description: Retrieves a user's public profile information.
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.publicUserProfileResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get user's public profile
+      tags:
+      - User
+  /users/{username}/scores:
+    get:
+      description: Retrieves a list of game scores for a specific player, ordered
+        by recorded time.
+      parameters:
+      - description: Player username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Limit the number of scores returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.GameResponseScore'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List game scores by player
+      tags:
+      - Game
+  /users/{username}/unblock:
+    delete:
+      consumes:
+      - application/json
+      description: Unblocks a previously blocked user.
+      parameters:
+      - description: Username to unblock
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Unblock user
+      tags:
+      - Friend
+  /ws/chat:
+    get:
+      description: Upgrades the HTTP connection to a WebSocket for real-time chat.
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Establish WebSocket connection for chat
+      tags:
+      - Chat
 schemes:
 - http
 - https

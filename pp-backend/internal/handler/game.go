@@ -5,9 +5,11 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	serviceErrors "github.com/pitturu-ppaturu/backend/internal/service/errors"
 	"github.com/pitturu-ppaturu/backend/internal/service"
+	"github.com/pitturu-ppaturu/backend/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -30,7 +32,7 @@ func NewGameHandler(gs service.GameService) *GameHandler {
 // @Accept       json
 // @Produce      json
 // @Param        game body CreateGameRequest true "Game details"
-// @Success      201 {object} repository.Game
+// @Success      201 {object} GameResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      500 {object} Response
@@ -49,7 +51,7 @@ func (h *GameHandler) CreateGame(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, game)
+	respondJSON(c, http.StatusCreated, toGameResponse(game))
 }
 
 // GetGameByID handles retrieving a game definition by its ID.
@@ -58,7 +60,7 @@ func (h *GameHandler) CreateGame(c *gin.Context) {
 // @Tags         Game
 // @Produce      json
 // @Param        game_id path string true "Game ID"
-// @Success      200 {object} repository.Game
+// @Success      200 {object} GameResponse
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
 // @Router       /games/{game_id} [get]
@@ -79,7 +81,7 @@ func (h *GameHandler) GetGameByID(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, game)
+	respondJSON(c, http.StatusOK, toGameResponse(game))
 }
 
 // ListGames handles listing all game definitions.
@@ -87,7 +89,7 @@ func (h *GameHandler) GetGameByID(c *gin.Context) {
 // @Description  Retrieves a list of all game definitions.
 // @Tags         Game
 // @Produce      json
-// @Success      200 {array} repository.Game
+// @Success      200 {array} GameResponse
 // @Failure      500 {object} Response
 // @Router       /games [get]
 func (h *GameHandler) ListGames(c *gin.Context) {
@@ -97,7 +99,11 @@ func (h *GameHandler) ListGames(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, games)
+	gameResponses := make([]GameResponse, len(games))
+	for i, game := range games {
+		gameResponses[i] = toGameResponse(game)
+	}
+	respondJSON(c, http.StatusOK, gameResponses)
 }
 
 // CreateGameSession handles creating a new game session.
@@ -107,7 +113,7 @@ func (h *GameHandler) ListGames(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        game_id path string true "Game ID"
-// @Success      201 {object} repository.GameSession
+// @Success      201 {object} GameSessionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      404 {object} Response
@@ -137,7 +143,7 @@ func (h *GameHandler) CreateGameSession(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, session)
+	respondJSON(c, http.StatusCreated, toGameSessionResponse(session))
 }
 
 // EndGameSession handles ending a game session and submitting a score.
@@ -148,7 +154,7 @@ func (h *GameHandler) CreateGameSession(c *gin.Context) {
 // @Produce      json
 // @Param        session_id path string true "Game Session ID"
 // @Param        score body EndGameSessionRequest true "Score details"
-// @Success      200 {object} repository.GameSession
+// @Success      200 {object} GameSessionResponse
 // @Failure      400 {object} Response
 // @Failure      401 {object} Response
 // @Failure      403 {object} Response
@@ -185,7 +191,7 @@ func (h *GameHandler) EndGameSession(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, updatedSession)
+	respondJSON(c, http.StatusOK, toGameSessionResponse(updatedSession))
 }
 
 // ListGameScoresByGameID handles listing game scores for a specific game.
@@ -196,7 +202,7 @@ func (h *GameHandler) EndGameSession(c *gin.Context) {
 // @Param        game_id path string true "Game ID"
 // @Param        limit query int false "Limit the number of scores returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.GameScore
+// @Success      200 {array} GameResponseScore
 // @Failure      400 {object} Response
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
@@ -232,7 +238,11 @@ func (h *GameHandler) ListGameScoresByGameID(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, scores)
+	scoreResponses := make([]GameResponseScore, len(scores))
+	for i, score := range scores {
+		scoreResponses[i] = toGameResponseScore(score)
+	}
+	respondJSON(c, http.StatusOK, scoreResponses)
 }
 
 // ListGameScoresByPlayerUsername handles listing game scores for a specific player.
@@ -243,7 +253,7 @@ func (h *GameHandler) ListGameScoresByGameID(c *gin.Context) {
 // @Param        username path string true "Player username"
 // @Param        limit query int false "Limit the number of scores returned"
 // @Param        offset query int false "Offset for pagination"
-// @Success      200 {array} repository.GameScore
+// @Success      200 {array} GameResponseScore
 // @Failure      400 {object} Response
 // @Failure      404 {object} Response
 // @Failure      500 {object} Response
@@ -275,7 +285,11 @@ func (h *GameHandler) ListGameScoresByPlayerUsername(c *gin.Context) {
 		return
 	}
 
-	respondJSON(c, http.StatusOK, scores)
+	scoreResponses := make([]GameResponseScore, len(scores))
+	for i, score := range scores {
+		scoreResponses[i] = toGameResponseScore(score)
+	}
+	respondJSON(c, http.StatusOK, scoreResponses)
 }
 
 type CreateGameRequest struct {
@@ -285,4 +299,47 @@ type CreateGameRequest struct {
 
 type EndGameSessionRequest struct {
 	Score int `json:"score" binding:"required"`
+}
+
+func toGameResponse(game *repository.Game) GameResponse {
+	var description *string
+	if game.Description.Valid {
+		description = &game.Description.String
+	}
+
+	return GameResponse{
+		ID:          game.ID,
+		Name:        game.Name,
+		Description: description,
+		CreatedAt:   game.CreatedAt,
+		UpdatedAt:   game.UpdatedAt,
+	}
+}
+
+func toGameSessionResponse(session *repository.GameSession) GameSessionResponse {
+	var endTime *time.Time
+	if session.EndTime.Valid {
+		endTime = &session.EndTime.Time
+	}
+
+	return GameSessionResponse{
+		ID:            session.ID,
+		GameID:        session.GameID,
+		PlayerUsername: session.PlayerUsername,
+		StartTime:     session.StartTime,
+		EndTime:       endTime,
+		Status:        session.Status,
+		CreatedAt:     session.CreatedAt,
+		UpdatedAt:     session.UpdatedAt,
+	}
+}
+
+func toGameResponseScore(score *repository.GameScore) GameResponseScore {
+	return GameResponseScore{
+		ID:            score.ID,
+		SessionID:     score.SessionID,
+		PlayerUsername: score.PlayerUsername,
+		Score:         score.Score,
+		RecordedAt:    score.RecordedAt,
+	}
 }

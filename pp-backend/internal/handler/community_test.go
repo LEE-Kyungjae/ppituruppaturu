@@ -22,24 +22,24 @@ type MockCommunityService struct {
 	mock.Mock
 }
 
-func (m *MockCommunityService) CreatePost(authorUsername, title, content string) (*repository.Post, error) {
+func (m *MockCommunityService) CreatePost(authorUsername, title, content string) (*PostResponse, error) {
 	args := m.Called(authorUsername, title, content)
-	return args.Get(0).(*repository.Post), args.Error(1)
+	return args.Get(0).(*PostResponse), args.Error(1)
 }
 
-func (m *MockCommunityService) GetPostByID(postID uuid.UUID) (*repository.Post, error) {
+func (m *MockCommunityService) GetPostByID(postID uuid.UUID) (*PostResponse, error) {
 	args := m.Called(postID)
-	return args.Get(0).(*repository.Post), args.Error(1)
+	return args.Get(0).(*PostResponse), args.Error(1)
 }
 
-func (m *MockCommunityService) ListPosts(limit, offset int) ([]*repository.Post, error) {
+func (m *MockCommunityService) ListPosts(limit, offset int) ([]*PostResponse, error) {
 	args := m.Called(limit, offset)
-	return args.Get(0).([]*repository.Post), args.Error(1)
+	return args.Get(0).([]*PostResponse), args.Error(1)
 }
 
-func (m *MockCommunityService) UpdatePost(postID uuid.UUID, authorUsername, title, content string) (*repository.Post, error) {
+func (m *MockCommunityService) UpdatePost(postID uuid.UUID, authorUsername, title, content string) (*PostResponse, error) {
 	args := m.Called(postID, authorUsername, title, content)
-	return args.Get(0).(*repository.Post), args.Error(1)
+	return args.Get(0).(*PostResponse), args.Error(1)
 }
 
 func (m *MockCommunityService) DeletePost(postID uuid.UUID, authorUsername string) error {
@@ -92,7 +92,7 @@ func TestCommunityHandler_CreatePost(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	c.Request = req
 
-	mockCommunityService.On("CreatePost", "testuser", "Test Post", "This is a test post.").Return(&repository.Post{}, nil).Once()
+	mockCommunityService.On("CreatePost", "testuser", "Test Post", "This is a test post.").Return(&PostResponse{}, nil).Once()
 
 	h.CreatePost(c)
 
@@ -117,7 +117,7 @@ func TestCommunityHandler_GetPostByID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/posts/"+postID.String(), nil)
 	c.Request = req
 
-	mockCommunityService.On("GetPostByID", postID).Return(&repository.Post{}, nil).Once()
+	mockCommunityService.On("GetPostByID", postID).Return(&PostResponse{}, nil).Once()
 
 	h.GetPostByID(c)
 
@@ -135,7 +135,7 @@ func TestCommunityHandler_ListPosts(t *testing.T) {
 	r.GET("/posts", h.ListPosts)
 
 	// Set up mock BEFORE making the request
-	expectedPosts := []*repository.Post{{Title: "Post1"}, {Title: "Post2"}}
+	expectedPosts := []*PostResponse{{Title: "Post1"}, {Title: "Post2"}}
 	mockCommunityService.On("ListPosts", 5, 0).Return(expectedPosts, nil).Once()
 
 	// Test success
@@ -169,7 +169,7 @@ func TestCommunityHandler_UpdatePost(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	c.Request = req
 
-	mockCommunityService.On("UpdatePost", postID, "testuser", "Updated Title", "Updated Content").Return(&repository.Post{}, nil).Once()
+	mockCommunityService.On("UpdatePost", postID, "testuser", "Updated Title", "Updated Content").Return(&PostResponse{}, nil).Once()
 
 	h.UpdatePost(c)
 

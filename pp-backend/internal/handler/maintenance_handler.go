@@ -31,7 +31,7 @@ type ScheduleRequest struct {
 // @Accept       json
 // @Produce      json
 // @Param        schedule body ScheduleRequest true "Maintenance details"
-// @Success      201 {object} repository.MaintenanceSchedule
+// @Success      201 {object} MaintenanceScheduleResponse
 // @Failure      400 {object} Response
 // @Failure      500 {object} Response
 // @Security     BearerAuth
@@ -62,7 +62,7 @@ func (h *MaintenanceHandler) ScheduleMaintenance(c *gin.Context) {
 // @Description  Retrieves the currently scheduled maintenance.
 // @Tags         Admin
 // @Produce      json
-// @Success      200 {object} repository.MaintenanceSchedule
+// @Success      200 {object} MaintenanceScheduleResponse
 // @Failure      404 {object} Response
 // @Security     BearerAuth
 // @Router       /admin/maintenance [get]
