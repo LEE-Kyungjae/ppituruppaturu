@@ -1,4 +1,4 @@
-name: Test and Deploy
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,31 +6,36 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+  packages: write
   security-events: write
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
-  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  REGISTRY: docker.io
+  IMAGE_NAMESPACE: ze2l/ppituruppaturu
 
 jobs:
-  # Frontend Tests
   frontend-tests:
+    name: Frontend Quality Gates
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./pp-frontend
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Setup Node.js
+    - name: Install Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
+        cache: npm
         cache-dependency-path: pp-frontend/package-lock.json
 
     - name: Install dependencies
@@ -38,16 +43,16 @@ jobs:
       env:
         HUSKY: 0
 
-    - name: Run linting
+    - name: Lint
       run: npm run lint
 
-    - name: Run type checking
+    - name: Type check
       run: npm run type-check
 
     - name: Run unit tests
       run: npm test -- --coverage --watchAll=false
 
-    - name: Upload coverage reports
+    - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
         directory: ./pp-frontend/coverage
@@ -57,30 +62,29 @@ jobs:
     - name: Build frontend
       run: npm run build
 
-    - name: Install Playwright Browsers
+    - name: Install Playwright browsers
       run: npx playwright install --with-deps
 
-    - name: Run E2E tests
+    - name: Run E2E suite
       run: npx playwright test --reporter=line,html
       env:
         NEXT_PUBLIC_API_URL: http://localhost:8080
 
-    - name: Upload E2E test results
-      uses: actions/upload-artifact@v4
+    - name: Upload Playwright report on failure
       if: failure()
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-report
         path: pp-frontend/playwright-report/
         if-no-files-found: error
-        retention-days: 30
+        retention-days: 14
 
-  # Backend Tests
   backend-tests:
+    name: Backend Quality Gates
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./pp-backend
-
     services:
       postgres:
         image: postgres:15
@@ -97,9 +101,14 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Setup Go
+    - name: Verify initdb seed migrations
+      working-directory: ..
+      run: ./scripts/ensure-initdb.sh --check
+
+    - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
@@ -117,25 +126,25 @@ jobs:
     - name: Download dependencies
       run: go mod download
 
-    - name: Run linting
+    - name: Lint
       uses: golangci/golangci-lint-action@v3
       with:
         version: latest
         working-directory: pp-backend
 
-    - name: Run tests
+    - name: Run unit tests
       run: go test -v -race -coverprofile=coverage.out ./...
       env:
         TEST_DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?sslmode=disable
 
-    - name: Upload backend coverage
+    - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
         file: ./pp-backend/coverage.out
         flags: backend
         name: backend-coverage
 
-    - name: Build backend
+    - name: Build backend binary
       run: go build -o bin/server cmd/server/main.go
 
     - name: Run integration tests
@@ -143,21 +152,22 @@ jobs:
       env:
         TEST_DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?sslmode=disable
 
-  # Mobile Tests
   mobile-tests:
+    name: Mobile Quality Gates
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./pp_mobile
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Setup Flutter
+    - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.35.4'
-        channel: 'stable'
+        channel: stable
 
     - name: Install dependencies
       run: flutter pub get
@@ -165,72 +175,82 @@ jobs:
     - name: Run tests
       run: flutter test --coverage
 
-    - name: Upload mobile coverage
+    - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
         directory: ./pp_mobile/coverage
         flags: mobile
         name: mobile-coverage
 
-    - name: Build APK
+    - name: Build debug APK
       run: flutter build apk --debug
 
-  # Security Scans
   security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Run Trivy vulnerability scanner
+    - name: Trivy filesystem scan
       uses: aquasecurity/trivy-action@master
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+        scan-type: fs
+        scan-ref: .
+        format: sarif
+        output: trivy-results.sarif
 
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
+    - name: Upload Trivy report
       if: always()
+      uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: trivy-results.sarif
 
-  # Build and Deploy (only on main branch after all tests pass)
-  build-and-deploy:
+  build-images:
+    name: Build & Push Images
     needs: [frontend-tests, backend-tests, mobile-tests]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    env:
-      REGISTRY: docker.io
-      IMAGE_NAME: ze2l/ppituruppaturu
+    outputs:
+      backend-tag: ${{ steps.meta.outputs.backend-tag }}
+      frontend-tag: ${{ steps.meta.outputs.frontend-tag }}
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Verify initdb seed migrations
+      run: ./scripts/ensure-initdb.sh --check
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Docker Info & Debug
+    - name: Docker info
       run: |
         docker version
         docker buildx version
         docker buildx ls
-        echo "=== Backend Context ==="
-        ls -lah ./pp-backend
-        test -f ./pp-backend/Dockerfile && echo "Backend Dockerfile found"
-        echo "=== Frontend Context ==="
-        ls -lah ./pp-frontend
-        test -f ./pp-frontend/Dockerfile && echo "Frontend Dockerfile found"
 
-    - name: Log in to Docker Hub
+    - name: Docker registry login
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Backend Docker image
+    - name: Compute image tags
+      id: meta
+      run: |
+        sha="${GITHUB_SHA::12}"
+        ts=$(date -u +"%Y%m%d%H%M")
+        echo "backend-tag=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}-backend:${sha}" >> "$GITHUB_OUTPUT"
+        echo "frontend-tag=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}-frontend:${sha}" >> "$GITHUB_OUTPUT"
+        echo "backend-tag-latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}-backend:latest" >> "$GITHUB_OUTPUT"
+        echo "frontend-tag-latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}-frontend:latest" >> "$GITHUB_OUTPUT"
+        echo "build-ts=$ts" >> "$GITHUB_OUTPUT"
+
+    - name: Build & push backend image
       uses: docker/build-push-action@v5
       with:
         context: ./pp-backend
@@ -238,14 +258,12 @@ jobs:
         target: production
         platforms: linux/amd64
         push: true
-        no-cache: true
         provenance: false
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
-        outputs: type=registry
+          ${{ steps.meta.outputs.backend-tag }}
+          ${{ steps.meta.outputs.backend-tag-latest }}
 
-    - name: Build and push Frontend Docker image
+    - name: Build & push frontend image
       uses: docker/build-push-action@v5
       with:
         context: ./pp-frontend
@@ -253,60 +271,58 @@ jobs:
         target: production
         platforms: linux/amd64
         push: true
-        no-cache: true
         provenance: false
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
-        outputs: type=registry
+          ${{ steps.meta.outputs.frontend-tag }}
+          ${{ steps.meta.outputs.frontend-tag-latest }}
 
-    - name: Check deployment prerequisites
-      run: |
-        echo "🔍 Checking deployment prerequisites..."
-        echo "SERVER_HOST: ${{ secrets.SERVER_HOST }}"
-        echo "SERVER_USER: ${{ secrets.SERVER_USER }}"
-        echo "DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}"
-        echo "SSH key length: ${#DEPLOY_SSH_KEY}"
-      env:
-        DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+  deploy:
+    name: Blue/Green Deploy
+    needs: [build-images, security-scan]
+    if: needs.build-images.result == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://152.67.201.101
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-    - name: Test SSH connection
+    - name: Prime known_hosts
       run: |
         ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-        echo "🔐 Testing SSH connection..."
-        ssh -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful!'"
+        ssh -o ConnectTimeout=15 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
 
     - name: Pre-deployment port cleanup
       run: |
         echo "🧹 배포 전 포트 충돌 방지..."
-        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'EOF'
           set -euxo pipefail
           cd /opt/pitturu
 
-          echo "🔍 8082 포트 점유 상태 확인"
-          docker ps --filter "publish=8082" --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}' || echo "8082 포트 비어있음"
+          for port in 8081 8082 8083 8084; do
+            echo "🔍 포트 점유 상태 확인: $port"
+            docker ps --filter "publish=$port" --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}' || echo "포트 $port 비어있음"
 
-          echo "🧹 8082 점유 컨테이너 정리 (안전)"
-          ids=$(docker ps --filter "publish=8082" -q || true)
-          if [ -n "${ids:-}" ]; then
-            echo "8082 점유 컨테이너 제거: $ids"
-            docker stop $ids || true
-            docker rm $ids || true
-          fi
+            ids=$(docker ps --filter "publish=$port" -q || true)
+            if [ -n "${ids:-}" ]; then
+              echo "🧹 포트 $port 점유 컨테이너 정리: $ids"
+              docker stop $ids || true
+              docker rm $ids || true
+            fi
+          done
 
           echo "✅ 포트 정리 완료"
         EOF
 
-    - name: Deploy to server (Blue/Green)
+    - name: Upload deployment artefacts
       run: |
-        set -euxo pipefail
-
-        echo "📁 Uploading deployment files..."
         scp -v deploy-blue-green.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
         scp -v docker-compose.blue.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
         scp -v docker-compose.green.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/pitturu/
@@ -318,68 +334,28 @@ jobs:
         scp -v nginx-backend-ws-green.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
         scp -v nginx-pitturu-site.conf ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
 
-        echo "🚀 Starting Blue/Green deployment..."
-        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+    - name: Execute blue/green deployment
+      run: |
+        ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'EOF'
           set -euxo pipefail
           cd /opt/pitturu
 
-          echo "📁 Current directory: $(pwd)"
-          echo "📁 Directory contents:"
-          ls -la
-
-          echo "🔧 Setting up Nginx configuration..."
-          sudo mkdir -p /etc/nginx/upstreams
-          sudo mkdir -p /etc/nginx/conf.d
-          sudo mv /tmp/nginx-blue.conf /etc/nginx/upstreams/app-blue.conf
-          sudo mv /tmp/nginx-green.conf /etc/nginx/upstreams/app-green.conf
-          sudo mv /tmp/nginx-backend-api-blue.conf /etc/nginx/upstreams/nginx-backend-api-blue.conf
-          sudo mv /tmp/nginx-backend-api-green.conf /etc/nginx/upstreams/nginx-backend-api-green.conf
-          sudo mv /tmp/nginx-backend-ws-blue.conf /etc/nginx/upstreams/nginx-backend-ws-blue.conf
-          sudo mv /tmp/nginx-backend-ws-green.conf /etc/nginx/upstreams/nginx-backend-ws-green.conf
-          sudo mv /tmp/nginx-pitturu-site.conf /etc/nginx/sites-available/pitturu
-
-          echo "🔐 Docker Hub login..."
+          echo "🔐 Docker Hub 로그인"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-          echo "🎯 Making deploy script executable..."
           chmod +x deploy-blue-green.sh
 
-          echo "🔄 Executing Blue/Green deployment..."
+          export BACKEND_IMAGE="${{ needs.build-images.outputs['backend-tag'] }}"
+          export FRONTEND_IMAGE="${{ needs.build-images.outputs['frontend-tag'] }}"
           ./deploy-blue-green.sh
 
-          echo "📊 Final container status:"
+          echo "📊 최종 컨테이너 상태"
           docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
-
-          echo "=== 헬스체크 상태 확인 ==="
-          docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | egrep 'green|blue|8081|8082|8083|8084' || true
-
-          echo "=== Green 백엔드 헬스 로그 (최근 10회) ==="
-          docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}} {{.Output}}{{printf "\n"}}{{end}}' pitturu-green-backend-1 | tail -n 10 || true
-
-          echo "=== 헬스 엔드포인트 직접 확인 ==="
-          curl -I --max-time 5 http://127.0.0.1:3002/api/health || true
-
-          echo "✅ Blue/Green deployment completed successfully!"
         EOF
 
-    - name: Create deployment status
-      uses: chrnorm/deployment-action@v2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        environment: production
-        state: success
-
-  # Notification
-  notify:
-    needs: [build-and-deploy]
-    runs-on: ubuntu-latest
-    if: always() && github.ref == 'refs/heads/main'
-
-    steps:
-    - name: Notify deployment status
+    - name: Deployment summary
       run: |
-        if [[ "${{ needs.build-and-deploy.result }}" == "success" ]]; then
-          echo "✅ Deployment successful!"
-        else
-          echo "❌ Deployment failed!"
-        fi
+        echo "## 🚀 Deployment" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Backend image: ${{ needs.build-images.outputs['backend-tag'] }}" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Frontend image: ${{ needs.build-images.outputs['frontend-tag'] }}" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Environment: production" >> "$GITHUB_STEP_SUMMARY"

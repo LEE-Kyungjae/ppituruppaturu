@@ -3,6 +3,13 @@ set -euo pipefail
 
 STACK_DIR="/opt/pitturu"
 
+BACKEND_IMAGE=${BACKEND_IMAGE:-ze2l/ppituruppaturu-backend:latest}
+FRONTEND_IMAGE=${FRONTEND_IMAGE:-ze2l/ppituruppaturu-frontend:latest}
+export BACKEND_IMAGE FRONTEND_IMAGE
+
+echo "📦 Backend image: $BACKEND_IMAGE"
+echo "📦 Frontend image: $FRONTEND_IMAGE"
+
 # 네트워크 생성 함수
 ensure_network(){
   local network_name="pitturu-core"

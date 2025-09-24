@@ -42,7 +42,6 @@ tmp/
 
 # Documentation
 *.md
-docs/
 
 # Git
 .git/

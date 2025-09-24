@@ -6,7 +6,7 @@ networks:
 
 services:
   backend:
-    image: ze2l/ppituruppaturu-backend:latest
+    image: ${BACKEND_IMAGE:-ze2l/ppituruppaturu-backend:latest}
     restart: unless-stopped
     ports:
       - "127.0.0.1:8081:8080"
@@ -26,7 +26,7 @@ services:
       start_period: 10s
 
   frontend:
-    image: ze2l/ppituruppaturu-frontend:latest
+    image: ${FRONTEND_IMAGE:-ze2l/ppituruppaturu-frontend:latest}
     restart: unless-stopped
     ports:
       - "127.0.0.1:3001:3000"
