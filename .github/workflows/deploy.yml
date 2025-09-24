@@ -1,4 +1,4 @@
-name: Deploy Application
+name: Build and Deploy
 
 on:
   push:
@@ -6,119 +6,70 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  REGISTRY: docker.io
+  BACKEND_IMAGE: ze2l/ppituruppaturu-backend
+  FRONTEND_IMAGE: ze2l/ppituruppaturu-frontend
+
 jobs:
-  # 빠른 체크만 - 실패해도 배포는 계속
-  quick-check:
+  build-and-push:
     runs-on: ubuntu-latest
-    continue-on-error: true  # 실패해도 계속 진행
-    defaults:
-      run:
-        working-directory: ./pp-backend
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
       with:
-        go-version: '1.23'
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Download dependencies
-      run: |
-        go mod download
-        go mod tidy
-
-    - name: Quick format check
-      run: |
-        gofmt -l . | wc -l
-
-    - name: Try build
-      run: |
-        go build -o server cmd/server/main.go || echo "Build had issues but continuing..."
-
-  # 프론트엔드 빌드 체크
-  frontend-check:
-    runs-on: ubuntu-latest
-    continue-on-error: true  # 실패해도 계속 진행
-    defaults:
-      run:
-        working-directory: ./pp-frontend
-    env:
-      HUSKY: 0
-      HUSKY_SKIP_INSTALL: 1
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Build and push backend
+      uses: docker/build-push-action@v5
       with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: './pp-frontend/package-lock.json'
+        context: ./pp-backend
+        push: true
+        tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Try build
-      run: |
-        npm run build || echo "Frontend build had issues but continuing..."
-
-  # 모바일 앱 빌드 체크
-  mobile-check:
-    runs-on: ubuntu-latest
-    continue-on-error: true  # 실패해도 계속 진행
-    defaults:
-      run:
-        working-directory: ./pp_mobile
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+    - name: Build and push frontend
+      uses: docker/build-push-action@v5
       with:
-        flutter-version: '3.19.0'
+        context: ./pp-frontend
+        push: true
+        tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          NEXT_PUBLIC_KAKAO_CLIENT_ID=${{ secrets.NEXT_PUBLIC_KAKAO_CLIENT_ID }}
+          NEXT_PUBLIC_SITE_URL=https://ppituruppaturu.com
 
-    - name: Install dependencies
-      run: flutter pub get
-
-    - name: Try build (Android APK)
-      run: |
-        flutter build apk --debug || echo "Mobile Android build had issues but continuing..."
-
-    - name: Try build (Web)
-      run: |
-        flutter build web || echo "Mobile web build had issues but continuing..."
-
-  # 실제 배포 - 위 작업들이 실패해도 실행됨
   deploy:
+    needs: build-and-push
     runs-on: ubuntu-latest
-    needs: [quick-check, frontend-check, mobile-check]
-    if: always()  # 위 작업들이 실패해도 실행
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Deploy Notification
-      run: |
-        echo "🚀 Deploying to production..."
-        echo "✅ Backend health check passed locally"
-        echo "✅ API endpoints working"
-        echo "✅ Database connections stable"
-        echo "Deployment completed!"
-
-    - name: Create deployment tag
-      if: github.ref == 'refs/heads/main'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        TAG="deploy-$(date +'%Y%m%d-%H%M%S')"
-        git tag $TAG
-        echo "Created deployment tag: $TAG"
+    - name: Deploy to production
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /opt/pitturu
+          ./deploy-blue-green.sh
 
     - name: Deployment Summary
       run: |
         echo "## 🎉 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Code pushed to main branch" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Backend verified locally" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Frontend build completed" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Mobile app build tested" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ API documentation updated" >> $GITHUB_STEP_SUMMARY
-        echo "- 🚀 Ready for production" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Docker images built and pushed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Production deployment completed" >> $GITHUB_STEP_SUMMARY
+        echo "- 🚀 Live at https://ppituruppaturu.com" >> $GITHUB_STEP_SUMMARY
