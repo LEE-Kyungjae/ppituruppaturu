@@ -24,6 +24,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Login to Docker Hub
+      if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
@@ -34,7 +35,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./pp-backend
-        push: true
+        push: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
         tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -43,21 +44,22 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./pp-frontend
-        push: true
+        push: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
         tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
         build-args: |
-          NEXT_PUBLIC_KAKAO_CLIENT_ID=${{ secrets.NEXT_PUBLIC_KAKAO_CLIENT_ID }}
+          NEXT_PUBLIC_KAKAO_CLIENT_ID=${{ secrets.NEXT_PUBLIC_KAKAO_CLIENT_ID || '982038156c0f5d51eac72ac1912db622' }}
           NEXT_PUBLIC_SITE_URL=https://ppituruppaturu.com
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.HOST && secrets.SSH_PRIVATE_KEY
 
     steps:
     - name: Deploy to production
+      if: ${{ secrets.HOST && secrets.USERNAME && secrets.SSH_PRIVATE_KEY }}
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
@@ -67,7 +69,17 @@ jobs:
           cd /opt/pitturu
           ./deploy-blue-green.sh
 
+    - name: Build Summary (No Secrets)
+      if: ${{ !secrets.DOCKERHUB_USERNAME || !secrets.DOCKERHUB_TOKEN }}
+      run: |
+        echo "## 🛠️ Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Docker images built successfully" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚠️ Images not pushed (Docker Hub secrets not configured)" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚠️ Deployment skipped (SSH secrets not configured)" >> $GITHUB_STEP_SUMMARY
+        echo "- 💡 Configure GitHub Secrets to enable full CI/CD" >> $GITHUB_STEP_SUMMARY
+
     - name: Deployment Summary
+      if: ${{ secrets.HOST && secrets.USERNAME && secrets.SSH_PRIVATE_KEY }}
       run: |
         echo "## 🎉 Deployment Summary" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Docker images built and pushed" >> $GITHUB_STEP_SUMMARY
