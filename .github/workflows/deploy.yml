@@ -42,13 +42,16 @@ jobs:
     defaults:
       run:
         working-directory: ./pp-frontend
+    env:
+      HUSKY: 0
+      HUSKY_SKIP_INSTALL: 1
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         cache-dependency-path: './pp-frontend/package-lock.json'
 
