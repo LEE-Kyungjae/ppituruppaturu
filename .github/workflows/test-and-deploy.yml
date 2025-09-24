@@ -24,6 +24,9 @@ jobs:
     name: Frontend Quality Gates
     runs-on: ubuntu-latest
     continue-on-error: true
+    env:
+      HUSKY: 0
+      HUSKY_SKIP_INSTALL: 1
     defaults:
       run:
         working-directory: ./pp-frontend
