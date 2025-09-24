@@ -122,6 +122,22 @@ export interface GameResult {
   leaderboard: boolean
 }
 
+export interface MiniGameLeaderboardEntry {
+  rank: number
+  username: string
+  score: number
+  points: number
+  durationSeconds?: number
+  recordedAt: string
+  isCurrentUser?: boolean
+}
+
+export interface MiniGameLeaderboardResponse {
+  gameType: string
+  entries: MiniGameLeaderboardEntry[]
+  userRank?: number | null
+}
+
 export interface GameAction {
   type: string
   data?: Record<string, any>
@@ -160,6 +176,16 @@ export class MiniGameApiService {
   // 게임 상태 조회
   async getGameStatus(sessionId: string): Promise<GameState> {
     return this.client.get(`/api/v1/minigames/sessions/${sessionId}`)
+  }
+
+  // 미니게임 리더보드 조회
+  async getLeaderboard(gameType: string, limit?: number): Promise<MiniGameLeaderboardResponse> {
+    const params = new URLSearchParams()
+    if (limit) params.append('limit', limit.toString())
+
+    const query = params.toString()
+    const suffix = query ? `?${query}` : ''
+    return this.client.get(`/api/v1/minigames/${gameType}/leaderboard${suffix}`)
   }
 }
 

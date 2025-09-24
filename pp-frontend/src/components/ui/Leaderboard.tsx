@@ -7,7 +7,9 @@ interface LeaderboardEntry {
   rank: number
   username: string
   score: number
-  timestamp: string
+  points: number
+  recordedAt: string
+  durationSeconds?: number
   gameType?: string
   isCurrentUser?: boolean
 }
@@ -215,7 +217,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                       )}
                     </div>
                     <div className="text-sm text-white/60">
-                      {formatTimestamp(entry.timestamp)}
+                      {formatTimestamp(entry.recordedAt)}
                     </div>
                   </div>
                 </div>
@@ -224,7 +226,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   <div className="text-xl font-bold text-white">
                     {entry.score.toLocaleString()}
                   </div>
-                  <div className="text-sm text-white/60">점수</div>
+                  <div className="text-sm text-white/60">포인트 {entry.points.toLocaleString()}</div>
                 </div>
               </motion.div>
             ))

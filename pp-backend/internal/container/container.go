@@ -34,6 +34,7 @@ type Container struct {
 	PostRepo               repository.PostRepository
 	CommentRepo            repository.CommentRepository
 	GameRepo               repository.GameRepository
+	MiniGameScoreRepo      repository.MiniGameScoreRepository
 	ItemRepo               repository.ItemRepository
 	TransactionRepo        repository.TransactionRepository
 	ChatRoomRepo           repository.ChatRoomRepository
@@ -41,38 +42,39 @@ type Container struct {
 	MaintenanceRepo        repository.MaintenanceRepository
 
 	// Services
-	UserService      service.UserService
-	FriendService    service.FriendService
-	ChatService      service.ChatService
-	CommunityService service.CommunityService
-	GameService      service.GameService
-	PaymentService   service.PaymentService
-	ChatRoomService  service.ChatRoomService
-	KakaoAuthService service.KakaoAuthService
-	AuthService      service.AuthService
-	MaintenanceService service.MaintenanceService
+	UserService                service.UserService
+	FriendService              service.FriendService
+	ChatService                service.ChatService
+	CommunityService           service.CommunityService
+	GameService                service.GameService
+	MiniGameLeaderboardService service.MiniGameLeaderboardService
+	PaymentService             service.PaymentService
+	ChatRoomService            service.ChatRoomService
+	KakaoAuthService           service.KakaoAuthService
+	AuthService                service.AuthService
+	MaintenanceService         service.MaintenanceService
 
 	// Email
 	EmailSender email.Sender
 
 	// Handlers
-	AuthHandler      *handler.AuthHandler
-	UserHandler      *handler.UserHandler
-	AdminHandler     *handler.AdminHandler
-	FriendHandler    *handler.FriendHandler
-	ChatHandler      *handler.ChatHandler
-	CommunityHandler *handler.CommunityHandler
-	GameHandler      *handler.GameHandler
-	PaymentHandler   *handler.PaymentHandler
-	ChatRoomHandler  *handler.ChatRoomHandler
-	MiniGameHandler  *handler.MiniGameHandler
+	AuthHandler        *handler.AuthHandler
+	UserHandler        *handler.UserHandler
+	AdminHandler       *handler.AdminHandler
+	FriendHandler      *handler.FriendHandler
+	ChatHandler        *handler.ChatHandler
+	CommunityHandler   *handler.CommunityHandler
+	GameHandler        *handler.GameHandler
+	PaymentHandler     *handler.PaymentHandler
+	ChatRoomHandler    *handler.ChatRoomHandler
+	MiniGameHandler    *handler.MiniGameHandler
 	MaintenanceHandler *handler.MaintenanceHandler
 
 	// Mini Game Engine
-	MiniGameEngine   *minigame.MiniGameEngine
+	MiniGameEngine *minigame.MiniGameEngine
 
 	// Game Server
-	GameServer       *gameserver.GameServer
+	GameServer *gameserver.GameServer
 
 	// Middleware
 	AuthMiddleware *auth.Middleware
@@ -105,6 +107,7 @@ func New(cfg *config.Config) (*Container, error) {
 	chatRoomRepo := repository.NewPostgresChatRoomRepository(dbConn)
 	passwordResetTokenRepo := repository.NewPostgresPasswordResetTokenRepository(dbConn)
 	maintenanceRepo := repository.NewPostgresMaintenanceRepository(dbConn)
+	miniGameScoreRepo := repository.NewMiniGameScoreRepository(dbConn)
 
 	// 4) 이메일 발송기
 	emailSender := email.NewSMTPSender(cfg)
@@ -130,6 +133,7 @@ func New(cfg *config.Config) (*Container, error) {
 	kakaoAuthSvc := service.NewKakaoAuthService(kakaoClient, userRepo, tokenSvc, cfg)
 	authService := service.NewAuthService(userRepo, tokenRepo, passwordResetTokenRepo, tokenSvc, emailSender, cfg)
 	maintenanceService := service.NewMaintenanceService(maintenanceRepo, hub)
+	miniGameLeaderboardService := service.NewMiniGameLeaderboardService(miniGameScoreRepo)
 
 	// 5-1) 미니게임 엔진
 	miniGameEngine := minigame.NewMiniGameEngine(gameService, paymentService)
@@ -138,18 +142,18 @@ func New(cfg *config.Config) (*Container, error) {
 	var gameServer *gameserver.GameServer
 	if cfg.GameServerEnabled {
 		gameServerConfig := &gameserver.GameServerConfig{
-			Port:                   cfg.WSPort,
-			MaxConnections:         1000,
-			MaxRooms:               100,
-			MaxPlayersPerRoom:      8,
-			ConnectionTimeout:      5 * time.Minute,
-			RoomInactivityTimeout:  30 * time.Minute,
-			MatchmakingTimeout:     5 * time.Minute,
-			EnableCORS:             true,
-			AllowedOrigins:         []string{cfg.AllowedOrigins},
-			EnableMetrics:          true,
-			EnableHealthCheck:      true,
-			LogLevel:               "info",
+			Port:                  cfg.WSPort,
+			MaxConnections:        1000,
+			MaxRooms:              100,
+			MaxPlayersPerRoom:     8,
+			ConnectionTimeout:     5 * time.Minute,
+			RoomInactivityTimeout: 30 * time.Minute,
+			MatchmakingTimeout:    5 * time.Minute,
+			EnableCORS:            true,
+			AllowedOrigins:        []string{cfg.AllowedOrigins},
+			EnableMetrics:         true,
+			EnableHealthCheck:     true,
+			LogLevel:              "info",
 		}
 		gameServer = gameserver.NewGameServer(gameServerConfig, miniGameEngine)
 
@@ -177,59 +181,61 @@ func New(cfg *config.Config) (*Container, error) {
 	gameHandler := handler.NewGameHandler(gameService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomService)
-	miniGameHandler := handler.NewMiniGameHandler(miniGameEngine)
+	miniGameHandler := handler.NewMiniGameHandler(miniGameEngine, miniGameLeaderboardService)
 	maintenanceHandler := handler.NewMaintenanceHandler(maintenanceService)
 
 	maintenanceService.Start()
 
 	return &Container{
-		Config:                 cfg,
-		DBConn:                 dbConn,
-		DB:                     dbConn, // repository.DBTX로 sql.DB를 그대로 사용
-		Hub:                    hub,
-		UserRepo:               userRepo,
-		FriendRepo:             friendRepo,
-		TokenRepo:              tokenRepo,
-		MessageRepo:            messageRepo,
-		PostRepo:               postRepo,
-		CommentRepo:            commentRepo,
-		GameRepo:               gameRepo,
-		ItemRepo:               itemRepo,
-		TransactionRepo:        transactionRepo,
-		ChatRoomRepo:           chatRoomRepo,
-		PasswordResetTokenRepo: passwordResetTokenRepo,
-		MaintenanceRepo:        maintenanceRepo,
-		UserService:            userService,
-		FriendService:          friendService,
-		ChatService:            chatService,
-		CommunityService:       communityService,
-		GameService:            gameService,
-		PaymentService:         paymentService,
-		ChatRoomService:        chatRoomService,
-		KakaoAuthService:       kakaoAuthSvc,
-		AuthService:            authService,
-		MaintenanceService:     maintenanceService,
-		EmailSender:            emailSender,
-		AuthHandler:            authHandler,
-		UserHandler:            userHandler,
-		AdminHandler:           adminHandler,
-		FriendHandler:          friendHandler,
-		ChatHandler:            chatHandler,
-		CommunityHandler:       communityHandler,
-		GameHandler:            gameHandler,
-		PaymentHandler:         paymentHandler,
-		ChatRoomHandler:        chatRoomHandler,
-		MiniGameHandler:        miniGameHandler,
-		MaintenanceHandler:     maintenanceHandler,
+		Config:                     cfg,
+		DBConn:                     dbConn,
+		DB:                         dbConn, // repository.DBTX로 sql.DB를 그대로 사용
+		Hub:                        hub,
+		UserRepo:                   userRepo,
+		FriendRepo:                 friendRepo,
+		TokenRepo:                  tokenRepo,
+		MessageRepo:                messageRepo,
+		PostRepo:                   postRepo,
+		CommentRepo:                commentRepo,
+		GameRepo:                   gameRepo,
+		MiniGameScoreRepo:          miniGameScoreRepo,
+		ItemRepo:                   itemRepo,
+		TransactionRepo:            transactionRepo,
+		ChatRoomRepo:               chatRoomRepo,
+		PasswordResetTokenRepo:     passwordResetTokenRepo,
+		MaintenanceRepo:            maintenanceRepo,
+		UserService:                userService,
+		FriendService:              friendService,
+		ChatService:                chatService,
+		CommunityService:           communityService,
+		GameService:                gameService,
+		PaymentService:             paymentService,
+		MiniGameLeaderboardService: miniGameLeaderboardService,
+		ChatRoomService:            chatRoomService,
+		KakaoAuthService:           kakaoAuthSvc,
+		AuthService:                authService,
+		MaintenanceService:         maintenanceService,
+		EmailSender:                emailSender,
+		AuthHandler:                authHandler,
+		UserHandler:                userHandler,
+		AdminHandler:               adminHandler,
+		FriendHandler:              friendHandler,
+		ChatHandler:                chatHandler,
+		CommunityHandler:           communityHandler,
+		GameHandler:                gameHandler,
+		PaymentHandler:             paymentHandler,
+		ChatRoomHandler:            chatRoomHandler,
+		MiniGameHandler:            miniGameHandler,
+		MaintenanceHandler:         maintenanceHandler,
 
 		// Mini Game Engine
-		MiniGameEngine:         miniGameEngine,
+		MiniGameEngine: miniGameEngine,
 
 		// Game Server
-		GameServer:             gameServer,
+		GameServer: gameServer,
 
 		// Middleware
-		AuthMiddleware:         authMiddleware,
+		AuthMiddleware: authMiddleware,
 	}, nil
 }
 
@@ -289,8 +295,8 @@ func createTestRooms(gameServer *gameserver.GameServer) {
 		settings := map[string]interface{}{
 			"maxPlayers": 4,
 			"minPlayers": 2,
-			"isPrivate": false,
-			"name": testRoom.name,
+			"isPrivate":  false,
+			"name":       testRoom.name,
 		}
 
 		_, err := roomManager.CreateRoom(testRoom.host, minigame.GameType(testRoom.gameType), settings)

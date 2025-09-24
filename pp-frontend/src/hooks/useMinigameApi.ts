@@ -1,6 +1,6 @@
 // frontend/src/hooks/useMinigameApi.ts
 import { useState, useCallback, useRef } from 'react'
-import { miniGameApi, handleApiError, ApiError, GameSession, GameState, GameResult, GameAction } from '@/services/api'
+import { miniGameApi, handleApiError, GameSession, GameState, GameResult, GameAction, MiniGameLeaderboardEntry } from '@/services/api'
 
 // 게임 상태 타입
 export type GameStatus = 'idle' | 'starting' | 'playing' | 'ending' | 'completed' | 'error'
@@ -13,6 +13,7 @@ export interface GameStats {
   streak?: number
   accuracy?: number
 }
+
 
 // 훅 반환 타입
 export interface UseMinigameApiReturn {
@@ -285,24 +286,35 @@ export const useGameStats = () => {
 
 // 리더보드 데이터 훅
 export const useLeaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<any[]>([])
+  const [leaderboard, setLeaderboard] = useState<MiniGameLeaderboardEntry[]>([])
   const [userRank, setUserRank] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchLeaderboard = useCallback(async (gameType: string) => {
     try {
       setIsLoading(true)
-      // 실제 구현에서는 leaderboardApi를 사용
-      // const data = await leaderboardApi.getGameLeaderboard(gameType, 10)
-      // setLeaderboard(data)
-      
-      // 임시 데모 데이터
-      const mockData = [
-        { rank: 1, username: 'Player1', score: 1250, timestamp: new Date().toISOString() },
-        { rank: 2, username: 'Player2', score: 1180, timestamp: new Date().toISOString() },
-        { rank: 3, username: 'Player3', score: 1050, timestamp: new Date().toISOString() }
-      ]
-      setLeaderboard(mockData)
+      const response = await miniGameApi.getLeaderboard(gameType, 10)
+
+      let currentUsername: string | null = null
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('user')
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            currentUsername = parsed?.username || parsed?.user?.username || null
+          }
+        } catch (error) {
+          console.warn('Failed to parse stored user info:', error)
+        }
+      }
+
+      const entries = response.entries.map(entry => ({
+        ...entry,
+        isCurrentUser: currentUsername ? entry.username === currentUsername : false
+      }))
+
+      setLeaderboard(entries)
+      setUserRank(response.userRank ?? null)
     } catch (err) {
       console.error('Failed to fetch leaderboard:', err)
     } finally {

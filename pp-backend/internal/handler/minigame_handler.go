@@ -3,22 +3,26 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/pitturu-ppaturu/backend/internal/minigame"
+	"github.com/pitturu-ppaturu/backend/internal/service"
 )
 
 // MiniGameHandler handles mini game related HTTP requests
 type MiniGameHandler struct {
-	engine *minigame.MiniGameEngine
+	engine      *minigame.MiniGameEngine
+	leaderboard service.MiniGameLeaderboardService
 }
 
 // NewMiniGameHandler creates a new MiniGameHandler
-func NewMiniGameHandler(engine *minigame.MiniGameEngine) *MiniGameHandler {
+func NewMiniGameHandler(engine *minigame.MiniGameEngine, leaderboard service.MiniGameLeaderboardService) *MiniGameHandler {
 	return &MiniGameHandler{
-		engine: engine,
+		engine:      engine,
+		leaderboard: leaderboard,
 	}
 }
 
@@ -55,13 +59,28 @@ type GameStateResponse struct {
 
 // EndGameResponse represents the response when ending a game
 type EndGameResponse struct {
-	SessionID      string `json:"sessionId"`
-	FinalScore     int    `json:"finalScore"`
-	Duration       int    `json:"duration"` // in seconds
-	PointsEarned   int    `json:"pointsEarned"`
-	IsValid        bool   `json:"isValid"`
-	Reason         string `json:"reason,omitempty"`
-	Leaderboard    bool   `json:"leaderboard"` // if score qualifies for leaderboard
+	SessionID    string `json:"sessionId"`
+	FinalScore   int    `json:"finalScore"`
+	Duration     int    `json:"duration"` // in seconds
+	PointsEarned int    `json:"pointsEarned"`
+	IsValid      bool   `json:"isValid"`
+	Reason       string `json:"reason,omitempty"`
+	Leaderboard  bool   `json:"leaderboard"` // if score qualifies for leaderboard
+}
+
+type LeaderboardEntryResponse struct {
+	Rank            int    `json:"rank"`
+	Username        string `json:"username"`
+	Score           int    `json:"score"`
+	Points          int    `json:"points"`
+	DurationSeconds *int   `json:"durationSeconds,omitempty"`
+	RecordedAt      string `json:"recordedAt"`
+}
+
+type LeaderboardResponse struct {
+	GameType string                     `json:"gameType"`
+	Entries  []LeaderboardEntryResponse `json:"entries"`
+	UserRank *int                       `json:"userRank,omitempty"`
 }
 
 // ListGameTypesResponse represents available game types
@@ -73,9 +92,9 @@ type GameTypeInfo struct {
 	Type           string  `json:"type"`
 	Name           string  `json:"name"`
 	Description    string  `json:"description"`
-	Duration       int     `json:"duration"`       // seconds
+	Duration       int     `json:"duration"` // seconds
 	MaxScore       int     `json:"maxScore"`
-	Difficulty     int     `json:"difficulty"`     // 1-5
+	Difficulty     int     `json:"difficulty"` // 1-5
 	PointsPerScore float64 `json:"pointsPerScore"`
 }
 
@@ -88,16 +107,16 @@ type GameTypeInfo struct {
 // @Router /api/v1/minigames/types [get]
 func (h *MiniGameHandler) ListGameTypes(c *gin.Context) {
 	configs := h.engine.ListGameTypes()
-	
+
 	var games []GameTypeInfo
 	for gameType, config := range configs {
 		games = append(games, GameTypeInfo{
-			Type:         string(gameType),
-			Name:         h.getGameTypeName(gameType),
-			Description:  h.getGameTypeDescription(gameType),
-			Duration:     int(config.Duration.Seconds()),
-			MaxScore:     config.MaxScore,
-			Difficulty:   config.Difficulty,
+			Type:           string(gameType),
+			Name:           h.getGameTypeName(gameType),
+			Description:    h.getGameTypeDescription(gameType),
+			Duration:       int(config.Duration.Seconds()),
+			MaxScore:       config.MaxScore,
+			Difficulty:     config.Difficulty,
 			PointsPerScore: config.PointsPerScore,
 		})
 	}
@@ -301,20 +320,34 @@ func (h *MiniGameHandler) EndGame(c *gin.Context) {
 		}
 	}
 
-	// Check if score qualifies for leaderboard (top 10% of max score)
-	configs := h.engine.ListGameTypes()
-	config := configs[result.GameType]
-	leaderboardThreshold := int(float64(config.MaxScore) * 0.7) // Top 30%
-	qualifiesForLeaderboard := result.FinalScore >= leaderboardThreshold
+	// Persist leaderboard entry when possible
+	qualifiesForLeaderboard := false
+	if h.leaderboard != nil && result.IsValid {
+		if updated, err := h.leaderboard.RecordResult(string(result.GameType), usernameStr, result.FinalScore, result.PointsEarned, int(result.Duration.Seconds())); err == nil {
+			qualifiesForLeaderboard = qualifiesForLeaderboard || updated
+		}
+		if rank, err := h.leaderboard.GetUserRank(string(result.GameType), usernameStr); err == nil && rank > 0 && rank <= 10 {
+			qualifiesForLeaderboard = true
+		}
+	}
+
+	// Fallback threshold check to keep legacy behaviour when rank unavailable
+	if !qualifiesForLeaderboard {
+		configs := h.engine.ListGameTypes()
+		if config, ok := configs[result.GameType]; ok {
+			leaderboardThreshold := int(float64(config.MaxScore) * 0.7) // Top 30%
+			qualifiesForLeaderboard = result.FinalScore >= leaderboardThreshold
+		}
+	}
 
 	response := EndGameResponse{
-		SessionID:      result.SessionID.String(),
-		FinalScore:     result.FinalScore,
-		Duration:       int(result.Duration.Seconds()),
-		PointsEarned:   result.PointsEarned,
-		IsValid:        result.IsValid,
-		Reason:         result.Reason,
-		Leaderboard:    qualifiesForLeaderboard,
+		SessionID:    result.SessionID.String(),
+		FinalScore:   result.FinalScore,
+		Duration:     int(result.Duration.Seconds()),
+		PointsEarned: result.PointsEarned,
+		IsValid:      result.IsValid,
+		Reason:       result.Reason,
+		Leaderboard:  qualifiesForLeaderboard,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -382,6 +415,70 @@ func (h *MiniGameHandler) GetGameStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// @Summary Get mini-game leaderboard
+// @Description Retrieve the top scores for a mini-game
+// @Tags minigames
+// @Produce json
+// @Param gameType path string true "Mini-game type"
+// @Param limit query int false "Number of entries"
+// @Success 200 {object} LeaderboardResponse
+// @Failure 400 {object} Response
+// @Failure 404 {object} Response
+// @Failure 500 {object} Response
+// @Router /api/v1/minigames/{gameType}/leaderboard [get]
+func (h *MiniGameHandler) GetLeaderboard(c *gin.Context) {
+	if h.leaderboard == nil {
+		respondError(c, http.StatusNotFound, "leaderboard service unavailable")
+		return
+	}
+
+	gameType := c.Param("gameType")
+	limitStr := c.DefaultQuery("limit", "10")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		respondError(c, http.StatusBadRequest, "invalid limit parameter")
+		return
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
+	entriesDto, err := h.leaderboard.GetLeaderboard(gameType, limit)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	entries := make([]LeaderboardEntryResponse, len(entriesDto))
+	for i, entry := range entriesDto {
+		entries[i] = LeaderboardEntryResponse{
+			Rank:       i + 1,
+			Username:   entry.Username,
+			Score:      entry.Score,
+			Points:     entry.Points,
+			RecordedAt: entry.RecordedAt,
+		}
+		if entry.DurationSeconds != nil {
+			entries[i].DurationSeconds = entry.DurationSeconds
+		}
+	}
+
+	var userRankPtr *int
+	if usernameVal, exists := c.Get("user"); exists {
+		if username, ok := usernameVal.(string); ok && username != "" {
+			if rank, err := h.leaderboard.GetUserRank(gameType, username); err == nil && rank > 0 {
+				userRankPtr = &rank
+			}
+		}
+	}
+
+	respondJSON(c, http.StatusOK, LeaderboardResponse{
+		GameType: gameType,
+		Entries:  entries,
+		UserRank: userRankPtr,
+	})
 }
 
 // Helper methods for game information

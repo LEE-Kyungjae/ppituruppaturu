@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	swaggerFiles "github.com/swaggo/files"
 	"github.com/pitturu-ppaturu/backend/internal/auth"
 	"github.com/pitturu-ppaturu/backend/internal/container"
 	"github.com/pitturu-ppaturu/backend/internal/middleware"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Setup configures the application's routes.
@@ -43,9 +43,9 @@ func Setup(r *gin.Engine, c *container.Container) {
 	r.GET("/ws/game", func(ctx *gin.Context) {
 		// For now, this is a simple proxy to inform users about the game server
 		ctx.JSON(200, gin.H{
-			"message": "Game WebSocket is available on port 8081",
+			"message":  "Game WebSocket is available on port 8081",
 			"endpoint": "ws://localhost:8081/ws/{username}",
-			"note": "Connect directly to the game server for real-time game features",
+			"note":     "Connect directly to the game server for real-time game features",
 		})
 	})
 
@@ -64,6 +64,7 @@ func Setup(r *gin.Engine, c *container.Container) {
 		api.GET("/games", c.GameHandler.ListGames)
 		api.GET("/games/:game_id", c.GameHandler.GetGameByID)
 		api.GET("/minigames/types", c.MiniGameHandler.ListGameTypes)
+		api.GET("/minigames/:gameType/leaderboard", c.MiniGameHandler.GetLeaderboard)
 		api.GET("/posts", c.CommunityHandler.ListPosts)
 		api.GET("/posts/:post_id", c.CommunityHandler.GetPostByID)
 
@@ -158,7 +159,7 @@ func Setup(r *gin.Engine, c *container.Container) {
 					if c.GameServer == nil {
 						ctx.JSON(503, gin.H{
 							"error": "Game server is not enabled",
-							"note": "Set GAME_SERVER_ENABLED=true to enable real-time game features",
+							"note":  "Set GAME_SERVER_ENABLED=true to enable real-time game features",
 						})
 						return
 					}
@@ -177,14 +178,14 @@ func Setup(r *gin.Engine, c *container.Container) {
 					if c.GameServer == nil {
 						ctx.JSON(503, gin.H{
 							"error": "Game server is not enabled",
-							"note": "Set GAME_SERVER_ENABLED=true to enable real-time game features",
+							"note":  "Set GAME_SERVER_ENABLED=true to enable real-time game features",
 						})
 						return
 					}
 					// TODO: Implement room creation via HTTP API
 					ctx.JSON(501, gin.H{
 						"error": "Room creation via HTTP not implemented yet",
-						"note": "Use WebSocket connection to create rooms",
+						"note":  "Use WebSocket connection to create rooms",
 					})
 				})
 
@@ -192,21 +193,21 @@ func Setup(r *gin.Engine, c *container.Container) {
 				gameAPI.GET("/status", func(ctx *gin.Context) {
 					if c.GameServer == nil {
 						ctx.JSON(200, gin.H{
-							"status": "disabled",
+							"status":  "disabled",
 							"enabled": false,
-							"note": "Game server is disabled. Set GAME_SERVER_ENABLED=true to enable.",
+							"note":    "Game server is disabled. Set GAME_SERVER_ENABLED=true to enable.",
 						})
 						return
 					}
 					stats := c.GameServer.GetStats()
 					config := c.GameServer.GetConfig()
 					ctx.JSON(200, gin.H{
-						"status": "running",
+						"status":  "running",
 						"enabled": true,
 						"config": map[string]interface{}{
-							"port": config.Port,
-							"maxConnections": config.MaxConnections,
-							"maxRooms": config.MaxRooms,
+							"port":              config.Port,
+							"maxConnections":    config.MaxConnections,
+							"maxRooms":          config.MaxRooms,
 							"maxPlayersPerRoom": config.MaxPlayersPerRoom,
 						},
 						"stats": stats,
