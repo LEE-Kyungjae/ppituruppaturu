@@ -1,0 +1,399 @@
+{
+  "timestamp": "2025-09-23T22:26:13.239Z",
+  "specInfo": {
+    "title": "No title",
+    "version": "No version",
+    "description": "No description",
+    "baseUrl": "No base URL"
+  },
+  "totalEndpoints": 9,
+  "categories": [
+    {
+      "name": "Admin",
+      "count": 1,
+      "endpoints": [
+        {
+          "index": 1,
+          "method": "GET",
+          "path": "/admin/stats",
+          "summary": "Get application statistics",
+          "category": "Admin"
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "count": 4,
+      "endpoints": [
+        {
+          "index": 2,
+          "method": "GET",
+          "path": "/admin/users",
+          "summary": "List all users",
+          "category": "User Management"
+        },
+        {
+          "index": 3,
+          "method": "PUT",
+          "path": "/admin/users/{username}",
+          "summary": "Update a user's role",
+          "category": "User Management"
+        },
+        {
+          "index": 4,
+          "method": "DELETE",
+          "path": "/admin/users/{username}",
+          "summary": "Delete a user",
+          "category": "User Management"
+        },
+        {
+          "index": 5,
+          "method": "POST",
+          "path": "/users",
+          "summary": "Register a new user",
+          "category": "User Management"
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "count": 3,
+      "endpoints": [
+        {
+          "index": 6,
+          "method": "POST",
+          "path": "/auth/login",
+          "summary": "User login",
+          "category": "Authentication"
+        },
+        {
+          "index": 7,
+          "method": "POST",
+          "path": "/auth/logout",
+          "summary": "User logout",
+          "category": "Authentication"
+        },
+        {
+          "index": 8,
+          "method": "POST",
+          "path": "/auth/refresh",
+          "summary": "Refresh access token",
+          "category": "Authentication"
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "count": 1,
+      "endpoints": [
+        {
+          "index": 9,
+          "method": "GET",
+          "path": "/me",
+          "summary": "Get current user info",
+          "category": "User"
+        }
+      ]
+    }
+  ],
+  "functionalGroups": {
+    "game": [],
+    "backoffice": [
+      {
+        "index": 1,
+        "method": "GET",
+        "path": "/admin/stats",
+        "summary": "Get application statistics",
+        "category": "Admin"
+      },
+      {
+        "index": 2,
+        "method": "GET",
+        "path": "/admin/users",
+        "summary": "List all users",
+        "category": "User Management"
+      },
+      {
+        "index": 3,
+        "method": "PUT",
+        "path": "/admin/users/{username}",
+        "summary": "Update a user's role",
+        "category": "User Management"
+      },
+      {
+        "index": 4,
+        "method": "DELETE",
+        "path": "/admin/users/{username}",
+        "summary": "Delete a user",
+        "category": "User Management"
+      }
+    ],
+    "auth": [
+      {
+        "index": 6,
+        "method": "POST",
+        "path": "/auth/login",
+        "summary": "User login",
+        "category": "Authentication"
+      },
+      {
+        "index": 7,
+        "method": "POST",
+        "path": "/auth/logout",
+        "summary": "User logout",
+        "category": "Authentication"
+      },
+      {
+        "index": 8,
+        "method": "POST",
+        "path": "/auth/refresh",
+        "summary": "Refresh access token",
+        "category": "Authentication"
+      }
+    ],
+    "user": [
+      {
+        "index": 2,
+        "method": "GET",
+        "path": "/admin/users",
+        "summary": "List all users",
+        "category": "User Management"
+      },
+      {
+        "index": 3,
+        "method": "PUT",
+        "path": "/admin/users/{username}",
+        "summary": "Update a user's role",
+        "category": "User Management"
+      },
+      {
+        "index": 4,
+        "method": "DELETE",
+        "path": "/admin/users/{username}",
+        "summary": "Delete a user",
+        "category": "User Management"
+      },
+      {
+        "index": 5,
+        "method": "POST",
+        "path": "/users",
+        "summary": "Register a new user",
+        "category": "User Management"
+      },
+      {
+        "index": 6,
+        "method": "POST",
+        "path": "/auth/login",
+        "summary": "User login",
+        "category": "Authentication"
+      },
+      {
+        "index": 7,
+        "method": "POST",
+        "path": "/auth/logout",
+        "summary": "User logout",
+        "category": "Authentication"
+      },
+      {
+        "index": 9,
+        "method": "GET",
+        "path": "/me",
+        "summary": "Get current user info",
+        "category": "User"
+      }
+    ],
+    "payment": [],
+    "gameServer": []
+  },
+  "allEndpoints": [
+    {
+      "index": 1,
+      "method": "GET",
+      "path": "/admin/stats",
+      "summary": "Get application statistics",
+      "category": "Admin"
+    },
+    {
+      "index": 2,
+      "method": "GET",
+      "path": "/admin/users",
+      "summary": "List all users",
+      "category": "User Management"
+    },
+    {
+      "index": 3,
+      "method": "PUT",
+      "path": "/admin/users/{username}",
+      "summary": "Update a user's role",
+      "category": "User Management"
+    },
+    {
+      "index": 4,
+      "method": "DELETE",
+      "path": "/admin/users/{username}",
+      "summary": "Delete a user",
+      "category": "User Management"
+    },
+    {
+      "index": 5,
+      "method": "POST",
+      "path": "/users",
+      "summary": "Register a new user",
+      "category": "User Management"
+    },
+    {
+      "index": 6,
+      "method": "POST",
+      "path": "/auth/login",
+      "summary": "User login",
+      "category": "Authentication"
+    },
+    {
+      "index": 7,
+      "method": "POST",
+      "path": "/auth/logout",
+      "summary": "User logout",
+      "category": "Authentication"
+    },
+    {
+      "index": 8,
+      "method": "POST",
+      "path": "/auth/refresh",
+      "summary": "Refresh access token",
+      "category": "Authentication"
+    },
+    {
+      "index": 9,
+      "method": "GET",
+      "path": "/me",
+      "summary": "Get current user info",
+      "category": "User"
+    }
+  ],
+  "models": [
+    {
+      "title": "handler.LoginReq",
+      "properties": []
+    },
+    {
+      "title": "handler.LoginReq",
+      "properties": []
+    },
+    {
+      "title": "handler.LoginReq",
+      "properties": []
+    },
+    {
+      "title": "handler.RefreshReq",
+      "properties": []
+    },
+    {
+      "title": "handler.RefreshReq",
+      "properties": []
+    },
+    {
+      "title": "handler.RefreshReq",
+      "properties": []
+    },
+    {
+      "title": "handler.Response",
+      "properties": []
+    },
+    {
+      "title": "handler.Response",
+      "properties": []
+    },
+    {
+      "title": "handler.Response",
+      "properties": []
+    },
+    {
+      "title": "handler.loginResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.loginResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.loginResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.meResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.meResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.meResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.refreshResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.refreshResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.refreshResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.registerRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.registerRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.registerRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.statsResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.statsResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.statsResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.updateUserRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.updateUserRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.updateUserRequest",
+      "properties": []
+    },
+    {
+      "title": "handler.userResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.userResponse",
+      "properties": []
+    },
+    {
+      "title": "handler.userResponse",
+      "properties": []
+    }
+  ],
+  "screenshots": [
+    "swagger_comprehensive_overview.png",
+    "swagger_detailed_expanded.png"
+  ]
+}
